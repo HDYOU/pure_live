@@ -263,7 +263,7 @@ jobs:
         if: startsWith(matrix.platform,'windows')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform windows --targets exe,msix,zip --skip-clean
+          flutter_distributor package --platform windows --targets msix,zip --skip-clean
 
 
       # 打包文件 至 Artifacts
@@ -321,7 +321,7 @@ jobs:
         id: version
         uses: juliangruber/read-file-action@v1
         with:
-          path: assets/app_version.json
+          path: assets/version.json
       - name: Echo version
         run: echo "${{ fromJson(steps.version.outputs.content).version }}"
       - name: Echo version content
