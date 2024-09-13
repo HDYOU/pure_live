@@ -123,13 +123,13 @@ jobs:
         with:
           submodules: recursive
 
-      - name: replace
-        run: |
-            cd ${{ env.projcect_path }}
-            sed -i '/path: E:/d' pubspec.yaml
-            sed -i 's/gsy_video_player:/gsy_video_player: ^0.0.5/g' pubspec.yaml
+    #   - name: replace
+    #     run: |
+    #         cd ${{ env.projcect_path }}
+    #         sed -i '/path: E:/d' pubspec.yaml
+    #         sed -i 's/gsy_video_player:/gsy_video_player: ^0.0.5/g' pubspec.yaml
 
-            cat -n pubspec.yaml
+    #         cat -n pubspec.yaml
 
       - name: Setup JAVA
         if: startsWith(matrix.platform,'android')

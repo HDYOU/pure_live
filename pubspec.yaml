@@ -62,8 +62,7 @@ dependencies:
   media_kit: ^1.1.10+1                           # Primary package.
   media_kit_video: ^1.2.4                        # For video rendering.
   media_kit_libs_video: ^1.0.4                   # Native video dependencies.
-  gsy_video_player: 
-    path: E:/project/gsy_video_player
+  gsy_video_player: ^0.0.5
   share_handler: ^0.0.19
   uri_to_file: ^1.0.0
   bordered_text: ^2.0.0
