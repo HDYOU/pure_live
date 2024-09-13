@@ -250,7 +250,7 @@ jobs:
       - name: Install Linux Dependencies
         if: startsWith(matrix.platform,'linux')
         run: |
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv libasound2-dev
       # 打包 Linux ZIP\DMG
       - name: Build Linux
         if: startsWith(matrix.platform,'linux')
@@ -263,7 +263,7 @@ jobs:
         if: startsWith(matrix.platform,'windows')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform windows --targets msix,zip --skip-clean
+          flutter_distributor package --platform windows --targets exe,msix,zip --skip-clean
 
 
       # 打包文件 至 Artifacts
