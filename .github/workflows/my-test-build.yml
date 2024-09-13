@@ -36,8 +36,8 @@ jobs:
         #   - platform: android-tv
         #     os: ubuntu-latest
 
-          - platform: ios
-            os: macos-latest
+        #   - platform: ios
+            # os: macos-latest
 
           - platform: windows
             os: windows-latest
