@@ -72,14 +72,6 @@ jobs:
         run: |
            echo "projcect_path:  ${{ env.projcect_path }}"
 
-      - name: replace
-        run: |
-           cd ${{ env.projcect_path }}
-           sed -i '/path: E:/d' pubspec.yaml
-           sed -i 's/gsy_video_player:/gsy_video_player: ^0.0.5/g' pubspec.yaml
-
-           cat -n pubspec.yaml
-
       - name: Set android env var
         if: startsWith(matrix.platform,'android')
         run: |
@@ -130,6 +122,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: replace
+        run: |
+            cd ${{ env.projcect_path }}
+            sed -i '/path: E:/d' pubspec.yaml
+            sed -i 's/gsy_video_player:/gsy_video_player: ^0.0.5/g' pubspec.yaml
+
+            cat -n pubspec.yaml
 
       - name: Setup JAVA
         if: startsWith(matrix.platform,'android')
