@@ -46,7 +46,7 @@ jobs:
           - platform: linux
             os: ubuntu-latest
             arch: amd64
-            
+
           - platform: macos
             os: macos-13
             arch: amd64
@@ -72,6 +72,13 @@ jobs:
         run: |
            echo "projcect_path:  ${{ env.projcect_path }}"
 
+      - name: replace
+        run: |
+           cd ${{ env.projcect_path }}
+           sed -i '/path: E:/d' pubspec.yaml
+           sed -i 's/gsy_video_player:/gsy_video_player: ^0.0.5/g' pubspec.yaml
+
+           cat -n pubspec.yaml
 
       - name: Set android env var
         if: startsWith(matrix.platform,'android')
