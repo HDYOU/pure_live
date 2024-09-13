@@ -282,6 +282,15 @@ jobs:
             ${{ env.projcect_path }}/build/*/*/*.msix
             ${{ env.projcect_path }}/build/*/*/*.exe
 
+            ${{ env.projcect_path }}/dist/*/*/*/*.apk
+            ${{ env.projcect_path }}/dist/*/*.ipa
+            ${{ env.projcect_path }}/dist/*/*.dmg
+            ${{ env.projcect_path }}/dist/*/*.zip
+            ${{ env.projcect_path }}/dist/*/*.deb
+            ${{ env.projcect_path }}/dist/*/*.msix
+            ${{ env.projcect_path }}/dist/*/*.exe
+            ${{ env.projcect_path }}/dist/*/*.zip
+
 
   upload-release:
     # if: ${{ !contains(github.ref, '+') }}
