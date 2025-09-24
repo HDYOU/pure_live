@@ -37,6 +37,7 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
 
   String buvid3 = "";
   String buvid4 = "";
+  String accessId = "";
 
   Future<Map<String, String>> getHeader() async {
     if (buvid3.isEmpty) {
@@ -94,7 +95,7 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
   @override
   Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
     const baseUrl = "https://api.live.bilibili.com/xlive/web-interface/v1/second/getList";
-    var url = "$baseUrl?platform=web&parent_area_id=${category.areaType}&area_id=${category.areaId}&sort_type=&page=$page";
+    var url = "$baseUrl?platform=web&parent_area_id=${category.areaType}&area_id=${category.areaId}&sort_type=&page=$page&w_webid=${await getAccessId()}";
     var queryParams = await getWbiSign(url);
     var result = await HttpClient.instance.getJson(
       baseUrl,
@@ -643,5 +644,24 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
       items.add(room);
     }
     return items;
+  }
+
+  Future<String> getAccessId() async {
+    if (accessId.isNotEmpty) {
+      return accessId;
+    }
+
+    // 获取 access_id
+    var resp = await HttpClient.instance.getText(
+      "https://live.bilibili.com/lol",
+      queryParameters: {},
+      header: await getHeader(),
+    );
+    var id = RegExp(r'"access_id":"(.*?)"')
+        .firstMatch(resp)
+        ?.group(1)
+        ?.replaceAll("\\", "");
+    accessId = id ?? "";
+    return accessId;
   }
 }
