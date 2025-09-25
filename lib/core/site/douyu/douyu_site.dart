@@ -171,25 +171,25 @@ class DouyuSite extends LiveSite with DouyuSiteMixin {
     var data = quality.data as DouyuPlayData;
 
     List<LivePlayQualityPlayUrlInfo> urls = [];
-    var futureList = <Future<LivePlayQualityPlayUrlInfo>>[];
+    var futureList = <Future<List<LivePlayQualityPlayUrlInfo>>>[];
     for (var item in data.cdns) {
-      futureList.add(getPlayUrl(detail.roomId!, args, data.rate, item, false));
-      futureList.add(getPlayUrl(detail.roomId!, args, data.rate, item, true));
+      futureList.add(getPlayUrl(detail.roomId!, args, data.rate, item));
     }
     var waits = await Future.wait(futureList);
     for (var url in waits) {
-      if (url.playUrl.isNotEmpty) {
-        urls.add(url);
+      for (var item in url) {
+        if (item.playUrl.isNotEmpty) {
+          urls.add(item);
+        }
       }
     }
     return urls;
   }
 
-  Future<LivePlayQualityPlayUrlInfo> getPlayUrl(
-      String roomId, String args, int rate, String cdn, bool isHevc) async {
+  Future<List<LivePlayQualityPlayUrlInfo>> getPlayUrl(
+      String roomId, String args, int rate, String cdn) async {
     var code = "avc";
-    if(isHevc) code = "hevc";
-    args += "&cdn=$cdn&rate=$rate&ver=Douyu_223061205&iar=0&ive=0&sov=0&hevc=${isHevc ? 1 : 0}&fa=0";
+    args += "&cdn=$cdn&rate=$rate&ver=Douyu_223061205&iar=0&ive=0&sov=0&hevc=1&fa=0";
     var result = await HttpClient.instance.postJson(
       "https://www.douyu.com/lapi/live/getH5Play/$roomId",
       data: args,
@@ -201,10 +201,17 @@ class DouyuSite extends LiveSite with DouyuSiteMixin {
       formUrlEncoded: true,
     );
     //CoreLog.d("getPlayUrl ${jsonEncode(result)}");
-    return LivePlayQualityPlayUrlInfo(
+    var list = <LivePlayQualityPlayUrlInfo>[];
+    list.add(LivePlayQualityPlayUrlInfo(
         playUrl: "${result["data"]["rtmp_url"]}/${HtmlUnescape().convert(result["data"]["rtmp_live"].toString())}",
         info: "($cdn $code)"
-    );
+    ));
+    code = "hevc";
+    list.add(LivePlayQualityPlayUrlInfo(
+        playUrl: HtmlUnescape().convert(result["data"]["player_1"].toString()),
+        info: "($cdn $code)"
+    ));
+    return list;
   }
 
   @override
