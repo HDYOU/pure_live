@@ -173,7 +173,8 @@ class DouyuSite extends LiveSite with DouyuSiteMixin {
     List<LivePlayQualityPlayUrlInfo> urls = [];
     var futureList = <Future<LivePlayQualityPlayUrlInfo>>[];
     for (var item in data.cdns) {
-      futureList.add(getPlayUrl(detail.roomId!, args, data.rate, item));
+      futureList.add(getPlayUrl(detail.roomId!, args, data.rate, item, false));
+      futureList.add(getPlayUrl(detail.roomId!, args, data.rate, item, true));
     }
     var waits = await Future.wait(futureList);
     for (var url in waits) {
@@ -185,8 +186,10 @@ class DouyuSite extends LiveSite with DouyuSiteMixin {
   }
 
   Future<LivePlayQualityPlayUrlInfo> getPlayUrl(
-      String roomId, String args, int rate, String cdn) async {
-    args += "&cdn=$cdn&rate=$rate";
+      String roomId, String args, int rate, String cdn, bool isHevc) async {
+    var code = "avc";
+    if(isHevc) code = "hevc";
+    args += "&cdn=$cdn&rate=$rate&ver=Douyu_223061205&iar=0&ive=0&sov=0&hevc=${isHevc ? 1 : 0}&fa=0";
     var result = await HttpClient.instance.postJson(
       "https://www.douyu.com/lapi/live/getH5Play/$roomId",
       data: args,
@@ -200,7 +203,7 @@ class DouyuSite extends LiveSite with DouyuSiteMixin {
     //CoreLog.d("getPlayUrl ${jsonEncode(result)}");
     return LivePlayQualityPlayUrlInfo(
         playUrl: "${result["data"]["rtmp_url"]}/${HtmlUnescape().convert(result["data"]["rtmp_live"].toString())}",
-        info: "($cdn)"
+        info: "($cdn $code)"
     );
   }
 

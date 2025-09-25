@@ -175,7 +175,8 @@ mixin DouyuSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, Site
     List<RegExp> regExpBeanList = [
       // 斗鱼
       RegExp(r"douyu\.com/([\d|\w]+)[/]?$"),
-      RegExp(r"douyu\.com/topic/[\w\d]+\?.*rid=([^&]+).*$"),
+      //RegExp(r"douyu\.com/topic/[\w\d]+\?.*rid=([^&]+).*$"),
+      RegExp(r"douyu\.com/.*\?.*rid=([^&]+).*$"),
     ];
     siteParseBean = await parseUrl(regExpBeanList, realUrl, platform);
     return siteParseBean;
