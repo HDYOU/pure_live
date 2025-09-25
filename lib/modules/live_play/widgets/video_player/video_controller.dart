@@ -344,6 +344,7 @@ class VideoController with ChangeNotifier {
           reloadDataType: ReloadDataType.changeLine,
           line: currentLineIndex,
           active: active,
+          firstLoad: false,
         );
       } catch (e) {
         CoreLog.error(e);

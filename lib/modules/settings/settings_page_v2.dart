@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/common/services/setting_mixin/setting_video_play.dart';
 import 'package:pure_live/common/widgets/app_style.dart';
 import 'package:pure_live/common/widgets/settings/settings_card_v2.dart';
 import 'package:pure_live/common/widgets/settings/settings_list_item.dart';
@@ -15,6 +16,7 @@ import 'package:pure_live/modules/settings/settings_page.dart';
 import 'package:pure_live/modules/util/site_logo_widget.dart';
 import 'package:pure_live/modules/util/time_util.dart';
 import 'package:pure_live/plugins/extension/list_extension.dart';
+import 'package:pure_live/plugins/extension/string_extension.dart';
 import 'package:remixicon/remixicon.dart';
 
 class SettingsPageV2 extends GetView<SettingsService> {
@@ -487,6 +489,28 @@ class SettingsPageV2 extends GetView<SettingsService> {
                 },
               ),
               /////
+
+              /// 播放文件类型
+              SettingsListItem(
+                leading: const Icon(Icons.file_open_outlined),
+                title: Text(S.current.video_play_url_type),
+                subtitle: Text(S.current.video_play_url_type_info),
+                trailing: Obx(() => Text(controller.videoPlayType.value)),
+                onTap: () {
+                  showVideoPlayUrlTypeSelectorDialog();
+                },
+              ),
+              /// 播放文件编码
+              SettingsListItem(
+                leading: const Icon(Icons.cable_outlined),
+                title: Text(S.current.video_play_url_codec),
+                subtitle: Text(S.current.video_play_url_codec_info),
+                trailing: Obx(() => Text(controller.videoPlayCodec.value)),
+                onTap: () {
+                  showVideoPlayUrlCodecSelectorDialog();
+                },
+              ),
+
             ])
           ]),
     );
@@ -577,6 +601,62 @@ class SettingsPageV2 extends GetView<SettingsService> {
               },
             );
           }).toList())
+        ],
+      ),
+    );
+  }
+
+  /// 播放文件类型
+  static void showVideoPlayUrlTypeSelectorDialog() {
+    var controller = Get.find<SettingsService>();
+    var context = Get.context!;
+    Utils.showRightOrBottomSheet(
+      title: S.current.video_play_url_type,
+      child: ListView(
+        children: [
+          SettingsCardV2(
+              children: SettingVideoPlayMixin.videoPlayTypeList.map<Widget>((name) {
+                return RadioListTile<String>(
+                  activeColor: Theme.of(context).colorScheme.primary,
+                  groupValue: controller.videoPlayType.value,
+                  value: name,
+                  title: Text(name),
+                  onChanged: (value) {
+                    if(value.isNotNullOrEmpty){
+                      controller.videoPlayType.value = value!;
+                    }
+                    Navigator.of(context).pop();
+                  },
+                );
+              }).toList())
+        ],
+      ),
+    );
+  }
+
+  /// 播放文件编码
+  static void showVideoPlayUrlCodecSelectorDialog() {
+    var controller = Get.find<SettingsService>();
+    var context = Get.context!;
+    Utils.showRightOrBottomSheet(
+      title: S.current.video_play_url_codec,
+      child: ListView(
+        children: [
+          SettingsCardV2(
+              children: SettingVideoPlayMixin.videoPlayCodecList.map<Widget>((name) {
+                return RadioListTile<String>(
+                  activeColor: Theme.of(context).colorScheme.primary,
+                  groupValue: controller.videoPlayCodec.value,
+                  value: name,
+                  title: Text(name),
+                  onChanged: (value) {
+                    if(value.isNotNullOrEmpty){
+                      controller.videoPlayCodec.value = value!;
+                    }
+                    Navigator.of(context).pop();
+                  },
+                );
+              }).toList())
         ],
       ),
     );

@@ -636,6 +636,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "Version history updates",
     ),
     "video": MessageLookupByLibrary.simpleMessage("Video"),
+    "video_play_url_codec": MessageLookupByLibrary.simpleMessage("Play Codec"),
+    "video_play_url_codec_info": MessageLookupByLibrary.simpleMessage(
+      "Play Url Codec",
+    ),
+    "video_play_url_type": MessageLookupByLibrary.simpleMessage("Play Type"),
+    "video_play_url_type_info": MessageLookupByLibrary.simpleMessage(
+      "Play Url Type",
+    ),
     "videofit_contain": MessageLookupByLibrary.simpleMessage("Default"),
     "videofit_cover": MessageLookupByLibrary.simpleMessage("Cover"),
     "videofit_fill": MessageLookupByLibrary.simpleMessage("Fill"),

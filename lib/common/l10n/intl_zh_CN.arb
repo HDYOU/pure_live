@@ -352,6 +352,11 @@
     "bit_rate_4000": "蓝光",
     "bit_rate_0": "原画",
 
+    "video_play_url_type": "播放格式",
+    "video_play_url_type_info": "播放链接格式",
+    "video_play_url_codec": "播放编码",
+    "video_play_url_codec_info": "播放链接编码",
+
     "cache_manage": "缓存管理",
     "cache_manage_clear_prompt": "确定要清除缓存吗？",
     "cache_manage_clear_all": "清理全部缓存",

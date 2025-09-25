@@ -353,6 +353,11 @@
     "bit_rate_4000": "Blu-ray ",
     "bit_rate_0": "Origin",
 
+    "video_play_url_type": "Play Type",
+    "video_play_url_type_info": "Play Url Type",
+    "video_play_url_codec": "Play Codec",
+    "video_play_url_codec_info": "Play Url Codec",
+
 
     "cache_manage": "Cache Manage",
     "cache_manage_clear_prompt": "Are you sure you want to clear the cache?",

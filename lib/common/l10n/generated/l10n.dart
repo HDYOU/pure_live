@@ -2525,6 +2525,46 @@ class S {
     return Intl.message('Origin', name: 'bit_rate_0', desc: '', args: []);
   }
 
+  /// `Play Type`
+  String get video_play_url_type {
+    return Intl.message(
+      'Play Type',
+      name: 'video_play_url_type',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Play Url Type`
+  String get video_play_url_type_info {
+    return Intl.message(
+      'Play Url Type',
+      name: 'video_play_url_type_info',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Play Codec`
+  String get video_play_url_codec {
+    return Intl.message(
+      'Play Codec',
+      name: 'video_play_url_codec',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Play Url Codec`
+  String get video_play_url_codec_info {
+    return Intl.message(
+      'Play Url Codec',
+      name: 'video_play_url_codec_info',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Cache Manage`
   String get cache_manage {
     return Intl.message(

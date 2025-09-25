@@ -14,9 +14,10 @@ import 'package:pure_live/plugins/extension/map_extension.dart';
 import 'package:pure_live/plugins/extension/string_extension.dart';
 
 import 'setting_mixin/setting_bit_rate.dart';
+import 'setting_mixin/setting_video_play.dart';
 import 'setting_mixin/setting_webdav.dart';
 
-class SettingsService  extends GetxController with AutoShutDownMixin, SettingBitRateMixin, SettingWebdavMixin {
+class SettingsService extends GetxController with AutoShutDownMixin, SettingBitRateMixin, SettingWebdavMixin, SettingVideoPlayMixin {
   static SettingsService get instance => Get.find<SettingsService>();
 
   SettingsService() {
@@ -159,10 +160,11 @@ class SettingsService  extends GetxController with AutoShutDownMixin, SettingBit
     init();
   }
 
-  void init(){
+  void init() {
     initAutoShutDown(settingPartList);
     initBitRate(settingPartList);
     initWebdav(settingPartList);
+    initVideoPlay(settingPartList);
   }
 
   // Theme settings
@@ -203,8 +205,6 @@ class SettingsService  extends GetxController with AutoShutDownMixin, SettingBit
     Get.changeTheme(darkTheme);
   }
 
-
-
   static Map<String, Color> themeColors = {
     "Crimson": const Color.fromARGB(255, 220, 20, 60),
     "Orange": Colors.orange,
@@ -225,9 +225,7 @@ class SettingsService  extends GetxController with AutoShutDownMixin, SettingBit
   // Make a custom ColorSwatch to name map from the above custom colors.
   final Map<ColorSwatch<Object>, String> colorsNameMap = themeColors.map((key, value) => MapEntry(ColorTools.createPrimarySwatch(value), key));
 
-
   final themeColorSwitch = (PrefUtil.getString('themeColorSwitch') ?? Colors.blue.hex).obs;
-
 
   static Map<String, Locale> languages = {
     "English": const Locale.fromSubtags(languageCode: 'en'),
@@ -257,8 +255,6 @@ class SettingsService  extends GetxController with AutoShutDownMixin, SettingBit
 
   // Custom settings
   final autoRefreshTime = (PrefUtil.getInt('autoRefreshTime') ?? 3).obs;
-
-
 
   final enableDenseFavorites = (PrefUtil.getBool('enableDenseFavorites') ?? false).obs;
 
@@ -663,7 +659,6 @@ class SettingsService  extends GetxController with AutoShutDownMixin, SettingBit
     for (var f in settingPartList.fromJsonList) {
       f.call(json);
     }
-
   }
 
   Map<String, dynamic> toJson() {

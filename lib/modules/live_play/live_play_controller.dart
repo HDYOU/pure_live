@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_pip/fl_pip.dart';
+
 // import 'package:floating/floating.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -138,8 +139,8 @@ class LivePlayController extends StateController {
   final List<StreamSubscription?> subscriptionList = [];
 
   final StreamController<bool> streamController = StreamController<bool>();
-  Stream<bool> get streamState => streamController.stream; // 获取流。
 
+  Stream<bool> get streamState => streamController.stream; // 获取流。
 
   /// 释放一些系统状态
   Future resetSystem() async {
@@ -375,7 +376,7 @@ class LivePlayController extends StateController {
     // if (liveRoomRx.platform == site.id && liveRoomRx.roomId == roomId) {
     //   return;
     // }
-    var of = Sites.of(item.platform??"");
+    var of = Sites.of(item.platform ?? "");
     currentSite = of;
 
     // var liveRoom = liveRoomRx;
@@ -407,7 +408,7 @@ class LivePlayController extends StateController {
   }
 
   /// 获取信息出错
-  void getInfoError(String mgs){
+  void getInfoError(String mgs) {
     SmartDialog.showToast(mgs, displayTime: const Duration(seconds: 2));
     liveStatus.updateValueNotEquate(false);
     hasError.updateValueNotEquate(true);
@@ -429,7 +430,7 @@ class LivePlayController extends StateController {
     if (isFirstLoad.value) {
       try {
         liveRoom = await currentSite.liveSite.getRoomDetail(detail: liveRoom);
-      } catch(e){
+      } catch (e) {
         CoreLog.error(e);
         getInfoError("$e");
         return liveRoom;
@@ -468,7 +469,7 @@ class LivePlayController extends StateController {
       if (liveStatus.value) {
         try {
           await getPlayQualites();
-        } catch(e) {
+        } catch (e) {
           CoreLog.error(e);
           getInfoError("获取清晰度失败");
           return liveRoom;
@@ -548,7 +549,6 @@ class LivePlayController extends StateController {
       resetSystem();
       danmakuController.dispose();
 
-
       channelTimer?.cancel();
       loadRefreshRoomTimer?.cancel();
       networkTimer?.cancel();
@@ -556,7 +556,6 @@ class LivePlayController extends StateController {
       autoExitTimer?.cancel();
 
       streamController.close();
-
     } catch (e) {
       CoreLog.error(e);
     }
@@ -769,8 +768,8 @@ class LivePlayController extends StateController {
         var qualityLevel = await getQualityLevelByBitRate();
         currentQuality.updateValueNotEquate(qualityLevel);
       }
+      getPlayUrl(firstLoad: isFirstLoad.value);
       isFirstLoad.updateValueNotEquate(false);
-      getPlayUrl();
     } catch (e) {
       CoreLog.error(e);
       SmartDialog.showToast("无法读取视频信息,请重新获取");
@@ -780,13 +779,13 @@ class LivePlayController extends StateController {
     }
   }
 
-  Future<void> getPlayUrl() async {
+  Future<void> getPlayUrl({bool firstLoad = false}) async {
     var quality = qualites[currentQuality.value];
     var playUrlList = quality.playUrlList;
     if (playUrlList.isNullOrEmpty) {
       try {
         playUrlList = await currentSite.liveSite.getPlayUrls(detail: liveRoomRx.toLiveRoom(), quality: qualites[currentQuality.value]);
-      } catch(e) {
+      } catch (e) {
         CoreLog.error(e);
         getInfoError("无法读取播放地址");
         return;
@@ -804,8 +803,48 @@ class LivePlayController extends StateController {
       currentLineIndex.updateValueNotEquate(quality.playUrlList.length - 1);
     }
     playUrls.updateValueNotEquate(playUrlList);
+    if (firstLoad) {
+      var sLineIndex = await getFirstLineIndex();
+      CoreLog.d("sLineIndex: $sLineIndex");
+      currentLineIndex.updateValueNotEquate(sLineIndex);
+    }
     // log("playUrlList : ${playUrlList}", name: runtimeType.toString());
     setPlayer();
+  }
+
+  /// 获取播放链接索引
+  Future<int> getFirstLineIndex() async {
+    var quality = qualites[currentQuality.value];
+    var playUrlList = quality.playUrlList;
+    var videoPlayType = settings.videoPlayType.value.toLowerCase();
+    var videoPlayCodec = settings.videoPlayCodec.value.toLowerCase();
+    var videoPlayTypeIndexList = <int>{};
+    var videoPlayCodecIndexList = <int>{};
+    for (var i = 0; i < playUrlList.length; i++) {
+      var playUrlInfo = playUrlList[i];
+      var playUrl = playUrlInfo.playUrl;
+      if(playUrl.contains(".$videoPlayType") || playUrl.contains(".$videoPlayType?")){
+        videoPlayTypeIndexList.add(i);
+      }
+      var info = playUrlInfo.info;
+      if(info.contains(videoPlayCodec)){
+        videoPlayCodecIndexList.add(i);
+      }
+    }
+    var intersection = videoPlayTypeIndexList.intersection(videoPlayCodecIndexList);
+    if(intersection.isNotEmpty) {
+      return intersection.first;
+    }
+
+    if(videoPlayTypeIndexList.isNotEmpty) {
+      return videoPlayTypeIndexList.first;
+    }
+
+    if(videoPlayCodecIndexList.isNotEmpty) {
+      return videoPlayCodecIndexList.first;
+    }
+
+    return 0;
   }
 
   /// 第一次获取清晰度 通过清晰度名
@@ -847,7 +886,7 @@ class LivePlayController extends StateController {
     for (var i = 0; i < playQualites.length; i++) {
       var playQuality = playQualites[i];
       var vBitRate = playQuality.bitRate;
-      if (vBitRate * 1.3 >= bitRate){
+      if (vBitRate * 1.3 >= bitRate) {
         qualityLevel = i;
       } else {
         continue;
@@ -856,8 +895,9 @@ class LivePlayController extends StateController {
         return qualityLevel;
       }
     }
+
     /// 原画清晰度
-    if(bitRate <= 0) {
+    if (bitRate <= 0) {
       return 0;
     }
     return qualityLevel;
@@ -990,10 +1030,10 @@ class LivePlayController extends StateController {
     return DateTime.now().millisecondsSinceEpoch ~/ 1000 ~/ 60;
   }
 
-
   Timer? autoExitTimer;
   var countdown = 0.obs;
   var delayAutoExit = false.obs;
+
   void setAutoExit() {
     if (!settings.enableAutoShutDownTime.value) {
       autoExitTimer?.cancel();
@@ -1001,11 +1041,11 @@ class LivePlayController extends StateController {
     }
     autoExitTimer?.cancel();
     countdown.value = settings.autoShutDownTime.value * 60;
-    CoreLog.d("countdown: $countdown");
+    // CoreLog.d("countdown: $countdown");
     var refreshTimeSecond = 1;
     autoExitTimer = Timer.periodic(Duration(seconds: refreshTimeSecond), (timer) async {
       countdown.value -= refreshTimeSecond;
-      CoreLog.d("countdown: $countdown");
+      // CoreLog.d("countdown: $countdown");
       if (countdown.value <= 0) {
         countdown.value = 0;
         timer = Timer(const Duration(seconds: 10), () async {
@@ -1028,7 +1068,4 @@ class LivePlayController extends StateController {
       }
     });
   }
-
-
 }
-
