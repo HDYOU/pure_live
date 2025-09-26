@@ -358,6 +358,8 @@
     "video_play_url_codec": "Play Codec",
     "video_play_url_codec_info": "Play Url Codec",
 
+    "restart_network": "Restart Network",
+
 
     "cache_manage": "Cache Manage",
     "cache_manage_clear_prompt": "Are you sure you want to clear the cache?",

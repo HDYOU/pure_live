@@ -341,6 +341,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "remove": MessageLookupByLibrary.simpleMessage("删除"),
     "replay": MessageLookupByLibrary.simpleMessage("录播"),
+    "restart_network": MessageLookupByLibrary.simpleMessage("重启网络"),
     "retry": MessageLookupByLibrary.simpleMessage("重试"),
     "room_info_content": m11,
     "screen_caste": MessageLookupByLibrary.simpleMessage("投屏"),

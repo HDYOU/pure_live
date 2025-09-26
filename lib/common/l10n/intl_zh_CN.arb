@@ -357,6 +357,8 @@
     "video_play_url_codec": "播放编码",
     "video_play_url_codec_info": "播放链接编码",
 
+    "restart_network": "重启网络",
+
     "cache_manage": "缓存管理",
     "cache_manage_clear_prompt": "确定要清除缓存吗？",
     "cache_manage_clear_all": "清理全部缓存",

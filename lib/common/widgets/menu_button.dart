@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/core/common/http_client.dart';
 import 'package:remixicon/remixicon.dart';
 
 class MenuButton extends GetView<AuthController> {
@@ -26,6 +27,9 @@ class MenuButton extends GetView<AuthController> {
       position: PopupMenuPosition.under,
       icon: const Icon(Icons.menu_rounded),
       onSelected: (int index) {
+        if(index >= menuRoutes.length) {
+          return;
+        }
         if (index == 4) {
           if (controller.isLogin) {
             Get.toNamed(RoutePath.kMine);
@@ -93,7 +97,19 @@ class MenuButton extends GetView<AuthController> {
             text: S.current.settings_log,
           ),
         ),
+        PopupMenuItem(
+          value: 99,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: MenuListTile(
+            leading: const Icon(Remix.restart_line),
+            text: S.current.restart_network,
+          ),
+          onTap: () async {
+            await HttpClient.resetHttpClient();
+          },
+        ),
       ],
+
     );
   }
 }

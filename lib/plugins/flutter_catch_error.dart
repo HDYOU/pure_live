@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:fvp/mdk.dart' as mdk;
+import 'package:fvp/mdk.dart';
 import 'package:logging/logging.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/core/common/core_log.dart';
@@ -87,7 +88,9 @@ class FlutterCatchError {
     PrefUtil.prefs = await SharedPreferences.getInstance();
     MediaKit.ensureInitialized();
 
-    mdk.setGlobalOption("log", "warning");
+    mdk.setGlobalOption("log", LogLevel.warning);
+    mdk.setGlobalOption("timeout", 10*1000);
+
     Logger.root.level = Level.WARNING;
     fvp.registerWith();
     if (Platform.isWindows) {

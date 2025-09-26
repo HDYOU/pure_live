@@ -2565,6 +2565,16 @@ class S {
     );
   }
 
+  /// `Restart Network`
+  String get restart_network {
+    return Intl.message(
+      'Restart Network',
+      name: 'restart_network',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Cache Manage`
   String get cache_manage {
     return Intl.message(

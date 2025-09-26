@@ -471,6 +471,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "remove": MessageLookupByLibrary.simpleMessage("Remove"),
     "replay": MessageLookupByLibrary.simpleMessage("REPLAY"),
+    "restart_network": MessageLookupByLibrary.simpleMessage("Restart Network"),
     "retry": MessageLookupByLibrary.simpleMessage("Retry"),
     "room_info_content": m11,
     "screen_caste": MessageLookupByLibrary.simpleMessage("Screen Caste"),
