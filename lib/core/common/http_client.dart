@@ -69,8 +69,12 @@ class HttpClient {
   static late rhttp.RhttpCompatibleClient compatibleClient;
 
   static Future<void> initHttp() async {
-    await rhttp.Rhttp.init();
-    await initHttpExt();
+    try {
+      await rhttp.Rhttp.init();
+    } catch (_) {}
+    try {
+      await initHttpExt();
+    } catch (_) {}
   }
 
   static Future<void> initHttpExt() async {
@@ -207,7 +211,6 @@ class HttpClient {
     } catch (e) {
       await handleDioException(e);
       throw CoreError("发送Http请求失败!\n$e");
-
     } finally {
       cancelTokenMap.remove(cancelTokenKey);
     }
@@ -328,11 +331,11 @@ class HttpClient {
     CoreLog.error(e);
     if (e is DioException) {
       var string = e.toString();
-      if(string.contains("Network unreachable")) {
+      if (string.contains("Network unreachable")) {
         CoreLog.w("resetHttpClient ....");
         await resetHttpClient();
       }
-      if(e.type == DioExceptionType.badResponse) {
+      if (e.type == DioExceptionType.badResponse) {
         throw CoreError(e.message ?? "", statusCode: e.response?.statusCode ?? 0);
       }
     }
