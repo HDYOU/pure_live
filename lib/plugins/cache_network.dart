@@ -158,7 +158,7 @@ class CacheNetWorkUtils {
       // sizeText="&size=f$width,$height";
       sizeText="&size=w$width";
     }
-    var proxyUrl = "https://gimg0.baidu.com/gimg/src=$encodeUrl&app=2001&n=0&g=0n&q=80&fmt=avif$sizeText";
+    var proxyUrl = "https://gimg0.baidu.com/gimg/src=$encodeUrl&app=2001&n=0&g=0n&q=80&fmt=webp$sizeText";
     return proxyUrl;
   }
 }
