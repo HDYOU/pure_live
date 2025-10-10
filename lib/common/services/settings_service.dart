@@ -7,6 +7,7 @@ import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 import 'package:pure_live/common/services/setting_mixin/auto_shut_down.dart';
 import 'package:pure_live/common/services/setting_mixin/setting_part.dart';
+import 'package:pure_live/common/services/setting_mixin/setting_video_fit.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/modules/live_play/danmaku/danmaku_controller_factory.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/model/video_player_factory.dart';
@@ -299,7 +300,15 @@ class SettingsService extends GetxController with AutoShutDownMixin, SettingBitR
   // cookie
 
   final bilibiliCookie = (PrefUtil.getString('bilibiliCookie') ?? '').obs;
-  static const List<BoxFit> videofitList = [BoxFit.contain, BoxFit.fill, BoxFit.cover, BoxFit.fitWidth, BoxFit.fitHeight];
+  static final List<SettingVideoFit> videofitList = [
+    SettingVideoFit(BoxFit.contain),
+    SettingVideoFit(BoxFit.fill),
+    SettingVideoFit(BoxFit.cover),
+    SettingVideoFit(BoxFit.fitWidth),
+    SettingVideoFit(BoxFit.fitHeight),
+    SettingVideoFit(BoxFit.contain, aspectRatio: 16/9),
+    SettingVideoFit(BoxFit.contain, aspectRatio: 4/3),
+  ];
 
   final preferResolution = (PrefUtil.getString('preferResolution') ?? resolutions[0]).obs;
   final preferResolutionMobile = (PrefUtil.getString('preferResolutionMobile') ?? resolutions[resolutions.length - 1]).obs;
@@ -340,7 +349,7 @@ class SettingsService extends GetxController with AutoShutDownMixin, SettingBitR
 
   List<String> get resolutionsList => resolutions;
 
-  List<BoxFit> get videofitArrary => videofitList;
+  List<SettingVideoFit> get videofitArray => videofitList;
 
   void changeAutoRefreshConfig(int minutes) {
     autoRefreshTime.value = minutes;

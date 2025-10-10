@@ -26,6 +26,8 @@ class _VideoFitSettingState extends State<VideoFitSetting> {
     S.current.videofit_cover: BoxFit.cover,
     S.current.videofit_fitwidth: BoxFit.fitWidth,
     S.current.videofit_fitheight: BoxFit.fitHeight,
+    "16/9": "16/9",
+    "4/3": "4/3",
   };
 
   _VideoFitSettingState(this.controller) {

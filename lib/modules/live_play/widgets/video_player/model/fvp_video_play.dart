@@ -11,6 +11,7 @@ import 'package:pure_live/modules/util/listen_list_util.dart';
 import 'package:pure_live/modules/util/rx_util.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../../common/services/setting_mixin/setting_video_fit.dart';
 import 'video_play_impl.dart';
 
 /// FVP 播放器
@@ -240,7 +241,7 @@ class FvpVideoPlay extends VideoPlayerInterFace {
   }
 
   @override
-  void setVideoFit(BoxFit fit) {
+  void setVideoFit(SettingVideoFit fit) {
     // chewieController.value.aspectRatio = 1.0;
   }
 

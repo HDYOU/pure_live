@@ -15,6 +15,7 @@ import 'package:pure_live/modules/util/rx_util.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../../../common/services/setting_mixin/setting_video_fit.dart';
 import 'model/video_play_impl.dart';
 import 'model/video_player_factory.dart';
 import 'video_controller_panel.dart';
@@ -133,7 +134,7 @@ class VideoController with ChangeNotifier {
     required this.currentQuality,
   }) {
     videoFitIndex.value = settings.videoFitIndex.value;
-    videoFit.value = settings.videofitArrary[videoFitIndex.value];
+    videoFit.value = settings.videofitArray[videoFitIndex.value].fit;
     // hideDanmaku.value = settings.hideDanmaku.value;
     // danmakuArea.value = settings.danmakuArea.value;
     // danmakuSpeed.value = settings.danmakuSpeed.value;
@@ -413,8 +414,8 @@ class VideoController with ChangeNotifier {
     brightnessKey.currentState?.dispose();
   }
 
-  void setVideoFit(BoxFit fit) {
-    videoFit.value = fit;
+  void setVideoFit(SettingVideoFit fit) {
+    // videoFit.value = fit;
     videoPlayer.setVideoFit(fit);
   }
 

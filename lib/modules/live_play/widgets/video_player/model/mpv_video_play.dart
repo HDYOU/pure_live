@@ -15,6 +15,7 @@ import 'package:pure_live/modules/live_play/widgets/video_player/video_controlle
 import 'package:pure_live/modules/util/listen_list_util.dart';
 import 'package:pure_live/modules/util/rx_util.dart';
 
+import '../../../../../common/services/setting_mixin/setting_video_fit.dart';
 import 'video_play_impl.dart';
 
 class MpvVideoPlay extends VideoPlayerInterFace{
@@ -172,8 +173,8 @@ class MpvVideoPlay extends VideoPlayerInterFace{
   }
 
   @override
-  void setVideoFit(BoxFit fit) {
-    key.currentState?.update(fit: fit);
+  void setVideoFit(SettingVideoFit fit) {
+    key.currentState?.update(fit: fit.fit, aspectRatio: fit.aspectRatio);
   }
 
   @override
@@ -199,7 +200,9 @@ class MpvVideoPlay extends VideoPlayerInterFace{
             resumeUponEnteringForegroundMode: true,
             // 进入前景模式后恢复
             fit: controller
-                .settings.videofitArrary[controller.videoFitIndex.value],
+                .settings.videofitArray[controller.settings.videoFitIndex.value].fit,
+            aspectRatio: controller
+                .settings.videofitArray[controller.settings.videoFitIndex.value].aspectRatio,
             controls: "" == Sites.iptvSite
                 ? media_kit_video.MaterialVideoControls
                 : (state) =>
@@ -224,7 +227,7 @@ class MpvVideoPlay extends VideoPlayerInterFace{
             Obx(() => media_kit_video.Video(
                   controller: mediaPlayerController,
                   fit: controller
-                      .settings.videofitArrary[controller.videoFitIndex.value],
+                      .settings.videofitArray[controller.videoFitIndex.value].fit,
                   pauseUponEnteringBackgroundMode:
                       !controller.settings.enableBackgroundPlay.value,
                   // 进入背景模式时暂停
@@ -307,7 +310,7 @@ class DesktopFullscreen extends StatelessWidget {
           children: [
             Obx(() => media_kit_video.Video(
                   controller: mediaPlayerController,
-                  fit: settings.videofitArrary[controller.videoFitIndex.value],
+                  fit: settings.videofitArray[controller.videoFitIndex.value].fit,
                   pauseUponEnteringBackgroundMode:
                       !settings.enableBackgroundPlay.value,
                   // 进入背景模式时暂停

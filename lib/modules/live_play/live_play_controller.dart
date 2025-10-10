@@ -308,6 +308,10 @@ class LivePlayController extends StateController {
         danmakuController.resume();
       }
     }));
+
+    subscriptionList.add(settings.videoFitIndex.listen((data) {
+      videoController?.setVideoFit(settings.videofitArray[math.min(data, settings.videofitArray.length - 1)]);
+    }));
   }
 
   @override

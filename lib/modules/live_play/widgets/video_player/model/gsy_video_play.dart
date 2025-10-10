@@ -12,6 +12,7 @@ import 'package:pure_live/modules/live_play/widgets/video_player/video_controlle
 import 'package:pure_live/modules/util/listen_list_util.dart';
 import 'package:pure_live/modules/util/rx_util.dart';
 
+import '../../../../../common/services/setting_mixin/setting_video_fit.dart';
 import 'video_play_impl.dart';
 
 class GsyVideoPlay extends VideoPlayerInterFace {
@@ -200,8 +201,11 @@ class GsyVideoPlay extends VideoPlayerInterFace {
   }
 
   @override
-  void setVideoFit(BoxFit fit) {
-    gsyVideoPlayerController.setBoxFit(fit);
+  void setVideoFit(SettingVideoFit fit) {
+    gsyVideoPlayerController.setBoxFit(fit.fit);
+    if(fit.aspectRatio != null){
+      gsyVideoPlayerController.setAspectRatio(fit.aspectRatio ?? 16/9);
+    }
   }
 
   @override
@@ -270,4 +274,5 @@ class GsyVideoPlay extends VideoPlayerInterFace {
   void enableRotation() {
     chewieController.value.enableRotation();
   }
+
 }

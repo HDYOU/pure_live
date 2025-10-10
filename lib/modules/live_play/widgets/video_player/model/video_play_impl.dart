@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart'
     as video_player;
 
+import '../../../../../common/services/setting_mixin/setting_video_fit.dart';
+
 /// 视频播放器接口
 abstract class VideoPlayerInterFace {
   /// 播放链接
@@ -45,7 +47,7 @@ abstract class VideoPlayerInterFace {
   }
 
   /// 设置视频填充
-  void setVideoFit(BoxFit fit);
+  void setVideoFit(SettingVideoFit fit);
 
   /// 销毁
   void dispose();
