@@ -1,0 +1,136 @@
+import 'package:extended_image/extended_image.dart';
+import 'package:flutter/widgets.dart';
+
+import 'multi_extended_network_image_provider.dart';
+
+extension ExtendedImageExtension on ExtendedImage {
+
+  // 静态工厂方法，模拟构造函数
+  static ExtendedImage multiNetwork(
+    String url, {
+    Key? key,
+    String? semanticLabel,
+    bool excludeFromSemantics = false,
+    double? width,
+    double? height,
+    Color? color,
+    Animation<double>? opacity,
+    BlendMode? colorBlendMode,
+    BoxFit? fit,
+    AlignmentGeometry alignment = Alignment.center,
+    ImageRepeat repeat = ImageRepeat.noRepeat,
+    Rect? centerSlice,
+    bool matchTextDirection = false,
+    bool gaplessPlayback = false,
+    FilterQuality filterQuality = FilterQuality.low,
+    LoadStateChanged? loadStateChanged,
+    BoxShape? shape,
+    BoxBorder? border,
+    BorderRadius? borderRadius,
+    Clip clipBehavior = Clip.antiAlias,
+    bool enableLoadState = true,
+    BeforePaintImage? beforePaintImage,
+    AfterPaintImage? afterPaintImage,
+    ExtendedImageMode mode = ExtendedImageMode.none,
+    bool clearMemoryCacheIfFailed = true,
+    DoubleTap? onDoubleTap,
+    InitGestureConfigHandler? initGestureConfigHandler,
+    bool enableSlideOutPage = false,
+    BoxConstraints? constraints,
+    CancellationToken? cancelToken,
+    int retries = 3,
+    Duration? timeLimit,
+    Map<String, String>? headers,
+    bool cache = true,
+    double scale = 1.0,
+    Duration timeRetry = const Duration(milliseconds: 100),
+    Key? extendedImageEditorKey,
+    InitEditorConfigHandler? initEditorConfigHandler,
+    HeroBuilderForSlidingPage? heroBuilderForSlidingPage,
+    bool clearMemoryCacheWhenDispose = false,
+    bool handleLoadingProgress = false,
+    Key? extendedImageGestureKey,
+    int? cacheWidth,
+    int? cacheHeight,
+    bool isAntiAlias = false,
+    String? cacheKey,
+    bool printError = true,
+    double? compressionRatio,
+    int? maxBytes,
+    bool cacheRawData = false,
+    String? imageCacheName,
+    Duration? cacheMaxAge,
+    EdgeInsets layoutInsets = EdgeInsets.zero,
+  }) {
+    assert(cacheWidth == null || cacheWidth > 0);
+
+    assert(cacheHeight == null || cacheHeight > 0);
+
+    var image = ExtendedResizeImage.resizeIfNeeded(
+      provider: MultiExtendedNetworkImageProvider(
+        url,
+        scale: scale,
+        headers: headers,
+        cache: cache,
+        cancelToken: cancelToken,
+        retries: retries,
+        timeRetry: timeRetry,
+        timeLimit: timeLimit,
+        cacheKey: cacheKey,
+        printError: printError,
+        cacheRawData: cacheRawData,
+        imageCacheName: imageCacheName,
+        cacheMaxAge: cacheMaxAge,
+      ),
+      compressionRatio: compressionRatio,
+      maxBytes: maxBytes,
+      cacheWidth: cacheWidth,
+      cacheHeight: cacheHeight,
+      cacheRawData: cacheRawData,
+      imageCacheName: imageCacheName,
+    );
+    assert(constraints == null || constraints.debugAssertIsValid());
+    constraints = (width != null || height != null) ? constraints?.tighten(width: width, height: height) ?? BoxConstraints.tightFor(width: width, height: height) : constraints;
+    assert(cacheWidth == null || cacheWidth > 0);
+    assert(cacheHeight == null || cacheHeight > 0);
+    return ExtendedImage(
+      key: key,
+      image: image,
+      semanticLabel: semanticLabel,
+      excludeFromSemantics: excludeFromSemantics,
+      width: width,
+      height: height,
+      color: color,
+      opacity: opacity,
+      colorBlendMode: colorBlendMode,
+      fit: fit,
+      alignment: alignment,
+      repeat: repeat,centerSlice: centerSlice,
+      matchTextDirection: matchTextDirection,
+      gaplessPlayback: gaplessPlayback,
+      filterQuality: filterQuality,
+      loadStateChanged: loadStateChanged,
+      border: border,
+      shape: shape,
+      borderRadius: borderRadius,
+      clipBehavior: clipBehavior,
+      enableLoadState: enableLoadState,
+      beforePaintImage: beforePaintImage,
+      afterPaintImage: afterPaintImage,
+      mode: mode,
+      clearMemoryCacheIfFailed: clearMemoryCacheIfFailed,
+      onDoubleTap: onDoubleTap,
+      initGestureConfigHandler: initGestureConfigHandler,
+      enableSlideOutPage: enableSlideOutPage,
+      constraints: constraints,
+      extendedImageEditorKey: extendedImageEditorKey,
+      initEditorConfigHandler: initEditorConfigHandler,
+      heroBuilderForSlidingPage: heroBuilderForSlidingPage,
+      clearMemoryCacheWhenDispose: clearMemoryCacheWhenDispose,
+      extendedImageGestureKey: extendedImageGestureKey,
+      isAntiAlias: isAntiAlias,
+      handleLoadingProgress: handleLoadingProgress,
+      layoutInsets: layoutInsets,
+    );
+  }
+}

@@ -7,6 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   battery_plus
   connectivity_plus
   dynamic_color
+  flutter_avif_windows
   flutter_inappwebview_windows
   flutter_js
   flutter_volume_controller

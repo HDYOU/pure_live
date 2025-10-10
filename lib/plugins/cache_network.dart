@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:pure_live/core/common/core_log.dart';
 
+import 'image/extended_image_extension.dart';
+
 class CacheNetWorkUtils {
   // static Widget getCacheImage(String imageUrl,
   //     {double radius = 0.0, required Widget errorWidget, bool full = false}) {
@@ -90,7 +92,7 @@ class CacheNetWorkUtils {
         ),
       );
     }
-    return ExtendedImage.network(
+    return ExtendedImageExtension.multiNetwork(
       // key: ValueKey(imageUrl),
       proxyImageUrl(imageUrl, width: cacheWidth, height: cacheHeight),
       cache: true,
@@ -156,7 +158,7 @@ class CacheNetWorkUtils {
       // sizeText="&size=f$width,$height";
       sizeText="&size=w$width";
     }
-    var proxyUrl = "https://gimg0.baidu.com/gimg/src=$encodeUrl&app=2001&n=0&g=0n&q=80&fmt=webp$sizeText";
+    var proxyUrl = "https://gimg0.baidu.com/gimg/src=$encodeUrl&app=2001&n=0&g=0n&q=80&fmt=avif$sizeText";
     return proxyUrl;
   }
 }
