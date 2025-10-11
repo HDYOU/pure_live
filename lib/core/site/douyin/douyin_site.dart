@@ -277,7 +277,7 @@ class DouyinSite extends LiveSite with DouyinSiteMixin {
   }
 
   Future<Map> getRoomWebDetail(String webRid) async {
-    var headResp = await HttpClient.instance.head("https://live.douyin.com/$webRid", header: headers);
+    var headResp = await HttpClient.instance.get("https://live.douyin.com/$webRid", header: headers);
     var dyCookie = "";
     headResp.headers["set-cookie"]?.forEach((element) {
       var cookie = element.split(";")[0];
