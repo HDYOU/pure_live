@@ -31,7 +31,7 @@ jobs:
       matrix:
         include:
           - platform: android
-            os: ubuntu-latest
+            os: macos-latest
 
         #   - platform: android-tv
         #     os: ubuntu-latest
@@ -56,6 +56,43 @@ jobs:
             # arch: arm64
 
     steps:
+      - name: Show disk usage (Ubuntu/Linux)
+        if: runner.os == 'Linux'
+        run: |
+          echo "=== 磁盘分区整体使用情况 ==="
+          df -h  # 人类可读格式展示所有分区
+          echo -e "\n=== 根目录详细使用情况 ==="
+          df -h /  # 重点查看根分区（Ubuntu运行器核心分区）
+          echo -e "\n=== 大文件/目录占用（前20） ==="
+          du -ah / --max-depth=1 | sort -rh | head -n 20  # 查看根目录下大文件
+
+      - name: Show disk usage (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "=== 磁盘驱动器基本信息 ==="
+          Get-PSDrive -PSProvider FileSystem  # 展示所有磁盘驱动器
+          echo "=== C盘详细使用情况 ==="
+          Get-Volume -DriveLetter C  # 重点查看C盘（Windows运行器核心分区）
+          echo "=== C盘大文件夹占用 ==="
+          Get-ChildItem C:\ -Directory | ForEach-Object {
+              $size = (Get-ChildItem $_.FullName -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1GB
+              [PSCustomObject]@{
+                  Folder = $_.FullName
+                  SizeGB = [math]::Round($size, 2)
+              }
+          } | Sort-Object SizeGB -Descending | Select-Object -First 10
+
+      - name: Show disk usage (macOS)
+        if: runner.os == 'Darwin'  # macOS的runner.os标识为Darwin
+        run: |
+          echo "=== 磁盘分区整体使用情况 ==="
+          df -h
+          echo -e "\n=== 根目录详细使用情况 ==="
+          df -h /
+          echo -e "\n=== 大文件/目录占用（前20） ==="
+          du -ah / --max-depth=1 | sort -rh | head -n 20
+        
+
       - name: Set Projcect Path Base
         run: |
           echo "projcect_path=${{ github.workspace }}" >> $GITHUB_ENV
