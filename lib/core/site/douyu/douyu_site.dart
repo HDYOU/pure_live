@@ -19,6 +19,7 @@ import 'package:pure_live/model/live_category_result.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/model/live_play_quality_play_url_info.dart';
 import 'package:pure_live/model/live_search_result.dart';
+import 'package:pure_live/core/scripts/douyu_sign.dart';
 
 import '../../../common/utils/js_engine.dart';
 import 'douyu_site_mixin.dart';
@@ -257,7 +258,7 @@ class DouyuSite extends LiveSite with DouyuSiteMixin {
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
     var roomId = detail.roomId ?? "";
     try {
-      var roomData = getSignByHome(roomId);
+      var roomData = getRoomData(roomId);
       var result = await HttpClient.instance.getJson(
           "https://www.douyu.com/betard/$roomId",
           queryParameters: {},
@@ -299,6 +300,21 @@ class DouyuSite extends LiveSite with DouyuSiteMixin {
       return getLiveRoomWithError(detail);
     }
   }
+
+  Future<String> getRoomData(String roomId) async{
+    var jsEncResult = await HttpClient.instance.getText(
+      "https://www.douyu.com/swf_api/homeH5Enc?rids=$roomId",
+      queryParameters: {},
+      header: {
+        'referer': 'https://www.douyu.com/$roomId',
+        'user-agent':
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.43",
+      },
+    );
+    var crptext = json.decode(jsEncResult)["data"]["room$roomId"].toString();
+    return DouyuSign.getSign(crptext, roomId);
+  }
+
 
   @override
   Future<LiveSearchRoomResult> searchRooms(String keyword,
@@ -445,6 +461,9 @@ class DouyuSite extends LiveSite with DouyuSiteMixin {
         ?.group(1) ??
         "";
     String homeJs = result.replaceAll(RegExp(r"eval.*?;"), "strc;");
+
+    return DouyuSign.getSign(homeJs, realRid);
+
     await JsEngine.init();
 
     var res = JsEngine.evaluate("$homeJs;;ub98484234()").toString();
