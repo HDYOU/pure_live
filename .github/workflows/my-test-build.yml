@@ -228,9 +228,9 @@ jobs:
           path: |
             **/.dart_tool
             **/build
-          key: ${{ runner.os }}-flutter-{{ matrix.platform }}-${{ hashFiles('**/pubspec.yaml') }}
+          key: ${{ runner.os }}-flutter-${{ matrix.platform }}-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-flutter-{{ matrix.platform }}-
+            ${{ runner.os }}-flutter-${{ matrix.platform }}-
 
       - name: Setup Rust
         continue-on-error: true
