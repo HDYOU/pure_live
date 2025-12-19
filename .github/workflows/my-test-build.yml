@@ -210,12 +210,41 @@ jobs:
         with:
           flutter-version: 3.38.x
           channel: 'stable'
-          cache: "true"
+          cache: "false"
 #          cache: "{{ startsWith(matrix.platform,'android') ? 'false' : true}}"
+
+      - name: Cache Flutter pub-cache dependencies
+        uses: actions/cache@v4
+        with:
+           path: |
+              ~/.pub-cache
+           key: flutter-pub-cache-${{ hashFiles('**/pubspec.yaml') }}
+           restore-keys: |
+             flutter-pub-cache-
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/.dart_tool
+            **/build
+          key: ${{ runner.os }}-flutter-{{ matrix.platform }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-{{ matrix.platform }}-
 
       - name: Setup Rust
         continue-on-error: true
         uses: Swatinem/rust-cache@v2
+        with:
+          # 缓存目录：cargo仓库 + 编译产物
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ./rust/target  # Rust模块的编译产物目录
+          # 缓存key：基于Cargo.toml和Rust代码的hash
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.toml', '**/*.rs') }}
+          restore-keys: |
+            ${{ runner.os }}-rust-
 
       # 打开MAC Desktop支持
       - name: Enable Flutter MAC Desktop
@@ -254,7 +283,7 @@ jobs:
           cd ${{ env.projcect_path }}
           # flutter build apk --release --split-per-abi
           # flutter_distributor package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform arm,arm64,x64  --skip-clean
-          flutter_distributor package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform android-arm,android-arm64,android-x64  --skip-clean
+          flutter_distributor package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform android-arm,android-arm64,android-x64  --skip-clean 
 
       - name: Rename Android TV APK Name
         if: startsWith(matrix.platform,'android-tv')
@@ -358,13 +387,16 @@ jobs:
             ${{ env.projcect_path }}/dist/*/*.exe
             ${{ env.projcect_path }}/dist/*/*.zip
 
-
-
-      - name: Delete Android build
-        if: startsWith(matrix.platform,'android')
+      - name: Delete Package Before Upload
+        continue-on-error: true
         run: |
-          rm -rf build
-          rm -rf .dart_tool
+          rm -rf  ${{ env.projcect_path }}/build/*/*/*/*.apk
+          rm -rf  ${{ env.projcect_path }}/build/*/*/*.ipa
+          rm -rf  ${{ env.projcect_path }}/build/*/*/*.dmg
+          rm -rf  ${{ env.projcect_path }}/build/*/*/*.zip
+          rm -rf  ${{ env.projcect_path }}/build/*/*/*.deb
+          rm -rf  ${{ env.projcect_path }}/build/*/*/*.msix
+          rm -rf  ${{ env.projcect_path }}/build/*/*/*.exe
         
 
   upload-release:
