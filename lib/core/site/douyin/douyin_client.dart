@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
-import 'package:flutter_js/flutter_js.dart';
+import 'package:dart_quickjs/dart_quickjs.dart';
 import 'package:pure_live/common/utils/js_engine.dart';
 
 final String host = 'https://www.douyin.com';
@@ -53,11 +53,11 @@ Map<String, String> commonHeaders = {
 };
 
 class DouyinClient {
-  final JavascriptRuntime _jsRuntime;
+  final JsRuntime _jsRuntime;
   bool _isJsLoaded = false;
 
   // 构造函数，初始化JS运行时
-  DouyinClient() : _jsRuntime = getJavascriptRuntime() {
+  DouyinClient() : _jsRuntime = JsRuntime() {
     _initJsRuntime();
   }
   // 初始化JS运行时并加载签名脚本
@@ -172,10 +172,10 @@ class DouyinClient {
     // 构建查询字符串
     final queryString = Uri(queryParameters: processedParams).query;
     final callName = 'sign_datail';
-    JsEvalResult jsEvalResult = await JsEngine.evaluateAsync(
+    var jsEvalResult = await JsEngine.evaluateAsync(
       '$callName("$queryString", "${newHeaders['User-Agent']}")',
     );
-    final aBogus = jsEvalResult.stringResult;
+    final aBogus = jsEvalResult;
     processedParams['a_bogus'] = aBogus;
     return {'headers': newHeaders, 'params': processedParams};
   }

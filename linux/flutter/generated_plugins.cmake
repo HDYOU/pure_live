@@ -5,7 +5,6 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   dynamic_color
   flutter_avif_linux
-  flutter_js
   flutter_volume_controller
   fvp
   gtk

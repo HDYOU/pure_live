@@ -9,7 +9,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   dynamic_color
   flutter_avif_windows
   flutter_inappwebview_windows
-  flutter_js
   flutter_volume_controller
   fvp
   media_kit_libs_windows_video
