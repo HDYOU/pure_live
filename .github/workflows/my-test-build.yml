@@ -134,6 +134,7 @@ jobs:
       - name: Setup JAVA
         if: startsWith(matrix.platform,'android')
         uses: actions/setup-java@v4
+        continue-on-error: true
         with:
           distribution: 'zulu'
           java-version: 17
@@ -172,12 +173,14 @@ jobs:
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
+        continue-on-error: true
         with:
           flutter-version: 3.38.x
           channel: 'stable'
-          cache: "true"
+          cache: "{{ startsWith(matrix.platform,'android') ? 'false' : true}}"
 
       - name: Setup Rust
+        continue-on-error: true
         uses: Swatinem/rust-cache@v2
 
       # 打开MAC Desktop支持
@@ -321,6 +324,14 @@ jobs:
             ${{ env.projcect_path }}/dist/*/*.exe
             ${{ env.projcect_path }}/dist/*/*.zip
 
+
+
+      - name: Delete Android build
+        if: startsWith(matrix.platform,'android')
+        run: |
+          rm -rf build
+          rm -rf .dart_tool
+        
 
   upload-release:
     # if: ${{ !contains(github.ref, '+') }}
