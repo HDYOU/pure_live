@@ -69,16 +69,6 @@ jobs:
         run: |
           echo "=== 磁盘驱动器基本信息 ==="
           Get-PSDrive -PSProvider FileSystem  # 展示所有磁盘驱动器
-          echo "=== C盘详细使用情况 ==="
-          Get-Volume -DriveLetter C  # 重点查看C盘（Windows运行器核心分区）
-          echo "=== C盘大文件夹占用 ==="
-          Get-ChildItem C:\ -Directory | ForEach-Object {
-              $size = (Get-ChildItem $_.FullName -Recurse -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1GB
-              [PSCustomObject]@{
-                  Folder = $_.FullName
-                  SizeGB = [math]::Round($size, 2)
-              }
-          } | Sort-Object SizeGB -Descending | Select-Object -First 10
 
       - name: Show disk usage (macOS)
         if: runner.os == 'Darwin' || runner.os == 'macOS'  # macOS的runner.os标识为Darwin
