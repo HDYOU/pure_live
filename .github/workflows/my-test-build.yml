@@ -63,8 +63,6 @@ jobs:
           df -h  # 人类可读格式展示所有分区
           echo -e "\n=== 根目录详细使用情况 ==="
           df -h /  # 重点查看根分区（Ubuntu运行器核心分区）
-          echo -e "\n=== 大文件/目录占用（前20） ==="
-          du -ah / --max-depth=1 | sort -rh | head -n 20  # 查看根目录下大文件
 
       - name: Show disk usage (Windows)
         if: runner.os == 'Windows'
@@ -83,14 +81,12 @@ jobs:
           } | Sort-Object SizeGB -Descending | Select-Object -First 10
 
       - name: Show disk usage (macOS)
-        if: runner.os == 'Darwin'  # macOS的runner.os标识为Darwin
+        if: runner.os == 'Darwin' || runner.os == 'macOS'  # macOS的runner.os标识为Darwin
         run: |
           echo "=== 磁盘分区整体使用情况 ==="
           df -h
           echo -e "\n=== 根目录详细使用情况 ==="
-          df -h /
-          echo -e "\n=== 大文件/目录占用（前20） ==="
-          du -ah / --max-depth=1 | sort -rh | head -n 20
+          diskutil list  # 详细磁盘信息
         
 
       - name: Set Projcect Path Base
@@ -214,7 +210,8 @@ jobs:
         with:
           flutter-version: 3.38.x
           channel: 'stable'
-          cache: "{{ startsWith(matrix.platform,'android') ? 'false' : true}}"
+          cache: "true"
+#          cache: "{{ startsWith(matrix.platform,'android') ? 'false' : true}}"
 
       - name: Setup Rust
         continue-on-error: true
