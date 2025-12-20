@@ -113,7 +113,7 @@ class User {
       primaryTeam: json['primaryTeam'] != null
           ? PrimaryTeam.fromJson(json['primaryTeam'])
           : null,
-      channel: Channel.fromJson(json['channel']),
+      channel: Channel.fromJson(json['channel'] ?? {}),
       lastBroadcast: json['lastBroadcast'] != null
           ? LastBroadcast.fromJson(json['lastBroadcast'])
           : null,
@@ -130,6 +130,7 @@ class Stream {
   final String? streamType;
   final String? createdAt;
   final Game? game;
+  final String? previewImageUrl;
 
   Stream({
     required this.id,
@@ -138,6 +139,7 @@ class Stream {
     this.streamType,
     this.createdAt,
     this.game,
+    this.previewImageUrl,
   });
 
   factory Stream.fromJson(Map<String, dynamic> json) {
@@ -147,6 +149,7 @@ class Stream {
       typename: json['__typename'] ?? '',
       streamType: json['type'],
       createdAt: json['createdAt'],
+      previewImageUrl: json['previewImageURL'],
       game: json['game'] != null ? Game.fromJson(json['game']) : null,
     );
   }

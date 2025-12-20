@@ -13,6 +13,7 @@ import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/model/live_play_quality_play_url_info.dart';
 import 'package:pure_live/model/live_search_result.dart';
 
+import '../../../plugins/extension/string_extension.dart';
 import 'models.dart';
 import 'twitch_danmaku.dart';
 import 'twitch_site_mixin.dart';
@@ -245,7 +246,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       var subItem = LiveRoom(
           roomId: node["broadcaster"]["login"],
           title: node["title"],
-          cover: node["previewImageURL"].replaceFirst("https://", "https://i2.wp.com/"),
+          cover: (node["previewImageURL"] ?? "").replaceFirst("https://", "https://i2.wp.com/").toString().appendTxt("?&t=${DateTime.now().millisecondsSinceEpoch ~/ 1000}"),
           nick: node["broadcaster"]["displayName"],
           avatar: node["broadcaster"]["profileImageURL"].replaceFirst("https://", "https://i2.wp.com/"),
           watching: (node["viewersCount"] ?? 0).toString(),
@@ -409,11 +410,13 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       _ => false,
     };
     var title = user.lastBroadcast?.title ?? "null";
+    var previewData = roomInfo[2];
+    var previewImageUrl = previewData.data.user?.stream?.previewImageUrl ?? userOrError?.bannerImageUrl;
     // CoreLog.d("user.stream?.game? : ${jsonEncode(user.stream?.game?.name)}");
     return LiveRoom(
         roomId: userOrError?.login ?? detail.roomId,
         title: title,
-        cover: userOrError?.bannerImageUrl.replaceFirst("https://", "https://i2.wp.com/"),
+        cover: (previewImageUrl ?? "").replaceFirst("https://", "https://i2.wp.com/").appendTxt("?&t=${DateTime.now().millisecondsSinceEpoch ~/ 1000}"),
         nick: userOrError!.displayName,
         avatar: user.profileImageUrl.replaceFirst("https://", "https://i2.wp.com/"),
         watching: ((userOrError.stream ?? user.stream)?.viewersCount ?? 0).toString(),
@@ -444,7 +447,14 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
           "channelLogin": roomId,
           "includeIsDJ": true,
         },
-      )
+      ),
+      buildPersistedRequest(
+        "VideoPreviewOverlay",
+        "9515480dee68a77e667cb19de634739d33f243572b007e98e67184b1a5d8369f",
+        {
+          "login": roomId,
+        },
+      ),
     ];
     String requestQuery = "[${queries.map((q) => q.toString()).join(',')}]";
     // CoreLog.i("twitch-queries:$requestQuery");
@@ -498,7 +508,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       var subItem = LiveRoom(
           roomId: node["login"],
           title: node["broadcastSettings"]["title"],
-          cover: (node["stream"]?["previewImageURL"] ?? "").replaceFirst("https://", "https://i2.wp.com/"),
+          cover: (node["stream"]?["previewImageURL"] ?? "").replaceFirst("https://", "https://i2.wp.com/").toString().appendTxt("?&t=${DateTime.now().millisecondsSinceEpoch ~/ 1000}"),
           nick: node["displayName"],
           avatar: node["profileImageURL"].replaceFirst("https://", "https://i2.wp.com/"),
           watching: (node["stream"]?["viewersCount"] ?? 0).toString(),
