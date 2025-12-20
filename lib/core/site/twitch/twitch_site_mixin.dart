@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../sites.dart';
 
 mixin TwitchSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
-  var platform =  Sites.soopSite;
+  var platform =  Sites.twitchSite;
   @override
   String getJumpToNativeUrl(LiveRoom liveRoom) {
     try {
