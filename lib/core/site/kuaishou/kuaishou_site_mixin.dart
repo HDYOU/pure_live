@@ -11,7 +11,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../sites.dart';
 
-mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
+mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, SiteOtherJump {
   var platform =  Sites.kuaishouSite;
   @override
   String getJumpToNativeUrl(LiveRoom liveRoom) {
@@ -75,6 +75,11 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
   @override
   Future<bool> loadUserInfo(Site site, String cookie) async {
     try {
+      var list = ["did","kwfv1"];
+      var keyFlag = list.every((e) => cookie.contains(e));
+      if(!keyFlag){
+        return false;
+      }
       userName.value = "Cookie";
       uid = 0;
       var flag = true;

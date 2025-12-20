@@ -19,8 +19,7 @@ class SiteWebLoginController extends BaseController {
   }
 
   void toQRLogin() async {
-    await Get.offAndToNamed(RoutePath.kSiteQRLogin,
-        parameters: {"site": site.id});
+    await Get.offAndToNamed(RoutePath.kSiteQRLogin, parameters: {"site": site.id});
   }
 
   void onLoadStop(InAppWebViewController controller, WebUri? uri) async {
@@ -32,8 +31,8 @@ class SiteWebLoginController extends BaseController {
       var cookies = await cookieManager.getCookies(url: uri);
       var cookieStr = cookies.map((e) => "${e.name}=${e.value}").join(";");
       CoreLog.d("cookieStr: $cookieStr");
-      await site.liveSite.loadUserInfo(site, cookieStr);
-      Navigator.of(Get.context!).pop(true);
+      var flag = await site.liveSite.loadUserInfo(site, cookieStr);
+      if (flag) Navigator.of(Get.context!).pop(true);
     }
   }
 }
