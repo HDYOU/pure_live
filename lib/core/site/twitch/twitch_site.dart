@@ -194,7 +194,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   @override
   Future<List<LivePlayQualityPlayUrlInfo>> getPlayUrls({required LiveRoom detail, required LivePlayQuality quality}) async {
-    return quality.data;
+    return quality.playUrlList;
   }
 
   @override
