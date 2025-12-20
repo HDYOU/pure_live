@@ -240,6 +240,9 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         introduction: "",
         notice: "",
         danmakuData: detail.roomId,
+        platform: id,
+        liveStatus: online? LiveStatus.live: LiveStatus.offline,
+        // area: category.areaName,
         data: null);
   }
 
