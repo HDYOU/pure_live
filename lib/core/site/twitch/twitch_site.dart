@@ -12,8 +12,10 @@ import 'package:pure_live/model/live_category_result.dart';
 import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/model/live_play_quality_play_url_info.dart';
 import 'package:pure_live/model/live_search_result.dart';
+import 'package:pure_live/modules/util/list_util.dart';
 
 import '../../../plugins/extension/string_extension.dart';
+import '../../iptv/src/general_utils_object_extension.dart';
 import 'models.dart';
 import 'twitch_danmaku.dart';
 import 'twitch_site_mixin.dart';
@@ -436,7 +438,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         data: null);
   }
 
-  List<String> _getRoomInfoPersistedRequestList(String roomId){
+  List<String> _getRoomInfoPersistedRequestList(String roomId) {
     return [
       buildPersistedRequest(
         "ChannelShell",
@@ -478,7 +480,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     return _decodeRoomInfo(response);
   }
 
-  List<TwitchResponse> _decodeRoomInfo(List<dynamic> decoded){
+  List<TwitchResponse> _decodeRoomInfo(List<dynamic> decoded) {
     final responses = decoded.map((item) => TwitchResponse.fromJson(item as Map<String, dynamic>)).toList();
     if (responses.length < 3) {
       CoreLog.error('Invalid response from Twitch API');
@@ -494,10 +496,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       {
         "platform": "web",
         "query": keyword,
-        "options": {
-          "targets": null,
-          "shouldSkipDiscoveryControl": false
-        },
+        "options": {"targets": null, "shouldSkipDiscoveryControl": false},
         "requestID": "808c9f2e-f52e-431c-8dc7-d2e3c1831d77",
         "includeIsDJ": true
       },
@@ -529,11 +528,71 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
           notice: "",
           danmakuData: node["login"],
           platform: id,
-          liveStatus: status? LiveStatus.live : LiveStatus.offline,
+          liveStatus: status ? LiveStatus.live : LiveStatus.offline,
           area: node["stream"]?["game"]?["name"] ?? "",
           data: null);
       subs.add(subItem);
     }
     return Future.value(LiveSearchRoomResult(hasMore: false, items: subs));
+  }
+
+  @override
+  bool isSupportBatchUpdateLiveStatus() => true;
+
+  @override
+  Future<List<LiveRoom>> getLiveRoomDetailList({required List<LiveRoom> list}) async {
+    if (list.isNullOrEmpty) {
+      return list;
+    }
+
+    /// 分页获取，每页 20 个
+    var size = 20;
+    var futureList = <Future<List<LiveRoom>>>[];
+    for (var i = 0; i < list.length; i += size) {
+      var end = min(i + size, list.length);
+      var subList = list.sublist(i, end);
+      var future = getLiveRoomDetailListPart(list: subList);
+      futureList.add(future);
+    }
+    final rooms = await Future.wait(futureList);
+    return rooms.expand((e) => e).toList();
+  }
+
+  Future<List<LiveRoom>> getLiveRoomDetailListPart({required List<LiveRoom> list}) async {
+    if (list.isNullOrEmpty) {
+      return list;
+    }
+    var roomInfoPersistedRequestList = _getRoomInfoPersistedRequestList("12312");
+    var length = roomInfoPersistedRequestList.length;
+    var allPersistedRequestList = <String>[];
+    for (var room in list) {
+      allPersistedRequestList.addAll(_getRoomInfoPersistedRequestList(room.roomId!));
+    }
+
+    String requestQuery = "[${allPersistedRequestList.map((q) => q.toString()).join(',')}]";
+    // CoreLog.i("twitch-queries:$requestQuery");
+    getRequestHeaders();
+    var response = await HttpClient.instance.postJson(
+      gplApiUrl,
+      header: headers,
+      data: requestQuery,
+    );
+    // CoreLog.d("twitch-response:${jsonEncode(response)}");
+    List<dynamic> decoded = response;
+    var subList = ListUtil.subList(decoded, length);
+    var index = 0;
+    List<LiveRoom> roomList = [];
+    for (var itemList in subList) {
+      try {
+        var roomInfo = _decodeRoomInfo(itemList);
+        var liveRoom = toRoomDetail(roomInfo, list[index].roomId!);
+        roomList.add(liveRoom);
+      } catch (e) {
+        CoreLog.w("$e");
+      }
+
+      index++;
+    }
+    return roomList;
   }
 }
