@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 
-class ColorUtil {
+final class ColorUtil {
   static HashMap<int, Color> colorMap = HashMap<int, Color>();
 
   static Color numberToColor(int intColor) {

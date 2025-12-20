@@ -16,6 +16,7 @@ import 'interface/live_site.dart';
 import 'site/douyin/douyin_site.dart';
 import 'site/douyu/douyu_site.dart';
 import 'site/huya/huya_site.dart';
+import 'site/twitch/twitch_site.dart';
 
 class Sites {
   static const String allSite = "all";
@@ -29,6 +30,7 @@ class Sites {
   static const String soopSite = "soop";
   static const String yySite = "yy";
   static const String juheSite = "juhe";
+  static const String twitchSite = "twitch";
   static List<Site> supportSites = [
     Site(
       id: bilibiliSite,
@@ -103,6 +105,15 @@ class Sites {
       iconData: IconFont.soopLogoCopy,
       iconDataColor: Color(0xffD1FF00),
       getSiteName: () => S.current.soop,
+    ),
+    Site(
+      id: twitchSite,
+      name: "Twitch",
+      logo: "assets/images/twitch.png",
+      liveSite: TwitchSite(),
+      iconData: IconFont.twitch,
+      iconDataColor: Color(0xff6442A4),
+      getSiteName: () => "Twitch",
     ),
     Site(
       id: juheSite,

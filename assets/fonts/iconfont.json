@@ -1,6 +1,6 @@
 {
-  "id": "",
-  "name": "",
+  "id": "5093526",
+  "name": "no name",
   "font_family": "iconfont",
   "css_prefix_text": "icon-",
   "description": "",
@@ -44,8 +44,8 @@
       "icon_id": "13042916",
       "name": "抖音",
       "font_class": "douyin3-copy",
-      "unicode": "e503",
-      "unicode_decimal": 58627
+      "unicode": "e600",
+      "unicode_decimal": 58880
     },
     {
       "icon_id": "14256270",
@@ -53,6 +53,13 @@
       "font_class": "creative-commons",
       "unicode": "f248",
       "unicode_decimal": 62024
+    },
+    {
+      "icon_id": "15378902",
+      "name": "twitch",
+      "font_class": "twitch",
+      "unicode": "ecec",
+      "unicode_decimal": 60652
     },
     {
       "icon_id": "18166712",
@@ -65,8 +72,8 @@
       "icon_id": "20647585",
       "name": "icon_bilibili-square",
       "font_class": "icon_bilibili-square",
-      "unicode": "e504",
-      "unicode_decimal": 58628
+      "unicode": "e601",
+      "unicode_decimal": 58881
     },
     {
       "icon_id": "26586810",
