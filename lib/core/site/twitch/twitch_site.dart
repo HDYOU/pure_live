@@ -389,6 +389,10 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
   @override
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
     var roomInfo = await _getRoomInfo(detail.roomId!);
+    return toRoomDetail(roomInfo, detail.roomId!);
+  }
+
+  LiveRoom toRoomDetail(List<TwitchResponse> roomInfo, String tmpRoomId) {
     var channelShell = roomInfo.first;
     var streamMetaData = roomInfo[1];
 
@@ -413,26 +417,27 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var previewData = roomInfo[2];
     var previewImageUrl = previewData.data.user?.stream?.previewImageUrl ?? userOrError?.bannerImageUrl;
     // CoreLog.d("user.stream?.game? : ${jsonEncode(user.stream?.game?.name)}");
+    var roomId = userOrError?.login ?? tmpRoomId;
     return LiveRoom(
-        roomId: userOrError?.login ?? detail.roomId,
+        roomId: roomId,
         title: title,
         cover: (previewImageUrl ?? "").replaceFirst("https://", "https://i2.wp.com/").appendTxt("?&t=${DateTime.now().millisecondsSinceEpoch ~/ 1000}"),
         nick: userOrError!.displayName,
         avatar: user.profileImageUrl.replaceFirst("https://", "https://i2.wp.com/"),
         watching: ((userOrError.stream ?? user.stream)?.viewersCount ?? 0).toString(),
         status: online,
-        link: "$baseUrl/${detail.roomId}",
+        link: "$baseUrl/${roomId}",
         introduction: "",
         notice: "",
-        danmakuData: detail.roomId,
+        danmakuData: roomId,
         platform: id,
         liveStatus: online ? LiveStatus.live : LiveStatus.offline,
         area: user.stream?.game?.name,
         data: null);
   }
 
-  Future<List<TwitchResponse>> _getRoomInfo(String roomId) async {
-    var queries = [
+  List<String> _getRoomInfoPersistedRequestList(String roomId){
+    return [
       buildPersistedRequest(
         "ChannelShell",
         "fea4573a7bf2644f5b3f2cbbdcbee0d17312e48d2e55f080589d053aad353f11",
@@ -456,6 +461,10 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         },
       ),
     ];
+  }
+
+  Future<List<TwitchResponse>> _getRoomInfo(String roomId) async {
+    var queries = _getRoomInfoPersistedRequestList(roomId);
     String requestQuery = "[${queries.map((q) => q.toString()).join(',')}]";
     // CoreLog.i("twitch-queries:$requestQuery");
     getRequestHeaders();
@@ -466,9 +475,12 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     );
     // CoreLog.d("twitch-response:${jsonEncode(response)}");
 
-    final List<dynamic> decoded = response;
+    return _decodeRoomInfo(response);
+  }
+
+  List<TwitchResponse> _decodeRoomInfo(List<dynamic> decoded){
     final responses = decoded.map((item) => TwitchResponse.fromJson(item as Map<String, dynamic>)).toList();
-    if (responses.length < 2) {
+    if (responses.length < 3) {
       CoreLog.error('Invalid response from Twitch API');
     }
     return responses;
