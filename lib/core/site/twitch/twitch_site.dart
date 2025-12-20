@@ -180,6 +180,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     if (bandwidth > 2500000) return '720P';
     if (bandwidth > 1000000) return '480P';
     if (bandwidth > 500000) return '360P';
+    if (bandwidth > 300000) return '160P';
     return '自动';
   }
 
