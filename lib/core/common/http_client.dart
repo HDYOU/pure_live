@@ -19,13 +19,14 @@ class HttpClient {
   static HttpClient? _httpUtil;
 
   static HttpClient get instance {
+    return HttpClient();
     _httpUtil ??= HttpClient();
     return _httpUtil!;
   }
 
   ///  重置 HttpClient
   static Future<HttpClient> resetHttpClient() async {
-    await initHttpExt();
+    // await initHttpExt();
     _httpUtil = HttpClient();
     return _httpUtil!;
   }
@@ -66,23 +67,23 @@ class HttpClient {
   );
 
   late Dio dio;
-  static late rhttp.RhttpCompatibleClient compatibleClient;
+  // static late rhttp.RhttpCompatibleClient compatibleClient;
 
   static Future<void> initHttp() async {
     try {
       await rhttp.Rhttp.init();
     } catch (_) {}
     try {
-      await initHttpExt();
+      // await initHttpExt();
     } catch (_) {}
   }
 
-  static Future<void> initHttpExt() async {
-    compatibleClient = await rhttp.RhttpCompatibleClient.create(
+  static Future<rhttp.RhttpCompatibleClient> getCompatibleClient() async {
+    return await rhttp.RhttpCompatibleClient.create(
         settings: rhttp.ClientSettings(
-      dnsSettings: rhttp.DnsSettings.dynamic(resolver: (String host) async {
-        return await DnsHelper.lookupARecords(host);
-      }),
+      // dnsSettings: rhttp.DnsSettings.dynamic(resolver: (String host) async {
+      //   return await DnsHelper.lookupARecords(host);
+      // }),
       redirectSettings: rhttp.RedirectSettings.limited(20),
       tlsSettings: rhttp.TlsSettings(
         verifyCertificates: false,
@@ -101,9 +102,13 @@ class HttpClient {
     dio.interceptors.add(CustomInterceptor());
     dio.interceptors.add(CustomDioCacheInterceptor(options: cacheOptions));
     dio.httpClientAdapter = CustomIOHttpClientAdapter.instance;
-    dio.httpClientAdapter = ConversionLayerAdapter(compatibleClient);
+    initDio();
 
     HttpOverrides.global = GlobalHttpOverrides();
+  }
+
+  initDio() async {
+    dio.httpClientAdapter = ConversionLayerAdapter(await getCompatibleClient());
   }
 
   /// 用于存放 取消任务操作

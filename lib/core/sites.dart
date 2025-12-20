@@ -114,6 +114,7 @@ class Sites {
       iconData: IconFont.twitch,
       iconDataColor: Color(0xff6442A4),
       getSiteName: () => "Twitch",
+      // cacheCategory: false,
     ),
     Site(
       id: juheSite,

@@ -52,6 +52,7 @@ class UserOrError {
   final String displayName;
   final String primaryColorHex;
   final String profileImageUrl;
+  final String bannerImageUrl;
   final Stream? stream;
   final String typename;
 
@@ -61,6 +62,7 @@ class UserOrError {
     required this.displayName,
     required this.primaryColorHex,
     required this.profileImageUrl,
+    required this.bannerImageUrl,
     this.stream,
     required this.typename,
   });
@@ -72,6 +74,7 @@ class UserOrError {
       displayName: json['displayName'] ?? '',
       primaryColorHex: json['primaryColorHex'] ?? '',
       profileImageUrl: json['profileImageURL'] ?? '',
+      bannerImageUrl: json['bannerImageURL'] ?? '',
       stream: json['stream'] != null ? Stream.fromJson(json['stream']) : null,
       typename: json['__typename'] ?? '',
     );
