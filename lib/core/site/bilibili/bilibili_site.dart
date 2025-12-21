@@ -136,7 +136,7 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
         "codec": "0,1",
         "platform": "html5",
         "dolby": "5",
-        if(userCookie.isNotEmpty) "try_look": "1",
+        if(userCookie.isEmpty) "try_look": "1",
       },
       header: await getHeader(),
     );
