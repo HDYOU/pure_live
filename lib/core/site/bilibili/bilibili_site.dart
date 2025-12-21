@@ -48,15 +48,15 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
     }
     return cookie.isEmpty
         ? {
-            "user-agent": kDefaultUserAgent,
-            "referer": kDefaultReferer,
-            "cookie": 'buvid3=$buvid3;buvid4=$buvid4;',
-          }
+      "user-agent": kDefaultUserAgent,
+      "referer": kDefaultReferer,
+      "cookie": 'buvid3=$buvid3;buvid4=$buvid4;',
+    }
         : {
-            "cookie": cookie.contains("buvid3") ? cookie : "$cookie;buvid3=$buvid3;buvid4=$buvid4;",
-            "user-agent": kDefaultUserAgent,
-            "referer": kDefaultReferer,
-          };
+      "cookie": cookie.contains("buvid3") ? cookie : "$cookie;buvid3=$buvid3;buvid4=$buvid4;",
+      "user-agent": kDefaultUserAgent,
+      "referer": kDefaultReferer,
+    };
   }
 
   @override
@@ -148,37 +148,37 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
     for (var item in result["data"]["playurl_info"]["playurl"]["stream"][0]["format"][0]["codec"][0]["accept_qn"]) {
       int bitRate = 0;
       switch (item) {
-        /// 流畅
+      /// 流畅
         case 80:
           bitRate = 500;
           break;
 
-        /// 高清
+      /// 高清
         case 150:
           bitRate = 1000;
           break;
 
-        /// 超清
+      /// 超清
         case 250:
           bitRate = 2000;
           break;
 
-        /// 蓝光
+      /// 蓝光
         case 400:
           bitRate = 4000;
           break;
 
-        /// 原画
+      /// 原画
         case 10000:
           bitRate = 10000;
           break;
 
-        /// 4K
+      /// 4K
         case 20000:
           bitRate = 20000;
           break;
 
-        /// 杜比
+      /// 杜比
         case 30000:
           bitRate = 30000;
           break;
@@ -209,6 +209,7 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
         "platform": "html5",
         "dolby": "5",
         "qn": quality.data,
+        if(userCookie.isEmpty) "try_look": "1",
       },
       header: await getHeader(),
     );
@@ -276,7 +277,9 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
   }
 
   Future<Map<String, dynamic>> getRoomInfo({required String roomId}) async {
-    var url = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=$roomId";
+    var tryLook = "";
+    if (userCookie.isEmpty) tryLook = "&try_look=1";
+    var url = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=$roomId$tryLook";
     var queryParams = await getWbiSign(url);
     var result = await HttpClient.instance.getJson(
       "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom",
@@ -367,8 +370,14 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
 
     var imgUrl = resp["data"]["wbi_img"]["img_url"].toString();
     var subUrl = resp["data"]["wbi_img"]["sub_url"].toString();
-    var imgKey = imgUrl.substring(imgUrl.lastIndexOf('/') + 1).split('.').first;
-    var subKey = subUrl.substring(subUrl.lastIndexOf('/') + 1).split('.').first;
+    var imgKey = imgUrl
+        .substring(imgUrl.lastIndexOf('/') + 1)
+        .split('.')
+        .first;
+    var subKey = subUrl
+        .substring(subUrl.lastIndexOf('/') + 1)
+        .split('.')
+        .first;
 
     kImgKey = imgKey;
     kSubKey = subKey;
@@ -386,15 +395,20 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
 
     // 为请求参数进行 wbi 签名
     var mixinKey = getMixinKey(imgKey + subKey);
-    var currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    var currentTime = DateTime
+        .now()
+        .millisecondsSinceEpoch ~/ 1000;
 
-    var queryParams = Map<String, String>.from(Uri.parse(url).queryParameters);
+    var queryParams = Map<String, String>.from(Uri
+        .parse(url)
+        .queryParameters);
 
     queryParams["wts"] = currentTime.toString(); // 添加 wts 字段
 
     //按照 key 重排参数
     Map<String, String> map = {};
-    var sortedKeys = queryParams.keys.toList()..sort();
+    var sortedKeys = queryParams.keys.toList()
+      ..sort();
     for (var key in sortedKeys) {
       var value = queryParams[key]!;
       // 过滤 value 中的 "!'()*" 字符
@@ -438,8 +452,8 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
         liveStatus: (asT<int?>(roomInfo["room_info"]["live_status"]) ?? 0) == 1
             ? LiveStatus.live
             : (asT<int?>(roomInfo["room_info"]["live_status"]) ?? 0) == 2
-                ? LiveStatus.replay
-                : LiveStatus.offline,
+            ? LiveStatus.replay
+            : LiveStatus.offline,
         link: "https://live.bilibili.com/$roomId",
         introduction: roomInfo["room_info"]["description"].toString(),
         notice: "",
