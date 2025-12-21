@@ -452,14 +452,15 @@ class _ResolutionsRowState extends State<ResolutionsRow> {
               },
               itemBuilder: (context) {
                 final items = <PopupMenuItem<String>>[];
-                final urls = controller.playUrls;
+                var urls = rate.playUrlList;
+                if(urls.isNullOrEmpty) urls = controller.playUrls;
                 for (int i = 0; i < urls.length; i++) {
                   items.add(PopupMenuItem<String>(
                     value: i.toString(),
                     child: Text(
                       '线路${i + 1}\t${urls[i].info}\t${urls[i].playUrl.contains(".flv") ? "FLV" : "HLS"}',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: urls[i] == controller.playUrls[controller.currentLineIndex.value] ? Get.theme.colorScheme.primary : null,
+                            color: i == controller.currentLineIndex.value ? Get.theme.colorScheme.primary : null,
                           ),
                     ),
                   ));
