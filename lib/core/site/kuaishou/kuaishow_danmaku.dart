@@ -67,21 +67,38 @@ class KuaishowDanmaku implements LiveDanmaku {
     danmakuArgs = args as KuaishowDanmakuArgs;
     var kuaishouSite = Sites.of(Sites.kuaishouSite);
     var kuaishowSite = kuaishouSite.liveSite as KuaishowSite;
-    kuaishowSite.headers['cookie'] = kuaishowSite.cookie;
+    // kuaishowSite.headers['cookie'] = kuaishowSite.cookie;
     var mHeaders = kuaishowSite.headers;
     var fakeUseragent = FakeUserAgent.getRandomUserAgent();
-    mHeaders['User-Agent'] = fakeUseragent['userAgent'];
-    mHeaders['sec-ch-ua'] = 'Google Chrome;v=${fakeUseragent['v']}, Chromium;v=${fakeUseragent['v']}, Not=A?Brand;v=24';
-    mHeaders['sec-ch-ua-platform'] = fakeUseragent['device'];
-    mHeaders['sec-fetch-dest'] = 'document';
-    mHeaders['sec-fetch-mode'] = 'navigate';
-    mHeaders['sec-fetch-site'] = 'same-origin';
-    mHeaders['sec-fetch-user'] = '?1';
-    // mHeaders['origin'] = 'https://live.kuaishou.com';
-    // mHeaders['sec-websocket-key'] = 'E95v8n0Z1sq1GKVru6zacw==';
-    // mHeaders['sec-websocket-version'] = '13';
-    // mHeaders['sec-websocket-extensions'] = 'permessage-deflate; client_max_window_bits';
-    mHeaders['accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9';
+    mHeaders = {
+      'User-Agent': fakeUseragent['userAgent'],
+      'sec-ch-ua': 'Google Chrome;v=${fakeUseragent['v']}, Chromium;v=${fakeUseragent['v']}, Not=A?Brand;v=24',
+      'sec-ch-ua-platform': fakeUseragent['device'],
+      'Connection': 'Upgrade',
+      'Pragma': 'no-cache',
+      'Cache-Control': 'no-cache',
+      'Upgrade': 'websocket',
+      'Origin': 'https://live.kuaishou.com',
+      'Sec-WebSocket-Version': '13',
+      'Accept-Encoding': 'gzip, deflate, br, zstd',
+      'Accept-Language': 'zh-CN,zh;q=0.9',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      // 'Sec-WebSocket-Key': 'vQVk0e3lIrPsK57e427fTA==',
+      // 'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
+    };
+    // mHeaders['User-Agent'] = fakeUseragent['userAgent'];
+    // mHeaders['sec-ch-ua'] = ;
+    // mHeaders['sec-ch-ua-platform'] = fakeUseragent['device'];
+    // mHeaders['sec-fetch-dest'] = 'document';
+    // mHeaders['sec-fetch-mode'] = 'navigate';
+    // mHeaders['sec-fetch-site'] = 'same-origin';
+    // mHeaders['sec-fetch-user'] = '?1';
+    // mHeaders['Origin'] = 'https://live.kuaishou.com';
+    // // mHeaders['origin'] = 'https://live.kuaishou.com';
+    // // mHeaders['sec-websocket-key'] = 'E95v8n0Z1sq1GKVru6zacw==';
+    // // mHeaders['sec-websocket-version'] = '13';
+    // // mHeaders['sec-websocket-extensions'] = 'permessage-deflate; client_max_window_bits';
+    // mHeaders['accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9';
     webScoketUtils = WebScoketUtils(
       url: danmakuArgs.url,
       heartBeatTime: heartbeatTime,
