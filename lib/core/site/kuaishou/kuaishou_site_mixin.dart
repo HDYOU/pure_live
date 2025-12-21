@@ -41,11 +41,16 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
   @override
   bool isSupportQrLogin() => false;
 
-  final Map<String, String> loginHeaders = {
+  @override
+  String? webLoginUserAgent() {
+    return 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36';
+  }
+
+  late final Map<String, String> loginHeaders = {
     'User-Agent':
         // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
         // "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/118.0.0.0",
-       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+    webLoginUserAgent() ?? "",
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
     'connection': 'keep-alive',
     'sec-ch-ua': 'Google Chrome;v=107, Chromium;v=107, Not=A?Brand;v=24',
@@ -55,6 +60,8 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
     'Sec-Fetch-Site': 'same-origin',
     'Sec-Fetch-User': '?1'
   };
+
+
 
   @override
   URLRequest webLoginURLRequest() {
@@ -77,7 +84,7 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
   @override
   Future<bool> loadUserInfo(Site site, String cookie) async {
     try {
-      var list = ["did","kwfv1"];
+      var list = ["kwfv1"];
       var keyFlag = list.every((e) => cookie.contains(e));
       if(!keyFlag){
         return false;

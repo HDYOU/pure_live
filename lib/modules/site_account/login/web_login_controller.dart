@@ -18,6 +18,10 @@ class SiteWebLoginController extends BaseController {
     );
   }
 
+  String? initUserAgent(){
+    return site.liveSite.webLoginUserAgent();
+  }
+
   void toQRLogin() async {
     await Get.offAndToNamed(RoutePath.kSiteQRLogin, parameters: {"site": site.id});
   }

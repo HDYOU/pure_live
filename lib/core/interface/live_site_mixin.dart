@@ -60,6 +60,8 @@ mixin class SiteAccount {
   /// web登录请求
   URLRequest webLoginURLRequest() => URLRequest(headers: {}, url: WebUri(""),);
 
+  String? webLoginUserAgent() {return null;}
+
   /// web登录处理，判断是否成功
   bool webLoginHandle(WebUri? uri) => false;
 
