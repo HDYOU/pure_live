@@ -39,7 +39,7 @@ dependencies:
   keframe: ^3.0.0
 
   #hashlib
-  hashlib: ^1.21.1
+  hashlib: ^2.3.0
   # network
 #  flutter_js: 0.8.5
   dart_quickjs:
@@ -50,7 +50,7 @@ dependencies:
   web_socket_channel: ^3.0.1
   
   # ui related
-  dynamic_color: 1.7.0
+  dynamic_color: ^1.8.1
   flutter_staggered_grid_view: ^0.7.0
   #Widget
   easy_refresh: ^3.4.0
@@ -58,7 +58,7 @@ dependencies:
   # barrage wall
   quiver: ^3.2.1
   flex_color_picker: ^3.7.0
-  flutter_exit_app: ^1.1.2
+  flutter_exit_app: ^2.0.0
   visibility_detector: ^0.4.0+2
   # database
   supabase_flutter: ^2.8.3
@@ -71,23 +71,23 @@ dependencies:
   gsy_video_player: ^0.0.6
 #    git: https://github.com/liuchuancong/gsy_video_player.git
   fvp: ^0.35.1                              # FVP 视频播放器
-  video_player: 2.9.2                      #  视频播放器
+  video_player: ^2.10.1                      #  视频播放器
   chewie: ^1.9.0                      #  视频播放器
   share_handler: ^0.0.22
   uri_to_file: ^1.0.0
-  bordered_text: ^2.0.0
+  bordered_text: ^3.0.0
 #  screen_brightness: ^0.2.2+1 # 屏幕亮度
 #  screen_brightness_linux: ^0.1.0-dev.1 # 屏幕亮度
   screen_brightness: ^2.1.1 # 屏幕亮度
   flutter_volume_controller: ^1.3.3  # 声音
   flutter_color: ^2.1.0
   crypto_simple: ^3.0.0
-  window_manager: ^0.4.3
+  window_manager: ^0.5.1
 #  url_protocol:
 #    git:
 #      url: https://github.com/LucasXu0/flutter_url_protocol
 #      commit: 77a8420
-  win32_registry: ^1.1.5
+  win32_registry: ^2.1.0
   windows_single_instance: ^1.0.0
   app_links: ^6.3.3
   protobuf: ^3.1.0
@@ -97,7 +97,7 @@ dependencies:
   dio_cache_interceptor: ^3.5.1
   dio_cache_interceptor_db_store: ^6.0.0
   dio_compatibility_layer: ^0.1.0 # 允许 dio 使用 http 包
-  rhttp: ^0.13.0  # 使用 rust 请求http
+  rhttp: ^0.15.0  # 使用 rust 请求http
 #    git:
 #      url: https://ghfast.top/https://github.com/Tienisto/rhttp.git
 #      commit: 8ed4752 # 0.9.2 support text body compressed in gzip and brotli
@@ -106,15 +106,15 @@ dependencies:
   cookie_jar: ^4.0.8
   # system hardware utils
   wakelock_plus: ^1.2.10 #屏幕常亮
-  battery_plus: ^6.2.1
+  battery_plus: ^7.0.0
   stop_watch_timer: ^3.2.1
   # storage
-  file_picker: ^8.1.7
-  permission_handler: ^11.3.1
+  file_picker: ^10.3.8
+  permission_handler: ^12.0.1
   shared_preferences: ^2.3.5
   flutter_cache_manager: ^3.3.1
   # utils
-  get: 5.0.0-release-candidate-9.2.1
+  get: ^5.0.0-release-candidate-9.3.2
   intl: ^0.20.2
   timezone: ^0.10.0
   date_format: ^2.0.7
@@ -127,7 +127,7 @@ dependencies:
 #  flutter_restart:
 #    git: https://ghfast.top/https://github.com/liuchuancong/flutterRestartPluginWip
   move_to_desktop: ^0.0.2
-  dlna_dart: ^0.0.8
+  dlna_dart: ^0.1.0
 #  dart_tars_protocol:
 #    git: https://ghfast.top/https://github.com/xiaoyaocz/dart_tars_protocol
   tars_dart:
@@ -136,7 +136,7 @@ dependencies:
       path: ./simple_live_core/packages/tars_dart
   html_unescape: ^2.0.0
   flutter_inappwebview: ^6.1.5
-  connectivity_plus: ^6.1.1
+  connectivity_plus: ^7.0.0
   qr_flutter: ^4.1.0 
   # 给web端通信
 #  dia: ^0.1.5
@@ -145,15 +145,15 @@ dependencies:
 #  dia_body: ^0.1.3
 #  dia_router: ^0.1.7
 #  dia_cors: ^0.1.2
-  mobile_scanner: ^6.0.2 #二维码扫描
+  mobile_scanner: ^7.1.4 #二维码扫描
   async_locks: ^4.0.2 #同步锁
 #  cached_network_image: ^3.4.1 #图片缓存
-  extended_image: ^9.1.0  #图片缓存
+  extended_image: ^10.0.1  #图片缓存
   flutter_avif: ^3.1.0  # avif图片解码
   uuid: ^4.4.2   # 用于生成 UUID
   auto_orientation: ^2.3.1 #屏幕方向
-  device_info_plus: ^11.2.0 #设备信息
-  canvas_danmaku: ^0.2.7    #弹幕
+  device_info_plus: ^12.3.0 #设备信息
+  canvas_danmaku: ^0.3.1    #弹幕
   # 防抖节流
   easy_debounce: ^2.0.3
 #  floating: ^5.0.1 #PIP画中画
@@ -187,7 +187,7 @@ dependencies:
       path: ./libs/universal/media_kit_libs_video
 
 #  fix build error
-  sqflite_android: 2.4.1
+  sqflite_android: ^2.4.2+2
 
 
 dependency_overrides:
@@ -248,7 +248,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # flutter pub run flutter_launcher_icons
 flutter_icons:

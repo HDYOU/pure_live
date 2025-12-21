@@ -64,6 +64,10 @@ class _ScanCodePageState extends State<ScanCodePage> {
                           return const Icon(Icons.camera_front);
                         case CameraFacing.back:
                           return const Icon(Icons.camera_rear);
+                        case CameraFacing.external:
+                          return const Icon(Icons.camera_front);
+                        case CameraFacing.unknown:
+                          return const Icon(Icons.camera_rear);
                       }
                     },
                   ),

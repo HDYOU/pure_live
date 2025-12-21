@@ -33,6 +33,7 @@ class ExtendedNetworkImageProvider extends ImageProvider<image_provider.Extended
     this.cancelToken,
     this.imageCacheName,
     this.cacheMaxAge,
+    this.webHtmlElementStrategy = WebHtmlElementStrategy.never,
   });
 
   /// The name of [ImageCache], you can define custom [ImageCache] to store this provider.
@@ -384,4 +385,7 @@ class ExtendedNetworkImageProvider extends ImageProvider<image_provider.Extended
     }());
     return client;
   }
+
+  @override
+  final WebHtmlElementStrategy webHtmlElementStrategy;
 }
