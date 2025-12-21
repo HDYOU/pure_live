@@ -442,7 +442,7 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
       return LiveRoom(
         roomId: roomId,
         title: roomInfo["room_info"]["title"].toString(),
-        cover: roomInfo["room_info"]["cover"].toString(),
+        cover: roomInfo["room_info"]["keyframe"].toString(),
         userId: roomInfo["room_info"]["uid"].toString(),
         nick: roomInfo["anchor_info"]["base_info"]["uname"].toString(),
         avatar: "${roomInfo["anchor_info"]["base_info"]["face"]}@100w.jpg",
