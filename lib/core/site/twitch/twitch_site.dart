@@ -267,19 +267,25 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     return Future.value(LiveCategoryResult(hasMore: false, items: subs));
   }
 
+  String buildPlaybackAccessTokenPersistedRequest(String roomId){
+    return buildPersistedRequest(
+      "PlaybackAccessToken",
+      "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
+      {"isLive": true, "login": roomId, "isVod": false, "vodID": "", "playerType": "site", "isClip": false, "clipID": "", "platform": "site"},
+    );
+  }
+
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
     List<LivePlayQuality> qualities = <LivePlayQuality>[];
-    var liveGpl = buildPersistedRequest(
-      "PlaybackAccessToken",
-      "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
-      {"isLive": true, "login": detail.roomId, "isVod": false, "vodID": "", "playerType": "site", "isClip": false, "clipID": "", "platform": "site"},
-    );
-    var response = await HttpClient.instance.postJson(
-      gplApiUrl,
-      header: headers,
-      data: liveGpl,
-    );
+    // var liveGpl = buildPlaybackAccessTokenPersistedRequest(detail.roomId!);
+    // var response = await HttpClient.instance.postJson(
+    //   gplApiUrl,
+    //   header: headers,
+    //   data: liveGpl,
+    // );
+    var data = detail.data as List;
+    var response = data[0];
     var token = response['data']['streamPlaybackAccessToken']['value'];
     var sign = response['data']['streamPlaybackAccessToken']['signature'];
     var liveStatus = detail.status;
@@ -311,7 +317,10 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         header: headers,
       );
       // 这里需要一个 m3u8解析器
-      var list = M3u8FileUtil.parseM3u8File(content);
+      var list = M3u8FileUtil.parseM3u8File(
+          content,
+          otherInfoPattern: RegExp("VIDEO=\"([a-zA-Z0-9]+)\""),
+      );
       qualities = LiveUtil.combineLivePlayQuality(list);
     }
     return qualities;
@@ -350,8 +359,28 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   @override
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
-    var roomInfo = await _getRoomInfo(detail.roomId!);
-    return toRoomDetail(roomInfo, detail.roomId!);
+    String roomId = detail.roomId!;
+    var queries = _getRoomInfoPersistedRequestList(roomId);
+    var len = queries.length;
+    queries.add(buildPlaybackAccessTokenPersistedRequest(roomId));
+    String requestQuery = "[${queries.map((q) => q.toString()).join(',')}]";
+    // CoreLog.i("twitch-queries:$requestQuery");
+    getRequestHeaders();
+    var response = await HttpClient.instance.postJson(
+      gplApiUrl,
+      header: headers,
+      data: requestQuery,
+    );
+    // CoreLog.d("twitch-response:${jsonEncode(response)}");
+    response = (response as List);
+    var sublist = response.sublist(0, len);
+    var otherList = response.sublist(len);
+
+    var roomInfo =  _decodeRoomInfo(sublist);
+    // var roomInfo = await _getRoomInfo(detail.roomId!);
+    var roomDetail = toRoomDetail(roomInfo, detail.roomId!);
+    roomDetail.data = otherList;
+    return roomDetail;
   }
 
   LiveRoom toRoomDetail(List<TwitchResponse> roomInfo, String tmpRoomId) {
@@ -427,6 +456,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   Future<List<TwitchResponse>> _getRoomInfo(String roomId) async {
     var queries = _getRoomInfoPersistedRequestList(roomId);
+    queries.add(buildPlaybackAccessTokenPersistedRequest(roomId));
     String requestQuery = "[${queries.map((q) => q.toString()).join(',')}]";
     // CoreLog.i("twitch-queries:$requestQuery");
     getRequestHeaders();
