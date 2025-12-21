@@ -44,7 +44,8 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
   final Map<String, String> loginHeaders = {
     'User-Agent':
         // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/118.0.0.0",
+        // "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/118.0.0.0",
+       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
     'connection': 'keep-alive',
     'sec-ch-ua': 'Google Chrome;v=107, Chromium;v=107, Not=A?Brand;v=24',
@@ -59,17 +60,18 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
   URLRequest webLoginURLRequest() {
     return URLRequest(
       // url: WebUri("https://livev.m.chenzhongtech.com/fw/live/3xvm3rycyegby8y?cc=share_wxms&followRefer=151&shareMethod=CARD&kpn=GAME_ZONE&subBiz=LIVE_STEARM_OUTSIDE&shareId=18525643860104&shareToken=X8Ps8dZZjxzL1xG&shareMode=APP&efid=0&originShareId=18525643860104&shareObjectId=LodZ3A4PKRA&shareUrlOpened=0&timestamp=1755423126453"),
-      url: WebUri("https://livev.m.chenzhongtech.com/"),
+      url: WebUri("https://live.kuaishou.com/search?keyword=%E5%B0%8F%E5%AD%A9"),
       headers: loginHeaders,
     );
   }
 
   @override
   bool webLoginHandle(WebUri? uri) {
-    if (uri == null) {
-      return false;
-    }
-    return uri.host == "livev.m.chenzhongtech.com";
+    // if (uri == null) {
+    //   return false;
+    // }
+    // return uri.host == "live.kuaishou.com";
+    return true;
   }
 
   @override
