@@ -21,7 +21,7 @@ class LivePlayQuality {
   /// 蓝光10M 10_000
   /// 蓝光20M 20_000
   /// 蓝光30M 30_000
-  final int bitRate;
+  int bitRate;
 
   /// 播放链接
   List<LivePlayQualityPlayUrlInfo> playUrlList = [];
@@ -33,6 +33,16 @@ class LivePlayQuality {
     this.bitRate = 0,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      "quality": quality,
+      "data": data.toString(),
+      "sort": sort,
+      "bitRate": bitRate,
+      "playUrlList": playUrlList,
+    };
+  }
+
   @override
   String toString() {
     return json.encode({
@@ -40,6 +50,7 @@ class LivePlayQuality {
       "data": data.toString(),
       "sort": sort,
       "bitRate": bitRate,
+      "playUrlList": playUrlList
     });
   }
 }

@@ -12,6 +12,13 @@ class LivePlayQualityPlayUrlInfo {
     this.info = "",
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      "playUrl": playUrl,
+      "info": info.toString(),
+    };
+  }
+
   @override
   String toString() {
     return json.encode({

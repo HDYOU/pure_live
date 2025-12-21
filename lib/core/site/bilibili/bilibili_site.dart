@@ -11,6 +11,7 @@ import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/interface/live_site.dart';
 import 'package:pure_live/core/site/bilibili/bilibili_danmaku.dart';
+import 'package:pure_live/core/site/m3u8_file_util.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:pure_live/model/live_category.dart';
@@ -19,6 +20,7 @@ import 'package:pure_live/model/live_play_quality.dart';
 import 'package:pure_live/model/live_play_quality_play_url_info.dart';
 import 'package:pure_live/model/live_search_result.dart';
 
+import '../live_util.dart';
 import 'bilibili_site_mixin.dart';
 
 class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
@@ -133,13 +135,65 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
         "room_id": detail.roomId,
         "protocol": "0,1",
         "format": "0,1,2",
-        "codec": "0,1",
+        "codec": "0,1,2,3",
         "platform": "html5",
         "dolby": "5",
         if(userCookie.isEmpty) "try_look": "1",
       },
       header: await getHeader(),
     );
+
+    var txt = jsonEncode(result);
+    var streamReg = RegExp(r"/(live_[_\da-z]+)");
+    var streamSet = streamReg.allMatches(txt).map((e) => e.group(1) ?? "").toSet();
+    streamSet.remove("");
+    CoreLog.d("streamSet:${jsonEncode(streamSet.toList())}");
+
+    // https://api.live.bilibili.com/xlive/play-gateway/master/url?cid=6136246&mid=0&pt=web&p2p_type=1&net=0&free_type=0&build=0&feature=0&qn=0&drm_type=0,1,2,3&cam_id=0&stream_name=live_8618005_8318755_av1
+    Future<List<LivePlayQuality>> parseStreamName(String streamName) async {
+      var txt = await HttpClient.instance.getText(
+          "https://api.live.bilibili.com/xlive/play-gateway/master/url",
+          queryParameters: {
+            "cid": detail.roomId,
+            "mid": "0",
+            "pt": "web",
+            "p2p_type": "1",
+            "net": "0",
+            "free_type": "0",
+            "build": "0",
+            "feature": "0",
+            "qn": "0",
+            "drm_type": "0,1,2,3",
+            "cam_id": "0",
+            "stream_name": streamName,
+            if(userCookie.isEmpty) "try_look": "1",
+          },
+          header: await getHeader(),);
+      return M3u8FileUtil.parseM3u8File(txt,
+          qualityNamePattern: RegExp("BILI-DISPLAY=\"([^\"']+)\""),
+          bitRatePattern: RegExp(r"BILI-QN=(\d+)"),
+          otherInfoPattern: RegExp("PATHWAY-ID=\"https://(.+?)\.[a-z0-9]+\.[a-z]{2,5}\""),
+      );
+    }
+
+    var futures = <Future<List<LivePlayQuality>>>[];
+    for (var streamName in streamSet) {
+      futures.add(parseStreamName(streamName));
+    }
+
+    var wait = await Future.wait(futures);
+    var list = <LivePlayQuality>[];
+    for(var item in wait) {
+      list.addAll(item);
+    }
+    CoreLog.d("list: ${jsonEncode(list)}");
+
+    qualities = LiveUtil.combineLivePlayQuality(list);
+    for (var item in qualities) {
+      item.bitRate = qnToBitRate(item.bitRate);
+    }
+    return qualities;
+
     var qualitiesMap = <int, String>{};
     for (var item in result["data"]["playurl_info"]["playurl"]["g_qn_desc"]) {
       qualitiesMap[int.tryParse(item["qn"].toString()) ?? 0] = item["desc"].toString();
@@ -196,8 +250,53 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
     return qualities;
   }
 
+  int qnToBitRate(int qn) {
+    int bitRate = 0;
+    switch (qn) {
+    /// 流畅
+      case 80:
+        bitRate = 500;
+        break;
+
+    /// 高清
+      case 150:
+        bitRate = 1000;
+        break;
+
+    /// 超清
+      case 250:
+        bitRate = 2000;
+        break;
+
+    /// 蓝光
+      case 400:
+        bitRate = 4000;
+        break;
+
+    /// 原画
+      case 10000:
+        bitRate = 10000;
+        break;
+
+    /// 4K
+      case 20000:
+        bitRate = 20000;
+        break;
+
+    /// 杜比
+      case 30000:
+        bitRate = 30000;
+        break;
+      default:
+        bitRate = qn;
+        break;
+    }
+    return bitRate;
+  }
+
   @override
   Future<List<LivePlayQualityPlayUrlInfo>> getPlayUrls({required LiveRoom detail, required LivePlayQuality quality}) async {
+    return quality.playUrlList;
     List<LivePlayQualityPlayUrlInfo> urls = [];
     var result = await HttpClient.instance.getJson(
       "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo",

@@ -17,6 +17,7 @@ import 'package:pure_live/modules/util/list_util.dart';
 
 import '../../../plugins/extension/string_extension.dart';
 import '../../iptv/src/general_utils_object_extension.dart';
+import '../live_util.dart';
 import 'models.dart';
 import 'twitch_danmaku.dart';
 import 'twitch_site_mixin.dart';
@@ -310,21 +311,8 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         header: headers,
       );
       // 这里需要一个 m3u8解析器
-      var list = M3u8FileUtil.parseM3u8File(content, "");
-      Map<int, LivePlayQuality> map = {};
-      for (var item in list) {
-        var bitRate = item.bitRate;
-        if (map.containsKey(bitRate)) {
-          map[bitRate]?.playUrlList.addAll(item.playUrlList);
-        } else {
-          map[bitRate] = item;
-        }
-      }
-      var keys = map.keys.toList();
-      keys.sort((a, b) => b.compareTo(a));
-      for (var key in keys) {
-        qualities.add(map[key]!);
-      }
+      var list = M3u8FileUtil.parseM3u8File(content);
+      qualities = LiveUtil.combineLivePlayQuality(list);
     }
     return qualities;
   }
