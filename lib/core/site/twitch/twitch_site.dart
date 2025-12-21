@@ -7,6 +7,7 @@ import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/interface/live_site.dart';
+import 'package:pure_live/core/site/m3u8_file_util.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/model/live_category_result.dart';
 import 'package:pure_live/model/live_play_quality.dart';
@@ -309,50 +310,21 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         header: headers,
       );
       // 这里需要一个 m3u8解析器
-      var playUrlList = <String>[];
-      playUrlList.clear(); // 重置
-      final lines = content.split("\n");
-
-      for (var i in lines) {
-        if (i.startsWith("https://")) {
-          playUrlList.add(i.trim());
+      var list = M3u8FileUtil.parseM3u8File(content, "");
+      Map<int, LivePlayQuality> map = {};
+      for (var item in list) {
+        var bitRate = item.bitRate;
+        if (map.containsKey(bitRate)) {
+          map[bitRate]?.playUrlList.addAll(item.playUrlList);
+        } else {
+          map[bitRate] = item;
         }
       }
-
-      if (playUrlList.isEmpty) {
-        for (final i in lines) {
-          if (i.trim().endsWith('m3u8')) {
-            playUrlList.add(i.trim());
-          }
-        }
+      var keys = map.keys.toList();
+      keys.sort((a, b) => b.compareTo(a));
+      for (var key in keys) {
+        qualities.add(map[key]!);
       }
-      // 匹配带宽信息
-      final bandwidthPattern = RegExp(r'BANDWIDTH=(\d+)');
-      final bandwidthList = bandwidthPattern.allMatches(content).map((match) => match.group(1)!).toList();
-      // CoreLog.d("bandwidthList: ${jsonEncode(bandwidthList)}");
-      // 映射
-      final urlToBandwidth = <String, int>{};
-      for (int i = 0; i < playUrlList.length; i++) {
-        final bandwidth = i < bandwidthList.length ? int.parse(bandwidthList[i]) : 0;
-        urlToBandwidth[playUrlList[i]] = bandwidth;
-      }
-      playUrlList.sort((a, b) => urlToBandwidth[b]!.compareTo(urlToBandwidth[a]!));
-
-      Map<int, LivePlayQuality> livePlayQualityMap = {};
-
-      for (var url in playUrlList) {
-        final bandwidth = urlToBandwidth[url] ?? 0;
-        var livePlayQuality = livePlayQualityMap.putIfAbsent(
-            bandwidth,
-            () => LivePlayQuality(
-                  quality: _getQualityName(bandwidth),
-                  data: url, // 这里data直接存储播放URL
-                  sort: bandwidth,
-                  bitRate: _toBitRate(bandwidth),
-                ));
-        livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: url, info: ""));
-      }
-      qualities = livePlayQualityMap.values.toList();
     }
     return qualities;
   }
