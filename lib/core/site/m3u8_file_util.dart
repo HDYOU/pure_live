@@ -77,7 +77,7 @@ final class M3u8FileUtil {
       // CoreLog.d("line: $line");
       if(otherInfoPattern != null){
         otherInfo = otherInfoPattern.firstMatch(line)?.group(1) ?? "";
-        CoreLog.d("otherInfo: $otherInfo");
+        // CoreLog.d("otherInfo: $otherInfo");
       }
       var infoList = <String>[];
       infoList.add(info);
