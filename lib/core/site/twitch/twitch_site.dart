@@ -37,6 +37,8 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   static const baseUrl = "https://www.twitch.tv";
 
+  Map<String, String> cursorMap = {};
+
   Map<String, String> headers = {
     'user-agent': defaultUa,
     'accept-language': 'en-US,en;q=0.9',
@@ -99,7 +101,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     List<Future> futures = [];
     for (var item in categories) {
       futures.add(Future(() async {
-        var items = await getAllSubCategores(item, 1, 120, []);
+        var items = await getAllSubCategores(item, 1, 30, []);
         item.children.addAll(items);
       }));
     }
@@ -112,7 +114,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       var subsArea = await getSubCategores(liveCategory, page, pageSize);
       // CoreLog.d("getAllSubCategores: ${subsArea}");
       allSubCategores.addAll(subsArea);
-      return allSubCategores;
+      // return allSubCategores;
       var hasMore = subsArea.length >= pageSize;
       if (hasMore) {
         page++;
@@ -125,32 +127,39 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     }
   }
 
-  Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory, int page, int pageSize) async {
-    var off = (page - 1) * pageSize;
-    var params = {
-      "off": off,
-      "blk": 0,
-      "sub": {
-        "1": {"off": off, "tot": 100},
-        "2": {"off": 0, "tot": 180},
-        "3": {"off": 0, "tot": 0}
-      }
-    };
+  String buildCursorKey(String type, String id, int page) {
+    return "${type}_${id}_${page}";
+  }
 
-    List<int> bytes = utf8.encode(jsonEncode(params));
-    String cursor = base64.encode(bytes);
+  void saveCursor(String type, String id, int page, String value){
+    var key = buildCursorKey(type, id, page +1);
+    cursorMap[key] = value;
+  }
+
+  String getCursor(String type, String id, int page){
+    var key = buildCursorKey(type, id, page);
+    return cursorMap[key] ?? "";
+  }
+
+  Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory, int page, int pageSize) async {
+    var cursorType = "getSubCategores";
+    var cursorId = liveCategory.id;
+    String cursor = getCursor(cursorType, cursorId, page);
+    if(cursor.isEmpty && page > 1) {
+      return Future.value(<LiveArea>[]);
+    }
     var liveGpl = buildPersistedRequest(
       "BrowsePage_AllDirectories",
       "2f67f71ba89f3c0ed26a141ec00da1defecb2303595f5cda4298169549783d9e",
       {
-        "limit": pageSize,
+        "limit": 30,
         "options": {
           "recommendationsContext": {"platform": "web"},
           "requestID": "JIRA-VXP-2397",
           "sort": "RELEVANCE",
           "tags": [liveCategory.id]
         },
-        // "cursor": cursor,
+        if (cursor.isNotEmpty) "cursor": cursor,
       },
     );
     var response = await HttpClient.instance.postJson(
@@ -164,6 +173,9 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var edges = directoriesWithTags['edges'];
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
+    cursor = directoriesWithTags["cursor"] ?? "";
+    if(!hasNextPage) cursor = "";
+    saveCursor(cursorType, cursorId, page, cursor);
     List<LiveArea> subs = [];
     for (var item in edges) {
       var node = item['node'];
@@ -185,6 +197,12 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
   /// 读取类目下房间
   @override
   Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
+    var cursorType = "getCategoryRooms";
+    var cursorId = category.shortName!;
+    String cursor = getCursor(cursorType, cursorId, page);
+    if(cursor.isEmpty && page > 1) {
+      return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
+    }
     var params = [
       {
         "operationName": "DirectoryPage_Game",
@@ -201,37 +219,15 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
             "systemFilters": []
           },
           "sortTypeIsRecency": false,
-          "limit": 100,
+          "limit": 30,
           "includeCostreaming": true,
-          // "cursor": "eyJvZmYiOjI2LCJibGsiOjEsInN1YiI6eyIxIjp7Im9mZiI6MjYsInRvdCI6MTAwfSwiMiI6eyJvZmYiOjAsInRvdCI6MTc5fSwiMyI6eyJvZmYiOjAsInRvdCI6MH19fQ=="
+          if (cursor.isNotEmpty) "cursor": cursor,
         },
         "extensions": {
           "persistedQuery": {"version": 1, "sha256Hash": "76cb069d835b8a02914c08dc42c421d0dafda8af5b113a3f19141824b901402f"}
         }
       }
     ];
-    // var liveGpl = buildPersistedRequest(
-    //   "DirectoryPage_Game",
-    //   "76cb069d835b8a02914c08dc42c421d0dafda8af5b113a3f19141824b901402f",
-    //     {
-    //       "imageWidth": 50,
-    //       "slug": category.shortName,
-    //       "options": {
-    //         "sort": "RELEVANCE",
-    //         "recommendationsContext": {
-    //           "platform": "web"
-    //         },
-    //         "requestID": "JIRA-VXP-2397",
-    //         "freeformTags": null,
-    //         "tags": [],
-    //         "broadcasterLanguages": [],
-    //         "systemFilters": []
-    //       },
-    //       "sortTypeIsRecency": false,
-    //       "limit": 30,
-    //       "includeCostreaming": true
-    //     },
-    // );
     var liveGpl = jsonEncode(params);
     var response = await HttpClient.instance.postJson(
       gplApiUrl,
@@ -244,6 +240,9 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var edges = directoriesWithTags['edges'];
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
+    cursor = directoriesWithTags["cursor"] ?? "";
+    if(!hasNextPage) cursor = "";
+    saveCursor(cursorType, cursorId, page, cursor);
     List<LiveRoom> subs = [];
     for (var item in edges) {
       var node = item['node'];
@@ -267,7 +266,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     return Future.value(LiveCategoryResult(hasMore: false, items: subs));
   }
 
-  String buildPlaybackAccessTokenPersistedRequest(String roomId){
+  String buildPlaybackAccessTokenPersistedRequest(String roomId) {
     return buildPersistedRequest(
       "PlaybackAccessToken",
       "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
@@ -318,8 +317,8 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       );
       // 这里需要一个 m3u8解析器
       var list = M3u8FileUtil.parseM3u8File(
-          content,
-          otherInfoPattern: RegExp("VIDEO=\"([a-zA-Z0-9]+)\""),
+        content,
+        otherInfoPattern: RegExp("VIDEO=\"([a-zA-Z0-9]+)\""),
       );
       qualities = LiveUtil.combineLivePlayQuality(list);
     }
@@ -354,7 +353,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
   @override
   Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) {
     var liveArea = LiveArea(platform: id, shortName: "just-chatting", areaName: "Just Chatting");
-    return getCategoryRooms(liveArea);
+    return getCategoryRooms(liveArea, page: page);
   }
 
   @override
@@ -376,7 +375,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var sublist = response.sublist(0, len);
     var otherList = response.sublist(len);
 
-    var roomInfo =  _decodeRoomInfo(sublist);
+    var roomInfo = _decodeRoomInfo(sublist);
     // var roomInfo = await _getRoomInfo(detail.roomId!);
     var roomDetail = toRoomDetail(roomInfo, detail.roomId!);
     roomDetail.data = otherList;
@@ -480,6 +479,13 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   @override
   Future<LiveSearchRoomResult> searchRooms(String keyword, {int page = 1}) async {
+    // CoreLog.d("searchRooms $keyword $page");
+    var cursorType = "searchRooms";
+    var cursorId = keyword;
+    String cursor = getCursor(cursorType, cursorId, page);
+    if(cursor.isEmpty && page > 1) {
+      return Future.value(LiveSearchRoomResult(hasMore: false, items: <LiveRoom>[]));
+    }
     var liveGpl = buildPersistedRequest(
       "SearchResultsPage_SearchResults",
       "7f3580f6ac6cd8aa1424cff7c974a07143827d6fa36bba1b54318fe7f0b68dc5",
@@ -488,7 +494,8 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         "query": keyword,
         "options": {"targets": null, "shouldSkipDiscoveryControl": false},
         "requestID": "808c9f2e-f52e-431c-8dc7-d2e3c1831d77",
-        "includeIsDJ": true
+        "includeIsDJ": true,
+        if (cursor.isNotEmpty) "cursor": cursor,
       },
     );
     var response = await HttpClient.instance.postJson(
@@ -499,6 +506,8 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
     // CoreLog.d("data response:${jsonEncode(response)}");
     var directoriesWithTags = response['data']['searchFor']['channels'];
+    cursor = directoriesWithTags["cursor"] ?? "";
+    saveCursor(cursorType, cursorId, page, cursor);
     var edges = directoriesWithTags['edges'];
     List<LiveRoom> subs = [];
     for (var item in edges) {
