@@ -131,12 +131,12 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     return "${type}_${id}_${page}";
   }
 
-  void saveCursor(String type, String id, int page, String value){
-    var key = buildCursorKey(type, id, page +1);
+  void saveCursor(String type, String id, int page, String value) {
+    var key = buildCursorKey(type, id, page + 1);
     cursorMap[key] = value;
   }
 
-  String getCursor(String type, String id, int page){
+  String getCursor(String type, String id, int page) {
     var key = buildCursorKey(type, id, page);
     return cursorMap[key] ?? "";
   }
@@ -145,7 +145,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var cursorType = "getSubCategores";
     var cursorId = liveCategory.id;
     String cursor = getCursor(cursorType, cursorId, page);
-    if(cursor.isEmpty && page > 1) {
+    if (cursor.isEmpty && page > 1) {
       return Future.value(<LiveArea>[]);
     }
     var liveGpl = buildPersistedRequest(
@@ -174,7 +174,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
     cursor = directoriesWithTags["cursor"] ?? "";
-    if(!hasNextPage) cursor = "";
+    if (!hasNextPage) cursor = "";
     saveCursor(cursorType, cursorId, page, cursor);
     List<LiveArea> subs = [];
     for (var item in edges) {
@@ -200,7 +200,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var cursorType = "getCategoryRooms";
     var cursorId = category.shortName!;
     String cursor = getCursor(cursorType, cursorId, page);
-    if(cursor.isEmpty && page > 1) {
+    if (cursor.isEmpty && page > 1) {
       return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
     }
     var params = [
@@ -241,7 +241,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
     cursor = directoriesWithTags["cursor"] ?? "";
-    if(!hasNextPage) cursor = "";
+    if (!hasNextPage) cursor = "";
     saveCursor(cursorType, cursorId, page, cursor);
     List<LiveRoom> subs = [];
     for (var item in edges) {
@@ -483,7 +483,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var cursorType = "searchRooms";
     var cursorId = keyword;
     String cursor = getCursor(cursorType, cursorId, page);
-    if(cursor.isEmpty && page > 1) {
+    if (cursor.isEmpty && page > 1) {
       return Future.value(LiveSearchRoomResult(hasMore: false, items: <LiveRoom>[]));
     }
     var liveGpl = buildPersistedRequest(
