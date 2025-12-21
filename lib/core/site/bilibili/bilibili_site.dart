@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:get/get.dart';
 import 'package:pure_live/common/models/live_area.dart';
 import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/common/models/live_room.dart';
@@ -135,6 +136,7 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
         "codec": "0,1",
         "platform": "html5",
         "dolby": "5",
+        if(userCookie.isNotEmpty) "try_look": "1",
       },
       header: await getHeader(),
     );
