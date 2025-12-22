@@ -254,7 +254,6 @@ jobs:
       - name: Get Flutter Dependency
         run: |
           cd ${{ env.projcect_path }}
-#          flutter config --no-analytics
           flutter pub get 
 
 
