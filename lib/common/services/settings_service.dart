@@ -386,7 +386,7 @@ class SettingsService extends GetxController
 
   final shieldList = ((PrefUtil.getStringList('shieldList') ?? [])).obs;
 
-  final hotAreasList = ((PrefUtil.getStringList('hotAreasList') ?? supportSites)).obs;
+  final hotAreasList = ((PrefUtil.getStringList('hotAreasList') ?? [supportSites.first])).obs;
 
   // 用于标志 关注房间列表长度 是否变化,
   final favoriteRoomsLengthChangeFlag = false.obs;
