@@ -200,7 +200,7 @@ jobs:
         with:
           flutter-version: 3.38.x
           channel: 'stable'
-          cache: "true"
+          cache: "false"
 #          cache: "{{ startsWith(matrix.platform,'android') ? 'false' : true}}"
 
       - name: Cache Flutter pub-cache dependencies
@@ -254,7 +254,7 @@ jobs:
       - name: Get Flutter Dependency
         run: |
           cd ${{ env.projcect_path }}
-          flutter config --no-analytics
+#          flutter config --no-analytics
           flutter pub get 
 
 
@@ -289,7 +289,7 @@ jobs:
         run: |
           cd ${{ env.projcect_path }}
           # flutter build ios --release --no-codesign
-          flutter_distributor package --platform ios --skip-clean  --no-codesign --flutter-build-args no-tree-shake-icons
+          flutter_distributor package --platform ios --skip-clean  --no-codesign
 
       #创建未签名ipa
       - name: Create IPA
@@ -307,7 +307,7 @@ jobs:
         if: startsWith(matrix.platform,'macos')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform macos --targets dmg,zip --skip-clean --flutter-build-args no-tree-shake-icons
+          flutter_distributor package --platform macos --targets dmg,zip --skip-clean
 
        # 安装 Linux 依赖
       - name: Install Linux Dependencies
@@ -321,7 +321,7 @@ jobs:
         if: startsWith(matrix.platform,'linux')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform linux --targets deb,zip --skip-clean --flutter-build-args no-tree-shake-icons
+          flutter_distributor package --platform linux --targets deb,zip --skip-clean
 
       # build Windows inno_setup
       # 安装特定版本的 Inno Setup 并添加到环境变量
@@ -350,7 +350,7 @@ jobs:
         if: startsWith(matrix.platform,'windows')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform windows --targets exe,msix,zip --skip-clean --flutter-build-args no-tree-shake-icons
+          flutter_distributor package --platform windows --targets exe,msix,zip --skip-clean
 
 
       # 打包文件 至 Artifacts
