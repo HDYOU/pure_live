@@ -155,7 +155,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         "options": {
           "recommendationsContext": {"platform": "web"},
           "requestID": "JIRA-VXP-2397",
-          "sort": "RELEVANCE",
+          "sort": "VIEWER_COUNT",
           "tags": [liveCategory.id]
         },
         if (cursor.isNotEmpty) "cursor": cursor,
@@ -210,7 +210,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
             "recommendationsContext": {
               "platform": "web"
             },
-            "sort": "RELEVANCE",
+            "sort": "VIEWER_COUNT",  // VIEWER_COUNT  RELEVANCE
             "broadcasterLanguages": [
               "ZH", "KO",
             ]
@@ -482,7 +482,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         "recommendationsContext": {
           "platform": "web"
         },
-        "sort": "RELEVANCE",
+        "sort": "VIEWER_COUNT",
         "broadcasterLanguages": [
           "ZH", "KO",
         ]
