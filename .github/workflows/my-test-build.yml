@@ -255,7 +255,7 @@ jobs:
         run: |
           cd ${{ env.projcect_path }}
           flutter config --no-analytics
-          flutter pub get --no-version-check
+          flutter pub get 
 
 
       # 安装appdmg npm install -g appdmg
