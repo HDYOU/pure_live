@@ -201,6 +201,32 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     }
     var params = [
       {
+        "operationName": "CategoryChannels_InternationalSection",
+        "variables": {
+          "imageWidth": 50,
+          "limit": 30,
+          "slug": category.shortName,
+          "options": {
+            "recommendationsContext": {
+              "platform": "web"
+            },
+            "sort": "RELEVANCE",
+            "broadcasterLanguages": [
+              "ZH", "KO",
+            ]
+          },
+          "sortTypeIsRecency": false,
+          "includeCostreaming": true,
+          if (cursor.isNotEmpty) "cursor": cursor,
+        },
+        "extensions": {
+          "persistedQuery": {
+            "version": 1,
+            "sha256Hash": "ebdda252f3c75dd3b857ee27219eb7d4145f0e67501cf49f9211239108faf53b"
+          }
+        }
+      },
+      /*{
         "operationName": "DirectoryPage_Game",
         "variables": {
           "imageWidth": 50,
@@ -222,7 +248,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         "extensions": {
           "persistedQuery": {"version": 1, "sha256Hash": "76cb069d835b8a02914c08dc42c421d0dafda8af5b113a3f19141824b901402f"}
         }
-      }
+      }*/
     ];
     var liveGpl = jsonEncode(params);
     var response = await getGplResponse(liveGpl);
@@ -232,6 +258,9 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var edges = directoriesWithTags['edges'] as List;
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
+    if(edges.isNullOrEmpty) {
+      return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
+    }
     cursor = edges.last["cursor"] ?? "";
     if (!hasNextPage) cursor = "";
     saveCursor(cursorType, cursorId, page, cursor);
@@ -448,6 +477,15 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
           "previousPageviewMedium": null
         },
         "contextChannelName": "woojungx4"
+      },
+      "options": {
+        "recommendationsContext": {
+          "platform": "web"
+        },
+        "sort": "RELEVANCE",
+        "broadcasterLanguages": [
+          "ZH", "KO",
+        ]
       },
       "creatorAnniversariesFeature": false,
       "withFreeformTags": false,
