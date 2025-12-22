@@ -12,6 +12,7 @@ import 'package:pure_live/common/widgets/utils.dart';
 import 'package:pure_live/modules/backup/backup_page.dart';
 import 'package:pure_live/modules/hot_areas/hot_areas_controller.dart';
 import 'package:pure_live/modules/live_play/danmaku/danmaku_controller_factory.dart';
+import 'package:pure_live/modules/settings/network/settings_network.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
 import 'package:pure_live/modules/util/site_logo_widget.dart';
 import 'package:pure_live/modules/util/time_util.dart';
@@ -144,6 +145,21 @@ class SettingsPageV2 extends GetView<SettingsService> {
               Get.toNamed(RoutePath.kLog);
             },
           ),
+
+          /// 网络设置
+          SettingsListItem(
+            leading: const Icon(Icons.network_cell_outlined),
+            title: Text("网络管理"),
+            trailing: const Icon(
+              Icons.chevron_right,
+              color: Colors.grey,
+            ),
+            onTap: () {
+              SettingsNetwork.showSettingsNetworkSetDialog();
+            },
+          ),
+
+
         ]),
       ]),
     );

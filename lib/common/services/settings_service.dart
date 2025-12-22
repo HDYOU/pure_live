@@ -15,10 +15,14 @@ import 'package:pure_live/plugins/extension/map_extension.dart';
 import 'package:pure_live/plugins/extension/string_extension.dart';
 
 import 'setting_mixin/setting_bit_rate.dart';
+import 'setting_mixin/setting_network_proxy.dart' show SettingNetworkProxy;
 import 'setting_mixin/setting_video_play.dart';
 import 'setting_mixin/setting_webdav.dart';
 
-class SettingsService extends GetxController with AutoShutDownMixin, SettingBitRateMixin, SettingWebdavMixin, SettingVideoPlayMixin {
+class SettingsService extends GetxController
+    with AutoShutDownMixin, SettingBitRateMixin, SettingWebdavMixin, SettingVideoPlayMixin
+    , SettingNetworkProxy
+{
   static SettingsService get instance => Get.find<SettingsService>();
 
   SettingsService() {
@@ -166,6 +170,7 @@ class SettingsService extends GetxController with AutoShutDownMixin, SettingBitR
     initBitRate(settingPartList);
     initWebdav(settingPartList);
     initVideoPlay(settingPartList);
+    initNetworkApiProxy(settingPartList);
   }
 
   // Theme settings

@@ -6,8 +6,10 @@ import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:dio_cache_interceptor_db_store/dio_cache_interceptor_db_store.dart';
 import 'package:dio_compatibility_layer/dio_compatibility_layer.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pure_live/common/index.dart';
 import 'package:pure_live/core/common/core_error.dart';
 import 'package:pure_live/core/common/core_log.dart';
+import 'package:pure_live/core/iptv/src/general_utils_object_extension.dart';
 import 'package:rhttp/rhttp.dart' as rhttp;
 
 import '../../plugins/dns4flutter/dns_helper.dart';
@@ -168,7 +170,7 @@ class HttpClient {
       queryParameters ??= {};
       header ??= {};
       var result = await dio.get(
-        url,
+        proxyUrl(url, queryParameters),
         queryParameters: queryParameters,
         options: Options(
           responseType: ResponseType.plain,
@@ -196,6 +198,12 @@ class HttpClient {
     Map<String, dynamic>? header,
     CancelToken? cancel,
   }) async {
+    var stackTrace = StackTrace.current;
+    try{
+      CoreLog.d("log: ${stackTrace.toString()}");
+    } catch (e){
+      CoreLog.error(e);
+    }
     await tryToCancelRequest();
     var cancelToken = cancel ?? CancelToken();
     var cancelTokenKey = getCancelTokenKey();
@@ -204,7 +212,7 @@ class HttpClient {
       queryParameters ??= {};
       header ??= {};
       var result = await dio.get(
-        url,
+        proxyUrl(url, queryParameters),
         queryParameters: queryParameters,
         options: Options(
           responseType: ResponseType.json,
@@ -219,6 +227,52 @@ class HttpClient {
     } finally {
       cancelTokenMap.remove(cancelTokenKey);
     }
+  }
+
+  /// 通过 StackTrace 获取文件名在获取 SiteKey
+  static String findSiteKeyByStackTrace(){
+    var stackTrace = StackTrace.current;
+    try{
+      var string = stackTrace.toString();
+      // /twitch_site.dart
+      // CoreLog.d("log: ${string}");
+      var siteKeyPattern = RegExp(r"/([^/]+)_site.dart");
+      var siteKey = siteKeyPattern.firstMatch(string)?.group(1) ?? "";
+      if(siteKey.isNullOrEmpty) {
+        CoreLog.w("Not Found Site Key By StackTrace.\n\n$string");
+        return "";
+      }
+      var site = Sites.siteMap[siteKey];
+      if(site == null) {
+        CoreLog.w("Not Found Site By SiteKey: $siteKey");
+        return "";
+      }
+      return siteKey;
+    } catch (e){
+      CoreLog.error(e);
+    }
+    return "";
+  }
+
+  static bool isProxyUrl(String siteKey){
+    if(siteKey.isNullOrEmpty) return false;
+    // var of = Sites.of(siteKey);
+    return SettingsService.instance.networkApiProxy.contains(siteKey);
+  }
+  
+  static String proxyUrl(String url, Map<String, dynamic> queryParameters){
+    var siteKey = findSiteKeyByStackTrace();
+    // CoreLog.d("siteKey: ${siteKey}");
+    if(!isProxyUrl(siteKey)) {
+      return url;
+    }
+    var parse = Uri.parse(url);
+    var host = parse.host;
+    var replaceUrl = url.replaceFirst(host, "proxy.moonchan.xyz");
+    queryParameters["proxy_host"]=host;
+    queryParameters["proxy_referer"]="https://$host/";
+    CoreLog.d("proxyUrl: siteKey: ${siteKey} url: ${replaceUrl} ");
+    return replaceUrl;
   }
 
   /// Post请求，返回Map
@@ -243,7 +297,7 @@ class HttpClient {
       header ??= {};
       data ??= {};
       var result = await dio.post(
-        url,
+        proxyUrl(url, queryParameters),
         queryParameters: queryParameters,
         data: data,
         options: Options(
@@ -280,7 +334,7 @@ class HttpClient {
       queryParameters ??= {};
       header ??= {};
       var result = await dio.head(
-        url,
+        proxyUrl(url, queryParameters),
         queryParameters: queryParameters,
         options: Options(
           headers: header,
@@ -315,7 +369,7 @@ class HttpClient {
       queryParameters ??= {};
       header ??= {};
       var result = await dio.get(
-        url,
+        proxyUrl(url, queryParameters),
         queryParameters: queryParameters,
         options: Options(
           responseType: ResponseType.json,

@@ -1,7 +1,6 @@
 import 'package:extended_image/extended_image.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:loading_indicator/loading_indicator.dart';
+import 'package:pure_live/common/index.dart';
 import 'package:pure_live/core/common/core_log.dart';
 
 import 'image/extended_image_extension.dart';
@@ -112,15 +111,15 @@ class CacheNetWorkUtils {
             //   fit: BoxFit.fitWidth,
             // );
             return Container(color: Colors.grey,);
-            return LoadingIndicator(
-              indicatorType: Indicator.ballPulse,
+            // return LoadingIndicator(
+              // indicatorType: Indicator.ballPulse,
 
               /// 必须, loading的类型
               // colors: const [Colors.white],       /// 可选, 颜色集合
               // strokeWidth: 2,                     /// 可选, 线条宽度，只对含有线条的组件有效
               // backgroundColor: Colors.black,      /// 可选, 组件背景色
               // pathBackgroundColor: Colors.black   /// 可选, 线条背景色
-            );
+            // );
 
           ///if you don't want override completed widget
           ///please return null or state.completedWidget
@@ -152,6 +151,7 @@ class CacheNetWorkUtils {
   }
 
   static String proxyImageUrl(String imageUrl,{int? width, int? height}) {
+    if(SettingsService.instance.networkImageProxy.isFalse) return imageUrl;
     var encodeUrl = Uri.encodeComponent(imageUrl);
     var sizeText = "";
     if(width != null && height != null) {
