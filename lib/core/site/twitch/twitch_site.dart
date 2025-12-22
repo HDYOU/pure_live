@@ -33,7 +33,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
   LiveDanmaku getDanmaku() => TwitchDanmaku();
 
   static const defaultUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36";
-  static const gplApiUrl = "https://pure-bat-46.deno.dev/https://gql.twitch.tv/gql";
+  static const gplApiUrl = "https://gql.twitch.tv/gql";
 
   static const baseUrl = "https://www.twitch.tv";
 
