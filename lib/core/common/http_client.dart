@@ -198,12 +198,6 @@ class HttpClient {
     Map<String, dynamic>? header,
     CancelToken? cancel,
   }) async {
-    var stackTrace = StackTrace.current;
-    try{
-      CoreLog.d("log: ${stackTrace.toString()}");
-    } catch (e){
-      CoreLog.error(e);
-    }
     await tryToCancelRequest();
     var cancelToken = cancel ?? CancelToken();
     var cancelTokenKey = getCancelTokenKey();
@@ -231,8 +225,8 @@ class HttpClient {
 
   /// 通过 StackTrace 获取文件名在获取 SiteKey
   static String findSiteKeyByStackTrace(){
-    var stackTrace = StackTrace.current;
     try{
+      var stackTrace = StackTrace.current;
       var string = stackTrace.toString();
       // /twitch_site.dart
       // CoreLog.d("log: ${string}");
