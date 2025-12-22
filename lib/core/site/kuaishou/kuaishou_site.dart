@@ -13,6 +13,7 @@ import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/interface/live_site.dart';
 import 'package:pure_live/core/site/kuaishou/kuaishow_danmaku.dart';
+import 'package:pure_live/core/site/m3u8_file_util.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/model/live_category_result.dart';
@@ -171,7 +172,7 @@ class KuaishowSite extends LiveSite with KuaishouSiteMixin {
         var livePlayQuality = qualityMap[key]!;
         var playUrlList = livePlayQuality.data as List<String>;
         playUrlList.add(quality["url"]);
-        livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: quality["url"], info: "($codeKey)"));
+        livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: quality["url"], info: "(${M3u8FileUtil.toCodecCode(codeKey)})"));
       }
     }
     qualities = qualityMap.values.toList();

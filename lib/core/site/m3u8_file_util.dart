@@ -102,9 +102,11 @@ final class M3u8FileUtil {
   static String toCodecCode(String codec){
     var map = {
       "avc":"avc",
+      "h264":"avc",
 
       "hevc":"hevc",
       "hvc":"hevc",
+      "h265":"hevc",
 
       "av1":"av1",
       "av":"av1",
