@@ -200,7 +200,7 @@ jobs:
         with:
           flutter-version: 3.38.x
           channel: 'stable'
-          cache: "false"
+          cache: "true"
 #          cache: "{{ startsWith(matrix.platform,'android') ? 'false' : true}}"
 
       - name: Cache Flutter pub-cache dependencies

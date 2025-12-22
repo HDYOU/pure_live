@@ -151,7 +151,7 @@ class HuyaSite extends LiveSite with HuyaSiteMixin {
 
   @override
   Future<List<LivePlayQualityPlayUrlInfo>> getPlayUrls({required LiveRoom detail, required LivePlayQuality quality}) async {
-    var ls = <LivePlayQualityPlayUrlInfo>[];
+    var ls = <LivePlayQualityPlayUrlInfo>{};
 
     var futureList = <Future<List<LivePlayQualityPlayUrlInfo>>>[];
     HashSet<String> set = HashSet<String>();
@@ -168,7 +168,7 @@ class HuyaSite extends LiveSite with HuyaSiteMixin {
     for (var item in list) {
       ls.addAll(item);
     }
-    return ls;
+    return ls.toList();
   }
 
   Future<List<LivePlayQualityPlayUrlInfo>> getPlayUrl(HuyaLineModel line, int bitRate) async {
