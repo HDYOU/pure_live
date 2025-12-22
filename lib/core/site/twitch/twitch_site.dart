@@ -41,10 +41,13 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   Map<String, String> headers = {
     'user-agent': defaultUa,
-    'accept-language': 'en-US,en;q=0.9',
+    'Accept-Language': 'zh-CN;q=0.9;q=0.9,image/*,*/*',
     'accept': 'application/vnd.twitchtv.v5+json',
     'accept-encoding': 'gzip, deflate',
     'client-id': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
+    // 'X-Device-Id': '8XFlqSZNmqeUsGCgvFH6UJd9IwOjQskr',
+    // 'Client-Version': 'ffe6fca9-d879-4eb6-8f01-065fef38517f',
+    // 'Client-Session-Id': 'f88692d2006a145d',
   };
 
   final playSessionIds = ["bdd22331a986c7f1073628f2fc5b19da", "064bc3ff1722b6f53b0b5b8c01e46ca5"];
@@ -84,11 +87,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     // CoreLog.d("getCategores .....");
     var liveGpl = buildPersistedRequest("SearchCategoryTags", "b4cb189d8d17aadf29c61e9d7c7e7dcfc932e93b77b3209af5661bffb484195f", {"userQuery": "", "limit": 100});
 
-    var response = await HttpClient.instance.postJson(
-      gplApiUrl,
-      header: headers,
-      data: liveGpl,
-    );
+    var response = await getGplResponse(liveGpl);
 
     List<LiveCategory> categories = [];
     // CoreLog.d("response:${jsonEncode(response)}");
@@ -162,11 +161,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         if (cursor.isNotEmpty) "cursor": cursor,
       },
     );
-    var response = await HttpClient.instance.postJson(
-      gplApiUrl,
-      header: headers,
-      data: liveGpl,
-    );
+    var response = await getGplResponse(liveGpl);
 
     // CoreLog.d("data response:${jsonEncode(response).substring(0,1000)}");
     var directoriesWithTags = response['data']['directoriesWithTags'];
@@ -181,9 +176,9 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       var node = item['node'];
       var subCategory = LiveArea(
         areaId: node["id"],
-        areaName: node["name"],
+        areaName: node["displayName"],
         shortName: node["slug"],
-        // node["displayName"] node["slug"]
+        displayName: node["name"],
         areaType: liveCategory.id,
         platform: id,
         areaPic: (node["avatarURL"] ?? "").toString().replaceFirst("https://", "https://i2.wp.com/"),
@@ -200,6 +195,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var cursorType = "getCategoryRooms";
     var cursorId = category.shortName!;
     String cursor = getCursor(cursorType, cursorId, page);
+    CoreLog.d("category :${jsonEncode(category.areaName)} page:${page} key:${buildCursorKey(cursorType, cursorId, page)} cursor:${cursor}");
     if (cursor.isEmpty && page > 1) {
       return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
     }
@@ -229,18 +225,14 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       }
     ];
     var liveGpl = jsonEncode(params);
-    var response = await HttpClient.instance.postJson(
-      gplApiUrl,
-      header: headers,
-      data: liveGpl,
-    );
+    var response = await getGplResponse(liveGpl);
 
-    // CoreLog.d("data response:${jsonEncode(response)}");
+    CoreLog.d("data response:${jsonEncode(response)}");
     var directoriesWithTags = response[0]['data']['game']['streams'];
-    var edges = directoriesWithTags['edges'];
+    var edges = directoriesWithTags['edges'] as List;
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
-    cursor = directoriesWithTags["cursor"] ?? "";
+    cursor = edges.last["cursor"] ?? "";
     if (!hasNextPage) cursor = "";
     saveCursor(cursorType, cursorId, page, cursor);
     List<LiveRoom> subs = [];
@@ -259,7 +251,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
           danmakuData: node["broadcaster"]["id"],
           platform: id,
           liveStatus: LiveStatus.live,
-          area: node["game"]["name"],
+          area: node["game"]["displayName"],
           data: null);
       subs.add(subItem);
     }
@@ -277,12 +269,6 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) async {
     List<LivePlayQuality> qualities = <LivePlayQuality>[];
-    // var liveGpl = buildPlaybackAccessTokenPersistedRequest(detail.roomId!);
-    // var response = await HttpClient.instance.postJson(
-    //   gplApiUrl,
-    //   header: headers,
-    //   data: liveGpl,
-    // );
     var data = detail.data as List;
     var response = data[0];
     var token = response['data']['streamPlaybackAccessToken']['value'];
@@ -351,9 +337,16 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   /// 读取推荐的房间
   @override
-  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) {
+  Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
+    var items = <LiveRoom>[];
+    if (page == 1) {
+      items = await getSideNavRoomList();
+    }
     var liveArea = LiveArea(platform: id, shortName: "just-chatting", areaName: "Just Chatting");
-    return getCategoryRooms(liveArea, page: page);
+    var liveCategoryResult = await getCategoryRooms(liveArea, page: page);
+    items.addAll(liveCategoryResult.items);
+    liveCategoryResult.items = items;
+    return liveCategoryResult;
   }
 
   @override
@@ -365,11 +358,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     String requestQuery = "[${queries.map((q) => q.toString()).join(',')}]";
     // CoreLog.i("twitch-queries:$requestQuery");
     getRequestHeaders();
-    var response = await HttpClient.instance.postJson(
-      gplApiUrl,
-      header: headers,
-      data: requestQuery,
-    );
+    var response = await getGplResponse(requestQuery);
     // CoreLog.d("twitch-response:${jsonEncode(response)}");
     response = (response as List);
     var sublist = response.sublist(0, len);
@@ -416,14 +405,83 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         avatar: user.profileImageUrl.replaceFirst("https://", "https://i2.wp.com/"),
         watching: ((userOrError.stream ?? user.stream)?.viewersCount ?? 0).toString(),
         status: online,
-        link: "$baseUrl/${roomId}",
+        // link: "$baseUrl/${roomId}",
         introduction: "",
         notice: "",
         danmakuData: roomId,
         platform: id,
         liveStatus: online ? LiveStatus.live : LiveStatus.offline,
-        area: user.stream?.game?.name,
+        area: StringExtension(user.stream?.game?.displayName).isNullOrEmpty ? user.stream?.game?.name : user.stream?.game?.displayName,
         data: null);
+  }
+
+  Future<dynamic> getGplResponse(String liveGpl) async {
+    getRequestHeaders();
+    return await HttpClient.instance.postJson(
+      gplApiUrl,
+      header: headers,
+      data: liveGpl,
+    );
+  }
+
+  String buildSideNavPersistedRequest() {
+    return buildPersistedRequest("SideNav", "b9660765905e84e7b6a1ed18937b49ef0569e9b2a1c8f7a40a1bf289fbe2ced6", {
+      "input": {
+        "recommendationContext": {
+          "platform": "web",
+          "clientApp": "twilight",
+          "location": "channel",
+          "referrerDomain": "",
+          "viewportHeight": 703,
+          "viewportWidth": 1120,
+          "channelName": "woojungx4",
+          "categorySlug": null,
+          "lastChannelName": "woojungx4",
+          "lastCategorySlug": null,
+          "pageviewContent": null,
+          "pageviewContentType": null,
+          "pageviewLocation": "channel",
+          "pageviewMedium": null,
+          "previousPageviewContent": null,
+          "previousPageviewContentType": null,
+          "previousPageviewLocation": null,
+          "previousPageviewMedium": null
+        },
+        "contextChannelName": "woojungx4"
+      },
+      "creatorAnniversariesFeature": false,
+      "withFreeformTags": false,
+      "isLoggedIn": false
+    });
+  }
+
+  Future<List<LiveRoom>> getSideNavRoomList() async {
+    var liveGpl = buildSideNavPersistedRequest();
+    var response = await getGplResponse(liveGpl);
+
+    CoreLog.d("data response:${jsonEncode(response)}");
+    var directoriesWithTags = response['data']['sideNav']['sections']['edges'][0]['node']['content'];
+    var edges = directoriesWithTags['edges'];
+    List<LiveRoom> subs = [];
+    for (var item in edges) {
+      var node = item['node'];
+      var subItem = LiveRoom(
+          roomId: node["broadcaster"]["login"],
+          title: node["broadcaster"]["broadcastSettings"]["title"],
+          cover: (node["broadcaster"]["profileImageURL"] ?? "").replaceFirst("https://", "https://i2.wp.com/").toString().appendTxt("?&t=${DateTime.now().millisecondsSinceEpoch ~/ 1000}"),
+          nick: node["broadcaster"]["displayName"],
+          avatar: node["broadcaster"]["profileImageURL"].replaceFirst("https://", "https://i2.wp.com/"),
+          watching: (node["viewersCount"] ?? 0).toString(),
+          status: true,
+          introduction: "",
+          notice: "",
+          platform: id,
+          liveStatus: LiveStatus.live,
+          area: node["game"]["displayName"],
+          data: null);
+      subs.add(subItem);
+    }
+    return subs;
   }
 
   List<String> _getRoomInfoPersistedRequestList(String roomId) {
@@ -458,12 +516,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     queries.add(buildPlaybackAccessTokenPersistedRequest(roomId));
     String requestQuery = "[${queries.map((q) => q.toString()).join(',')}]";
     // CoreLog.i("twitch-queries:$requestQuery");
-    getRequestHeaders();
-    var response = await HttpClient.instance.postJson(
-      gplApiUrl,
-      header: headers,
-      data: requestQuery,
-    );
+    var response = await getGplResponse(requestQuery);
     // CoreLog.d("twitch-response:${jsonEncode(response)}");
 
     return _decodeRoomInfo(response);
@@ -498,11 +551,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         if (cursor.isNotEmpty) "cursor": cursor,
       },
     );
-    var response = await HttpClient.instance.postJson(
-      gplApiUrl,
-      header: headers,
-      data: liveGpl,
-    );
+    var response = await getGplResponse(liveGpl);
 
     // CoreLog.d("data response:${jsonEncode(response)}");
     var directoriesWithTags = response['data']['searchFor']['channels'];
@@ -528,7 +577,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
           danmakuData: node["login"],
           platform: id,
           liveStatus: status ? LiveStatus.live : LiveStatus.offline,
-          area: node["stream"]?["game"]?["name"] ?? "",
+          area: node["stream"]?["game"]?["displayName"] ?? "",
           data: null);
       subs.add(subItem);
     }
@@ -570,12 +619,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
     String requestQuery = "[${allPersistedRequestList.map((q) => q.toString()).join(',')}]";
     // CoreLog.i("twitch-queries:$requestQuery");
-    getRequestHeaders();
-    var response = await HttpClient.instance.postJson(
-      gplApiUrl,
-      header: headers,
-      data: requestQuery,
-    );
+    var response = await getGplResponse(requestQuery);
     // CoreLog.d("twitch-response:${jsonEncode(response)}");
     List<dynamic> decoded = response;
     var subList = ListUtil.subList(decoded, length);

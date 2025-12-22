@@ -113,7 +113,7 @@ class LivePlayPage extends GetView<LivePlayController> {
                             var liveCategory = list[i];
                             for (var j = 0; j < liveCategory.children.length && !flag; j++) {
                               var tmpLiveArea = liveCategory.children[j];
-                              if (tmpLiveArea.areaName == area) {
+                              if (tmpLiveArea.areaName == area || tmpLiveArea.displayName == area) {
                                 liveArea = tmpLiveArea;
                                 flag = true;
                                 break;

@@ -6,6 +6,7 @@ class LiveArea {
   String? areaName = '';
   String? areaPic = '';
   String? shortName = '';
+  String? displayName = '';
 
   LiveArea({
     this.platform,
@@ -15,6 +16,7 @@ class LiveArea {
     this.areaName,
     this.areaPic,
     this.shortName,
+    this.displayName,
   });
 
   LiveArea.fromJson(Map<String, dynamic> json)
@@ -24,6 +26,7 @@ class LiveArea {
         areaId = json['areaId'] ?? '',
         areaName = json['areaName'] ?? '',
         areaPic = json['areaPic'] ?? '',
+        displayName = json['displayName'] ?? '',
         shortName = json['shortName'] ?? '';
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -33,6 +36,7 @@ class LiveArea {
         'areaId': areaId,
         'areaName': areaName,
         'areaPic': areaPic,
+        'displayName': displayName,
         'shortName': shortName,
       };
 }

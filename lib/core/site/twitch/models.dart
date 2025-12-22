@@ -159,11 +159,13 @@ class Game {
   final String id;
   final String name;
   final String typename;
+  final String displayName;
 
   Game({
     required this.id,
     required this.name,
     required this.typename,
+    required this.displayName,
   });
 
   factory Game.fromJson(Map<String, dynamic> json) {
@@ -171,6 +173,7 @@ class Game {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       typename: json['__typename'] ?? '',
+      displayName: json['displayName'] ?? '',
     );
   }
 }
