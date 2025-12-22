@@ -7,7 +7,7 @@ class LivePlayQuality {
   String quality;
 
   /// 清晰度信息
-  final dynamic data;
+  dynamic data;
 
   final int sort;
 
@@ -28,7 +28,7 @@ class LivePlayQuality {
 
   LivePlayQuality({
     required this.quality,
-    required this.data,
+    this.data = null,
     this.sort = 0,
     this.bitRate = 0,
   });

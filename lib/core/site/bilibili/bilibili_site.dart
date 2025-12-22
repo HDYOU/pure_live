@@ -143,6 +143,44 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
       header: await getHeader(),
     );
 
+    var playUrlInfo=result["data"]["playurl_info"]["playurl"];
+    var qnDesc = playUrlInfo["g_qn_desc"];
+    Map<int, String> qnDescMap = {};
+    for(var e in qnDesc){
+      qnDescMap[e["qn"]] = e["desc"];
+    }
+    var stream = playUrlInfo["stream"];
+    var cdnHostPattern = RegExp(r"https://(.+)\.[a-z0-9]+\.[a-z]{2,5}$");
+
+    var livePlayQualityList = <LivePlayQuality>[];
+    for(var item in stream){
+      var format = item["format"];
+      for(var formatItem in format){
+        var codec = formatItem["codec"];
+        for(var codecItem in codec) {
+          var codecKey = codecItem["codec_name"];
+          var currentQn = codecItem["current_qn"];
+          var baseUrl = codecItem["base_url"];
+          var urlInfo = codecItem["url_info"];
+          // var bitRate = qnToBitRate(currentQn);
+          var livePlayQuality = LivePlayQuality(quality: qnDescMap[currentQn]??"",sort: currentQn, bitRate: currentQn);
+          for(var urlInfoItem in urlInfo) {
+            var host = urlInfoItem["host"];
+            var extra = urlInfoItem["extra"];
+            var streamTtl = urlInfoItem["stream_ttl"];
+            var playUrl="$host$baseUrl$extra";
+            var cdn = cdnHostPattern.firstMatch(host)?.group(1) ?? "";
+            var infoList = [cdn, codecKey];
+            infoList.remove("");
+            var info = "(${infoList.join(" ")})";
+            livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: playUrl, info: info));
+          }
+          livePlayQualityList.add(livePlayQuality);
+        }
+      }
+    }
+
+
     var txt = jsonEncode(result);
     var streamReg = RegExp(r"/(live_[_\da-z]+)");
     var streamSet = streamReg.allMatches(txt).map((e) => e.group(1) ?? "").toSet();
@@ -182,7 +220,7 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
     }
 
     var wait = await Future.wait(futures);
-    var list = <LivePlayQuality>[];
+    var list = livePlayQualityList;
     for(var item in wait) {
       list.addAll(item);
     }

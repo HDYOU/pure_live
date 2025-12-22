@@ -16,7 +16,9 @@ final class LiveUtil {
     var keys = map.keys.toList();
     keys.sort((a, b) => b.compareTo(a));
     for (var key in keys) {
-      qualities.add(map[key]!);
+      var value = map[key]!;
+      value.playUrlList = value.playUrlList.toSet().toList();
+      qualities.add(value);
     }
     return qualities;
   }

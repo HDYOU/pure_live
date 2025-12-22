@@ -26,4 +26,14 @@ class LivePlayQualityPlayUrlInfo {
       "info": info.toString(),
     });
   }
+
+  @override
+  int get hashCode => playUrl.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other)
+          || other is LivePlayQualityPlayUrlInfo
+          && runtimeType == other.runtimeType
+          && (other.playUrl == playUrl);
 }
