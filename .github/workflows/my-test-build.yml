@@ -273,7 +273,7 @@ jobs:
           cd ${{ env.projcect_path }}
           # flutter build apk --release --split-per-abi
           # flutter_distributor package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform arm,arm64,x64  --skip-clean
-          flutter_distributor package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform android-arm,android-arm64,android-x64  --skip-clean --flutter-build-args not-tree-shake 
+          flutter_distributor package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform android-arm,android-arm64,android-x64  --skip-clean --flutter-build-args not-tree-shake-icons 
 
       - name: Rename Android TV APK Name
         if: startsWith(matrix.platform,'android-tv')
@@ -288,7 +288,7 @@ jobs:
         run: |
           cd ${{ env.projcect_path }}
           # flutter build ios --release --no-codesign
-          flutter_distributor package --platform ios --skip-clean  --no-codesign --flutter-build-args not-tree-shake
+          flutter_distributor package --platform ios --skip-clean  --no-codesign --flutter-build-args not-tree-shake-icons
 
       #创建未签名ipa
       - name: Create IPA
@@ -306,7 +306,7 @@ jobs:
         if: startsWith(matrix.platform,'macos')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform macos --targets dmg,zip --skip-clean --flutter-build-args not-tree-shake
+          flutter_distributor package --platform macos --targets dmg,zip --skip-clean --flutter-build-args not-tree-shake-icons
 
        # 安装 Linux 依赖
       - name: Install Linux Dependencies
@@ -320,7 +320,7 @@ jobs:
         if: startsWith(matrix.platform,'linux')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform linux --targets deb,zip --skip-clean --flutter-build-args not-tree-shake
+          flutter_distributor package --platform linux --targets deb,zip --skip-clean --flutter-build-args not-tree-shake-icons
 
       # build Windows inno_setup
       # 安装特定版本的 Inno Setup 并添加到环境变量
@@ -349,7 +349,7 @@ jobs:
         if: startsWith(matrix.platform,'windows')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform windows --targets exe,msix,zip --skip-clean --flutter-build-args not-tree-shake
+          flutter_distributor package --platform windows --targets exe,msix,zip --skip-clean --flutter-build-args not-tree-shake-icons
 
 
       # 打包文件 至 Artifacts
