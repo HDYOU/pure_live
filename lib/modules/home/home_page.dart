@@ -164,6 +164,7 @@ class _HomePageState extends State<HomePage>
     bool isHasNerVersion =
         Get.find<SettingsService>().enableAutoCheckUpdate.value &&
             VersionUtil.hasNewVersion();
+    initByStart();
     if (mounted) {
       if (overlay != null && isHasNerVersion) {
         WidgetsBinding.instance
@@ -174,6 +175,10 @@ class _HomePageState extends State<HomePage>
         }
       }
     }
+  }
+
+  void initByStart(){
+    SettingsService.instance.syncData();
   }
 
   void onBackButtonPressed(bool canPop, data) async {
