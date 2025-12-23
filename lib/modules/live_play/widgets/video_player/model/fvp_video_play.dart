@@ -27,7 +27,6 @@ class FvpVideoPlay extends VideoPlayerInterFace {
   /// 默认视频 MPV 视频监听流
   final defaultVideoStreamSubscriptionList = <StreamSubscription>[];
 
-  final SettingsService settings = Get.find<SettingsService>();
 
   /// 存储 视频控制器，用于没有释放的视频流
   static final controllerList = <VideoPlayerController>[];

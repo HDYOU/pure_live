@@ -26,8 +26,6 @@ class GsyVideoPlay extends VideoPlayerInterFace {
   /// 默认视频 MPV 视频监听流
   final defaultVideoStreamSubscriptionList = <StreamSubscription>[];
 
-  final SettingsService settings = Get.find<SettingsService>();
-
   @override
   late final String playerName;
   late GsyVideoPlayerType playerType;
@@ -45,7 +43,7 @@ class GsyVideoPlay extends VideoPlayerInterFace {
           defaultVideoStreamSubscriptionList);
     }
     gsyVideoPlayerController = FixGsyVideoPlayerController(
-        allowBackgroundPlayback: settings.enableBackgroundPlay.value,
+        allowBackgroundPlayback: SettingsService.instance.enableBackgroundPlay.value,
         player: playerType);
     chewieController.value = ChewieController(
       videoPlayerController: gsyVideoPlayerController,
@@ -58,10 +56,10 @@ class GsyVideoPlay extends VideoPlayerInterFace {
       showControls: false,
       useRootNavigator: true,
       showOptions: false,
-      rotateWithSystem: settings.enableRotateScreenWithSystem.value,
+      rotateWithSystem: SettingsService.instance.enableRotateScreenWithSystem.value,
     );
 
-    var enableCodec = settings.enableCodec.value;
+    var enableCodec = SettingsService.instance.enableCodec.value;
 
     gsyVideoPlayerController
         .setRenderType(GsyVideoPlayerRenderType.surfaceView);

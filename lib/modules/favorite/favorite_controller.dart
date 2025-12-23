@@ -9,7 +9,6 @@ import 'favorite_grid_controller.dart';
 
 class FavoriteController extends GetxController
     with GetTickerProviderStateMixin {
-  final SettingsService settings = Get.find<SettingsService>();
   late TabController tabController;
   late TabController tabSiteController;
   final tabBottomIndex = 0.obs;
@@ -34,11 +33,11 @@ class FavoriteController extends GetxController
     workerList.clear();
     listenList.clear();
     // 监听settings rooms变化
-    // debounce(settings.favoriteRooms, (rooms) => syncRooms(), time: const Duration(milliseconds: 1000));
+    // debounce(SettingsService.instance.favoriteRooms, (rooms) => syncRooms(), time: const Duration(milliseconds: 1000));
     initFilterDataList(indexLength);
     initSiteSetList(indexLength);
     listenList.add(
-        settings.favoriteRoomsLengthChangeFlag.listen((rooms) => syncRooms()));
+        SettingsService.instance.favoriteRoomsLengthChangeFlag.listen((rooms) => syncRooms()));
     listenList.add(onlineRooms.listen((rooms) {
       CoreLog.d("onlineRooms ....");
       initSiteSet(rooms, onlineRoomsIndex);
@@ -64,9 +63,9 @@ class FavoriteController extends GetxController
     await onRefresh();
 
     // 定时自动刷新
-    if (settings.autoRefreshTime.value != 0) {
+    if (SettingsService.instance.autoRefreshTime.value != 0) {
       Timer.periodic(
-        Duration(minutes: settings.autoRefreshTime.value),
+        Duration(minutes: SettingsService.instance.autoRefreshTime.value),
         (timer) => onRefresh(),
       );
     }
@@ -84,7 +83,7 @@ class FavoriteController extends GetxController
     // onlineRooms.clear();
     // offlineRooms.clear();
     // onlineRooms.addAll();
-    var onlineList = settings.favoriteRooms
+    var onlineList = SettingsService.instance.favoriteRooms
         .where((room) => room.liveStatus == LiveStatus.live || room.liveStatus == LiveStatus.replay)
         .map((room) {
       room.watching =
@@ -95,7 +94,7 @@ class FavoriteController extends GetxController
         .compareTo(readableCountStrToNum(a.watching)));
     onlineRooms.value = onlineList;
 
-    var offlineList = settings.favoriteRooms
+    var offlineList = SettingsService.instance.favoriteRooms
         .where((room) => room.liveStatus == LiveStatus.offline)
         .map((room) {
       room.watching =
@@ -120,19 +119,19 @@ class FavoriteController extends GetxController
       await const Duration(seconds: 1).delay();
     }
     bool hasError = false;
-    if (settings.favoriteRooms.value.isEmpty) {
+    if (SettingsService.instance.favoriteRooms.value.isEmpty) {
       return false;
     }
-    var currentRooms = settings.favoriteRooms.value;
+    var currentRooms = SettingsService.instance.favoriteRooms.value;
     if (tabSiteIndex.value != 0) {
-      currentRooms = settings.favoriteRooms.value
+      currentRooms = SettingsService.instance.favoriteRooms.value
           .where((element) =>
               element.platform ==
               Sites().availableSites(containsAll: true)[tabSiteIndex.value].id)
           .toList();
     }
 
-    hasError = await UpdateRoomUtil.updateRoomList(currentRooms, settings);
+    hasError = await UpdateRoomUtil.updateRoomList(currentRooms, SettingsService.instance);
     syncRooms();
     isFirstLoad = false;
     isUpdating = false;

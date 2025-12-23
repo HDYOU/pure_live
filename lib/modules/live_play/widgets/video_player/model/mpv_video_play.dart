@@ -33,9 +33,7 @@ class MpvVideoPlay extends VideoPlayerInterFace{
   /// 存储 Stream 流监听
   /// 默认视频 MPV 视频监听流
   final defaultVideoStreamSubscriptionList = <StreamSubscription>[];
-
-  final SettingsService settings = Get.find<SettingsService>();
-
+  
   @override
   final String playerName;
 
@@ -60,13 +58,13 @@ class MpvVideoPlay extends VideoPlayerInterFace{
           'demuxer-donate-buffer', 'no'); // --demuxer-donate-buffer==<yes|no>
     }
     var conf = media_kit_video.VideoControllerConfiguration(
-      enableHardwareAcceleration: settings.enableCodec.value,
+      enableHardwareAcceleration: SettingsService.instance.enableCodec.value,
     );
     if (Platform.isAndroid || Platform.isIOS) {
       conf = media_kit_video.VideoControllerConfiguration(
         vo: 'mediacodec_embed',
         hwdec: 'mediacodec',
-        enableHardwareAcceleration: settings.enableCodec.value,
+        enableHardwareAcceleration: SettingsService.instance.enableCodec.value,
       );
     }
     mediaPlayerController =
@@ -195,14 +193,12 @@ class MpvVideoPlay extends VideoPlayerInterFace{
               return key;
             }(),
             controller: mediaPlayerController,
-            pauseUponEnteringBackgroundMode: !settings.enableBackgroundPlay.value,
+            pauseUponEnteringBackgroundMode: !SettingsService.instance.enableBackgroundPlay.value,
             // 进入背景模式时暂停
             resumeUponEnteringForegroundMode: true,
             // 进入前景模式后恢复
-            fit: controller
-                .settings.videofitArray[controller.settings.videoFitIndex.value].fit,
-            aspectRatio: controller
-                .settings.videofitArray[controller.settings.videoFitIndex.value].aspectRatio,
+            fit: SettingsService.instance.videofitArray[SettingsService.instance.videoFitIndex.value].fit,
+            aspectRatio: SettingsService.instance.videofitArray[SettingsService.instance.videoFitIndex.value].aspectRatio,
             controls: "" == Sites.iptvSite
                 ? media_kit_video.MaterialVideoControls
                 : (state) =>
@@ -226,10 +222,9 @@ class MpvVideoPlay extends VideoPlayerInterFace{
           children: [
             Obx(() => media_kit_video.Video(
                   controller: mediaPlayerController,
-                  fit: controller
-                      .settings.videofitArray[controller.videoFitIndex.value].fit,
+                  fit: SettingsService.instance.videofitArray[controller.videoFitIndex.value].fit,
                   pauseUponEnteringBackgroundMode:
-                      !controller.settings.enableBackgroundPlay.value,
+                      !SettingsService.instance.enableBackgroundPlay.value,
                   // 进入背景模式时暂停
                   resumeUponEnteringForegroundMode: true,
                   // 进入前景模式后恢复
@@ -310,9 +305,9 @@ class DesktopFullscreen extends StatelessWidget {
           children: [
             Obx(() => media_kit_video.Video(
                   controller: mediaPlayerController,
-                  fit: settings.videofitArray[controller.videoFitIndex.value].fit,
+                  fit: SettingsService.instance.videofitArray[controller.videoFitIndex.value].fit,
                   pauseUponEnteringBackgroundMode:
-                      !settings.enableBackgroundPlay.value,
+                      !SettingsService.instance.enableBackgroundPlay.value,
                   // 进入背景模式时暂停
                   resumeUponEnteringForegroundMode: true,
                   // 进入前景模式后恢复

@@ -58,7 +58,6 @@ class HuyaSite extends LiveSite with HuyaSiteMixin {
 
   final String kUserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36";
 
-  // final SettingsService settings = Get.find<SettingsService>();
   Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory) async {
     var result = await HttpClient.instance.getJson(
       "https://live.cdn.huya.com/liveconfig/game/bussLive",

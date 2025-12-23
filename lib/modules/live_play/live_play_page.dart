@@ -21,9 +21,7 @@ import 'widgets/index.dart';
 
 class LivePlayPage extends GetView<LivePlayController> {
   LivePlayPage({super.key});
-
-  final SettingsService settings = Get.find<SettingsService>();
-
+  
   Future<bool> onWillPop() async {
     try {
       var exit = await controller.onBackPressed();
@@ -148,8 +146,8 @@ class LivePlayPage extends GetView<LivePlayController> {
         initialData: false,
         stream: controller.streamState,
         builder: (context, snapshot) {
-          if (settings.enableScreenKeepOn.value) {
-            WakelockPlus.toggle(enable: settings.enableScreenKeepOn.value);
+          if (SettingsService.instance.enableScreenKeepOn.value) {
+            WakelockPlus.toggle(enable: SettingsService.instance.enableScreenKeepOn.value);
           }
           final page = () {
             CoreLog.d("isFullscreen.value ${controller.isFullscreen.value}");
@@ -252,12 +250,12 @@ class LivePlayPage extends GetView<LivePlayController> {
                               SettingsPage.showAutoShutDownTimeSetDialog();
                             },
                           ),
-                          if (settings.enableAutoShutDownTime.value)
+                          if (SettingsService.instance.enableAutoShutDownTime.value)
                             PopupMenuItem(
                                 value: 6,
                                 padding: EdgeInsets.symmetric(horizontal: 12),
                                 child: Obx(() => Visibility(
-                                    visible: settings.enableAutoShutDownTime.value,
+                                    visible: SettingsService.instance.enableAutoShutDownTime.value,
                                     child: MenuListTile(
                                         leading: Icon(Icons.share_arrival_time_outlined), text: "${S.current.auto_shutdown_time}：${TimeUtil.secondValueToStr(controller.countdown.value)}")))),
 
@@ -506,8 +504,7 @@ class _FavoriteFloatingButtonState extends State<FavoriteFloatingButton> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = Get.find<SettingsService>();
-    // late bool isFavorite = settings.isFavorite(widget.room);
+    // late bool isFavorite = SettingsService.instance.isFavorite(widget.room);
     return Obx(() => controller.isFavorite.value
         ? FloatingActionButton(
             key: UniqueKey(),
@@ -539,7 +536,7 @@ class _FavoriteFloatingButtonState extends State<FavoriteFloatingButton> {
                 if (value == true) {
                   controller.isFavorite.value = !controller.isFavorite.value;
                   // setState(() => controller.isFavorite.toggle);
-                  settings.removeRoom(widget.room);
+                  SettingsService.instance.removeRoom(widget.room);
                 }
               });
             },
@@ -552,7 +549,7 @@ class _FavoriteFloatingButtonState extends State<FavoriteFloatingButton> {
             onPressed: () {
               controller.isFavorite.value = !controller.isFavorite.value;
               // setState(() => controller.isFavorite.toggle);
-              settings.addRoom(widget.room);
+              SettingsService.instance.addRoom(widget.room);
             },
             icon: CacheNetWorkUtils.getCircleAvatar(widget.room.avatar, radius: 18),
             label: Column(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:pure_live/core/common/core_log.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 ///This is the new util class for the shared preferences.
@@ -29,6 +30,7 @@ class PrefUtil {
   }
 
   static bool? getBool(String key) {
+    CoreLog.d("key: ${key}");
     return prefs.getBool(key);
   }
 

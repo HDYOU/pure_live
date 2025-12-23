@@ -59,9 +59,7 @@ class VideoController with ChangeNotifier {
   GlobalKey<BrightnessVolumeDargAreaState> brightnessKey = GlobalKey<BrightnessVolumeDargAreaState>();
 
   // LivePlayController livePlayController = Get.find<LivePlayController>();
-
-  final SettingsService settings = Get.find<SettingsService>();
-
+  
   int videoPlayerIndex = 4;
 
   bool enableCodec = true;
@@ -133,15 +131,15 @@ class VideoController with ChangeNotifier {
     required this.currentLineIndex,
     required this.currentQuality,
   }) {
-    videoFitIndex.value = settings.videoFitIndex.value;
-    videoFit.value = settings.videofitArray[videoFitIndex.value].fit;
-    // hideDanmaku.value = settings.hideDanmaku.value;
-    // danmakuArea.value = settings.danmakuArea.value;
-    // danmakuSpeed.value = settings.danmakuSpeed.value;
-    // danmakuFontSize.value = settings.danmakuFontSize.value;
-    // danmakuFontBorder.value = settings.danmakuFontBorder.value;
-    // danmakuOpacity.value = settings.danmakuOpacity.value;
-    // mergeDanmuRating.value = settings.mergeDanmuRating.value;
+    videoFitIndex.value = SettingsService.instance.videoFitIndex.value;
+    videoFit.value = SettingsService.instance.videofitArray[videoFitIndex.value].fit;
+    // hideDanmaku.value = SettingsService.instance.hideDanmaku.value;
+    // danmakuArea.value = SettingsService.instance.danmakuArea.value;
+    // danmakuSpeed.value = SettingsService.instance.danmakuSpeed.value;
+    // danmakuFontSize.value = SettingsService.instance.danmakuFontSize.value;
+    // danmakuFontBorder.value = SettingsService.instance.danmakuFontBorder.value;
+    // danmakuOpacity.value = SettingsService.instance.danmakuOpacity.value;
+    // mergeDanmuRating.value = SettingsService.instance.mergeDanmuRating.value;
     initPagesConfig();
   }
 
@@ -174,8 +172,8 @@ class VideoController with ChangeNotifier {
       CoreLog.w("e");
     }
     FlutterVolumeController.updateShowSystemUI(false);
-    videoPlayerIndex = settings.videoPlayerIndex.value;
-    enableCodec = settings.enableCodec.value;
+    videoPlayerIndex = SettingsService.instance.videoPlayerIndex.value;
+    enableCodec = SettingsService.instance.enableCodec.value;
 
     videoPlayer = VideoPlayerFactory.getSupportVideoPlayerList()[videoPlayerIndex];
     videoPlayer.init(controller: this);
@@ -300,14 +298,14 @@ class VideoController with ChangeNotifier {
   }
 
   // void sendDanmaku(LiveMessage msg) {
-  //   if (settings.hideDanmaku.value) return;
+  //   if (SettingsService.instance.hideDanmaku.value) return;
   //
   //   danmakuController.send([
   //     Bullet(
   //       child: DanmakuText(
   //         msg.message,
-  //         fontSize: settings.danmakuFontSize.value,
-  //         strokeWidth: settings.danmakuFontBorder.value,
+  //         fontSize: SettingsService.instance.danmakuFontSize.value,
+  //         strokeWidth: SettingsService.instance.danmakuFontBorder.value,
   //         color: msg.color,
   //       ),
   //     ),
@@ -475,10 +473,10 @@ class VideoController with ChangeNotifier {
     // disable locked
     showLocked.updateValueNotEquate(false);
     // fix danmaku overlap bug
-    if (!settings.hideDanmaku.value) {
-      settings.hideDanmaku.updateValueNotEquate(true);
+    if (!SettingsService.instance.hideDanmaku.value) {
+      SettingsService.instance.hideDanmaku.updateValueNotEquate(true);
       Timer(const Duration(milliseconds: 500), () {
-        settings.hideDanmaku.updateValueNotEquate(false);
+        SettingsService.instance.hideDanmaku.updateValueNotEquate(false);
       });
     }
     // fix obx setstate when build
@@ -531,10 +529,10 @@ class VideoController with ChangeNotifier {
     // disable locked
     showLocked.updateValueNotEquate(false);
     // fix danmaku overlap bug
-    if (!settings.hideDanmaku.value) {
-      settings.hideDanmaku.updateValueNotEquate(true);
+    if (!SettingsService.instance.hideDanmaku.value) {
+      SettingsService.instance.hideDanmaku.updateValueNotEquate(true);
       Timer(const Duration(milliseconds: 500), () {
-        settings.hideDanmaku.updateValueNotEquate(false);
+        SettingsService.instance.hideDanmaku.updateValueNotEquate(false);
       });
     }
     // fix obx setstate when build

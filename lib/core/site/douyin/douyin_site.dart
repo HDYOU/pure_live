@@ -27,7 +27,6 @@ class DouyinSite extends LiveSite with DouyinSiteMixin {
 
   @override
   LiveDanmaku getDanmaku() => DouyinDanmaku();
-  final SettingsService settings = Get.find<SettingsService>();
 
   /// 使用 QQBrowser User-Agent（参考 DouyinLiveRecorder）
   static const String kDefaultUserAgent =
@@ -55,8 +54,8 @@ class DouyinSite extends LiveSite with DouyinSiteMixin {
       if (cookie.isNotEmpty) {
         headers["cookie"] = cookie;
         return headers;
-      } else if ((settings.siteCookies[id]??"").isNotEmpty) {
-        cookie = settings.siteCookies[id] ?? "";
+      } else if ((SettingsService.instance.siteCookies[id]??"").isNotEmpty) {
+        cookie = SettingsService.instance.siteCookies[id] ?? "";
         headers["cookie"] = cookie;
         return headers;
       }
@@ -611,7 +610,7 @@ class DouyinSite extends LiveSite with DouyinSiteMixin {
       if (cookie.contains("ttwid")) {
         dyCookie += "$cookie;";
       } else {
-        dyCookie += settings.siteCookies[id] ?? "";
+        dyCookie += SettingsService.instance.siteCookies[id] ?? "";
       }
       if (cookie.contains("__ac_nonce")) {
         dyCookie += "$cookie;";

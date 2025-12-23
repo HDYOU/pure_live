@@ -22,8 +22,7 @@ class HistoryPage extends GetView<HistoryController> {
               onPressed: () async {
                 var result = await Utils.showAlertDialog(S.current.clear_history_confirm, title: S.current.clear_history);
                 if (result) {
-                  final SettingsService settings = Get.find<SettingsService>();
-                  settings.clearHistory();
+                  SettingsService.instance.clearHistory();
                   controller.refreshData();
                 }
               },
