@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:pure_live/common/models/live_area.dart';
 import 'package:pure_live/common/models/live_room.dart';
+import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
@@ -54,6 +55,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   void getRequestHeaders() {
     headers['device-id'] = getDeviceId();
+    headers["Cookie"]= SettingsService.instance.siteCookies[id] ?? "";
 // no token
 // no cookie
   }

@@ -80,8 +80,6 @@ mixin TwitchSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
       var flag = true;
       isLogin.value = flag;
       userCookie.value = cookie;
-      var liveSite = site.liveSite as KuaishowSite;
-      liveSite.cookie = cookie;
       SettingsService settings = SettingsService.instance;
       settings.siteCookies[site.id] = cookie;
       return flag;

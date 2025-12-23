@@ -26,8 +26,6 @@ class SoopSite extends LiveSite with SoopSiteMixin {
   @override
   String get name => "SOOP直播";
 
-  String cookie = '';
-  Map<String, String> cookieObj = {};
   List<String> imageExtensions = ['svgz', 'pjp', 'png', 'ico', 'avif', 'tiff', 'tif', 'jfif', 'svg', 'xbm', 'pjpeg', 'webp', 'jpg', 'jpeg', 'bmp', 'gif'];
 
   @override
