@@ -165,7 +165,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
     // CoreLog.d("data response:${jsonEncode(response).substring(0,1000)}");
     var directoriesWithTags = response['data']['directoriesWithTags'];
-    var edges = directoriesWithTags['edges'];
+    var edges = (directoriesWithTags['edges'] ?? []) as List;
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
     cursor = directoriesWithTags["cursor"] ?? "";
@@ -200,7 +200,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
     }
     var params = [
-      {
+      /*{
         "operationName": "CategoryChannels_InternationalSection",
         "variables": {
           "imageWidth": 50,
@@ -225,19 +225,21 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
             "sha256Hash": "ebdda252f3c75dd3b857ee27219eb7d4145f0e67501cf49f9211239108faf53b"
           }
         }
-      },
-      /*{
+      },*/
+      {
         "operationName": "DirectoryPage_Game",
         "variables": {
           "imageWidth": 50,
           "slug": category.shortName,
           "options": {
-            "sort": "RELEVANCE",
+            "sort": "VIEWER_COUNT",
             "recommendationsContext": {"platform": "web"},
             "requestID": "JIRA-VXP-2397",
             "freeformTags": null,
             "tags": [],
-            "broadcasterLanguages": [],
+            "broadcasterLanguages": [
+              "ZH", "KO",
+            ],
             "systemFilters": []
           },
           "sortTypeIsRecency": false,
@@ -248,14 +250,14 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         "extensions": {
           "persistedQuery": {"version": 1, "sha256Hash": "76cb069d835b8a02914c08dc42c421d0dafda8af5b113a3f19141824b901402f"}
         }
-      }*/
+      }
     ];
     var liveGpl = jsonEncode(params);
     var response = await getGplResponse(liveGpl);
 
     CoreLog.d("data response:${jsonEncode(response)}");
     var directoriesWithTags = response[0]['data']['game']['streams'];
-    var edges = directoriesWithTags['edges'] as List;
+    var edges = (directoriesWithTags['edges'] ?? []) as List;
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
     if(edges.isNullOrEmpty) {
@@ -499,7 +501,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
     CoreLog.d("data response:${jsonEncode(response)}");
     var directoriesWithTags = response['data']['sideNav']['sections']['edges'][0]['node']['content'];
-    var edges = directoriesWithTags['edges'];
+    var edges = (directoriesWithTags['edges'] ?? []) as List;
     List<LiveRoom> subs = [];
     for (var item in edges) {
       var node = item['node'];
@@ -595,7 +597,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var directoriesWithTags = response['data']['searchFor']['channels'];
     cursor = directoriesWithTags["cursor"] ?? "";
     saveCursor(cursorType, cursorId, page, cursor);
-    var edges = directoriesWithTags['edges'];
+    var edges = (directoriesWithTags['edges'] ?? []) as List;
     List<LiveRoom> subs = [];
     for (var item in edges) {
       var node = item['item'];
