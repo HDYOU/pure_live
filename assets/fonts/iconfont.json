@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "11983519",
+      "name": "youtube",
+      "font_class": "youtube",
+      "unicode": "ea07",
+      "unicode_decimal": 59911
+    },
+    {
+      "icon_id": "24221582",
+      "name": "icon_panda_def",
+      "font_class": "icon_panda_def",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "46429098",
+      "name": "icon_panda_def-copy",
+      "font_class": "pandatv-copy",
+      "unicode": "f249",
+      "unicode_decimal": 62025
+    },
+    {
       "icon_id": "4829082",
       "name": "bilibili",
       "font_class": "bilibili",

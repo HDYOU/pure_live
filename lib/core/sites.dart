@@ -8,6 +8,7 @@ import 'package:pure_live/core/site/cc/cc_site.dart';
 import 'package:pure_live/core/site/iptv/iptv_site.dart';
 import 'package:pure_live/core/site/juhe/juhe_site.dart';
 import 'package:pure_live/core/site/kuaishou/kuaishou_site.dart';
+import 'package:pure_live/core/site/pandatv/pandatv_site.dart';
 import 'package:pure_live/core/site/soop/soop_site.dart';
 import 'package:pure_live/core/site/yy/yy_site.dart';
 
@@ -31,6 +32,7 @@ class Sites {
   static const String yySite = "yy";
   static const String juheSite = "juhe";
   static const String twitchSite = "twitch";
+  static const String pandatvSite = "pandatv";
   static List<Site> supportSites = [
     Site(
       id: bilibiliSite,
@@ -114,6 +116,16 @@ class Sites {
       iconData: IconFont.twitch,
       iconDataColor: Color(0xff6442A4),
       getSiteName: () => "Twitch",
+      // cacheCategory: false,
+    ),
+    Site(
+      id: pandatvSite,
+      name: "PandaTv",
+      logo: "assets/images/pandatv.png",
+      liveSite: PandaTvSite(),
+      iconData: IconFont.pandatvCopy,
+      iconDataColor: Color(0xff8f87a5),
+      getSiteName: () => "PandaTv",
       // cacheCategory: false,
     ),
     Site(
