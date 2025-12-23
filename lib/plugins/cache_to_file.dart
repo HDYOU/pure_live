@@ -36,7 +36,12 @@ class CustomCache {
   Future<File> _getFile(String key) async {
     var baseDir = await getTemporaryDirectory();
     var dir = '${baseDir.path}/$cacheDir';
-    await Directory(dir).create(recursive: true);
+    var directory = Directory(dir);
+    try{
+      if(!directory.existsSync()){
+        await directory.create(recursive: true);
+      }
+    } catch(e){}
     return File('$dir/$key');
   }
 
@@ -57,6 +62,11 @@ class CustomCache {
     if (partPath.isNotEmpty) {
       baseDir = Directory("${baseDir.path}/$partPath");
     }
+    try{
+      if(!baseDir.existsSync()){
+      await baseDir.create(recursive: true);
+      }
+    } catch(e){}
     return baseDir;
   }
 
