@@ -103,7 +103,7 @@ class FlutterCatchError {
     // 先初始化supdatabase
     await SupaBaseManager.getInstance().initial();
     // 初始化服务
-    initService();
+    await initService();
     initRefresh();
 
     // 图片缓存删除
