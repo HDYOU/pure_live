@@ -6,15 +6,11 @@ import 'package:pure_live/common/utils/pref_util.dart';
 /// 码率
 mixin SettingNetworkProxy {
   /// API 请求网络代理
-  static var networkApiProxyKey = "networkApiProxy";
-  static var networkApiProxyDefault = <String>[];
-  final networkApiProxyBuild = SettingRxStringListBuild(key: networkImageKey, defaultValue: networkApiProxyDefault);
+  final networkApiProxyBuild = SettingRxStringListBuild(key: "networkApiProxy", defaultValue: <String>[]);
   late final networkApiProxy = networkApiProxyBuild.rxValue;
 
   /// 图片代理
-  static var networkImageKey = "networkImageProxy";
-  static var networkImageDefault = true;
-  final networkImageProxyBuild = SettingRxBuild(key: networkImageKey, defaultValue: networkImageDefault);
+  final networkImageProxyBuild = SettingRxBuild(key: "networkImageProxy", defaultValue: true);
   late final networkImageProxy = networkImageProxyBuild.rxValue;
 
   void initNetworkApiProxy(SettingPartList settingPartList) {

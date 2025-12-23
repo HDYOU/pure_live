@@ -14,6 +14,7 @@ import 'package:pure_live/modules/hot_areas/hot_areas_controller.dart';
 import 'package:pure_live/modules/live_play/danmaku/danmaku_controller_factory.dart';
 import 'package:pure_live/modules/settings/network/settings_network.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
+import 'package:pure_live/modules/util/rx_util.dart';
 import 'package:pure_live/modules/util/site_logo_widget.dart';
 import 'package:pure_live/modules/util/time_util.dart';
 import 'package:pure_live/plugins/extension/list_extension.dart';
@@ -694,7 +695,7 @@ class SettingsPageV2 extends GetView<SettingsService> {
               value: name,
               title: Text(controller.getBitRateName(name)),
               onChanged: (value) {
-                controller.changeBitRate(value!);
+                controller.bitRate.updateValueNotEquate(value!);
                 Navigator.of(context).pop();
               },
             );
@@ -720,7 +721,7 @@ class SettingsPageV2 extends GetView<SettingsService> {
               value: name,
               title: Text(controller.getBitRateName(name)),
               onChanged: (value) {
-                controller.changeBitRateMobile(value!);
+                controller.bitRateMobile.updateValueNotEquate(value!);
                 Navigator.of(context).pop();
               },
             );

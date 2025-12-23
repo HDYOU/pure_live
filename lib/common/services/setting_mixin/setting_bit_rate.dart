@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/l10n/generated/l10n.dart';
 import 'package:pure_live/common/services/setting_mixin/setting_part.dart';
+import 'package:pure_live/common/services/setting_mixin/setting_rx.dart';
 import 'package:pure_live/common/utils/pref_util.dart';
 
 /// 码率
@@ -41,63 +42,19 @@ mixin SettingBitRateMixin {
   }
 
   /// 码率
-  static var bitRateKey = "bitRate";
-  static var bitRateDefault = 4000;
-  final bitRate = (PrefUtil.getInt(bitRateKey) ?? bitRateDefault).obs;
+  final bitRateBuild = SettingRxBuild(key: "bitRate", defaultValue: 4000);
+  late final bitRate = bitRateBuild.rxValue;
 
   /// 码率
-  static var bitRateMobileKey = "bitRateMobile";
-  static var bitRateMobileDefault = 250;
-  final bitRateMobile = (PrefUtil.getInt(bitRateMobileKey) ?? bitRateMobileDefault).obs;
+  final bitRateMobileBuild = SettingRxBuild(key: "bitRateMobile", defaultValue: 250);
+  late final bitRateMobile = bitRateMobileBuild.rxValue;
   
   void initBitRate(SettingPartList settingPartList) {
-    bitRate.listen((value) {
-      PrefUtil.setInt(bitRateKey, value);
-    });
-
-    bitRateMobile.listen((value) {
-      PrefUtil.setInt(bitRateMobileKey, value);
-    });
-
-    settingPartList.fromJsonList.add(fromJsonBitRate);
-    settingPartList.toJsonList.add(toJsonBitRate);
-    settingPartList.defaultConfigList.add(defaultConfigBitRate);
-  }
-
-  void onInitBitRate() {
-  }
-
-  void changeBitRate(int vBitRate) {
-    bitRate.value = vBitRate;
-    PrefUtil.setInt(bitRateKey, vBitRate);
-  }
-
-  void changeBitRateMobile(int vBitRateMobile) {
-    bitRateMobile.value = vBitRateMobile;
-    PrefUtil.setInt(bitRateMobileKey, vBitRateMobile);
-  }
-
-  void changeBitRateConfig(int vBitRate, int vBitRateMobile) {
-    bitRate.value = vBitRate;
-    bitRateMobile.value = vBitRateMobile;
-    PrefUtil.setInt(bitRateKey, vBitRate);
-    PrefUtil.setInt(bitRateMobileKey, vBitRateMobile);
-    onInitBitRate();
-  }
-
-  //// -------------- 默认
-  void fromJsonBitRate(Map<String, dynamic> json) {
-    bitRate.value = json[bitRateKey] ?? bitRateDefault;
-    bitRateMobile.value = json[bitRateMobileKey] ?? bitRateMobileDefault;
-  }
-
-  void toJsonBitRate(Map<String, dynamic> json) {
-    json[bitRateKey] = bitRate.value;
-    json[bitRateMobileKey] = bitRateMobile.value;
-  }
-
-  void defaultConfigBitRate(Map<String, dynamic> json) {
-    json[bitRateKey] = bitRateDefault;
-    json[bitRateMobileKey] = bitRateMobile;
+    var list = [bitRateBuild, bitRateMobileBuild];
+    for (var value in list) {
+      settingPartList.fromJsonList.add(value.fromJsonFunc);
+      settingPartList.toJsonList.add(value.toJsonFunc);
+      settingPartList.defaultConfigList.add(value.defaultConfigFunc);
+    }
   }
 }

@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/services/setting_mixin/setting_part.dart';
-import 'package:pure_live/common/utils/pref_util.dart';
+import 'package:pure_live/common/services/setting_mixin/setting_rx.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/iptv/src/general_utils_object_extension.dart';
 import 'package:pure_live/modules/util/rx_util.dart';
@@ -17,81 +17,33 @@ import '../settings_service.dart';
 /// 码率
 mixin SettingWebdavMixin {
   /// url
-  static var webdavUrlKey = "webdavUrl";
-  static var webdavUrlDefault = "https://dav.jianguoyun.com/dav/";
-
   /// 坚果云
-  final webdavUrl = (PrefUtil.getString(webdavUrlKey) ?? webdavUrlDefault).obs;
+  final webdavUrlBuild = SettingRxBuild(key: "webdavUrl", defaultValue: "https://dav.jianguoyun.com/dav/");
+  late final webdavUrl = webdavUrlBuild.rxValue;
 
   /// 用户名
-  static var webdavUserKey = "webdavUser";
-  static var webdavUserDefault = "";
-  final webdavUser = (PrefUtil.getString(webdavUserKey) ?? webdavUserDefault).obs;
+  final webdavUserBuild = SettingRxBuild(key: "webdavUser", defaultValue: "");
+  late final webdavUser = webdavUserBuild.rxValue;
 
   /// 密码
-  static var webdavPwdKey = "webdavPwd";
-  static var webdavPwdDefault = "";
-  final webdavPwd = (PrefUtil.getString(webdavPwdKey) ?? webdavPwdDefault).obs;
+  final webdavPwdBuild = SettingRxBuild(key: "webdavPwd", defaultValue: "");
+  late final webdavPwd = webdavPwdBuild.rxValue;
 
   /// 路径
-  static var webdavPathKey = "webdavPath";
-  static var webdavPathDefault = "pure_live";
-  final webdavPath = (PrefUtil.getString(webdavPathKey) ?? webdavPathDefault).obs;
+  final webdavPathBuild = SettingRxBuild(key: "webdavPath", defaultValue: "pure_live");
+  late final webdavPath = webdavPathBuild.rxValue;
 
   /// webDav同步时间
-  static var webdavSyncTimeKey = "webdavSyncTime";
-  static var webdavSyncTimeDefault = 0;
-  final webdavSyncTime = (PrefUtil.getInt(webdavSyncTimeKey) ?? webdavSyncTimeDefault).obs;
+  final webdavSyncTimeBuild = SettingRxBuild(key: "webdavSyncTime", defaultValue: 0);
+  late final webdavSyncTime = webdavSyncTimeBuild.rxValue;
 
   void initWebdav(SettingPartList settingPartList) {
-    webdavUrl.listen((value) {
-      PrefUtil.setString(webdavUrlKey, value);
-    });
-
-    webdavUser.listen((value) {
-      PrefUtil.setString(webdavUserKey, value);
-    });
-
-    webdavPwd.listen((value) {
-      PrefUtil.setString(webdavPwdKey, value);
-    });
-
-    webdavPath.listen((value) {
-      PrefUtil.setString(webdavPathKey, value);
-    });
-
-    webdavSyncTime.listen((value) {
-      PrefUtil.setInt(webdavSyncTimeKey, value);
-    });
-
-    settingPartList.fromJsonList.add(fromJsonWebdav);
-    settingPartList.toJsonList.add(toJsonWebdav);
-    settingPartList.defaultConfigList.add(defaultConfigWebdav);
-  }
-
-  //// -------------- 默认
-  void fromJsonWebdav(Map<String, dynamic> json) {
-    webdavUrl.value = json[webdavUrlKey] ?? webdavUrlDefault;
-    webdavUser.value = json[webdavUserKey] ?? webdavUserDefault;
-    webdavPwd.value = json[webdavPwdKey] ?? webdavPwdDefault;
-    webdavPath.value = json[webdavPathKey] ?? webdavPathDefault;
-    webdavSyncTime.value = json[webdavSyncTimeKey] ?? webdavSyncTimeDefault;
-  }
-
-  void toJsonWebdav(Map<String, dynamic> json) {
-    json[webdavUrlKey] = webdavUrl.value;
-    json[webdavUserKey] = webdavUser.value;
-    json[webdavPwdKey] = webdavPwd.value;
-    json[webdavPathKey] = webdavPath.value;
-    json[webdavSyncTimeKey] = webdavSyncTime.value;
-  }
-
-  void defaultConfigWebdav(Map<String, dynamic> json) {
-    json[webdavUrlKey] = webdavUrlDefault;
-    json[webdavUserKey] = webdavUserDefault;
-    json[webdavPwdKey] = webdavPwdDefault;
-    json[webdavPathKey] = webdavPathDefault;
-    json[webdavSyncTimeKey] = webdavSyncTimeDefault;
+    var list = {webdavUrlBuild, webdavUserBuild, webdavPwdBuild, webdavPathBuild};
+    for (var value in list) {
+      settingPartList.fromJsonList.add(value.fromJsonFunc);
+      settingPartList.toJsonList.add(value.toJsonFunc);
+      settingPartList.defaultConfigList.add(value.defaultConfigFunc);
+    }
   }
 
   Future<bool> _retryZone(Future<bool> Function() fn) async {
@@ -112,8 +64,9 @@ mixin SettingWebdavMixin {
   bool _haveWaitingTask = false;
 
   bool isMkdir = false;
+
   Future<void> createWebDevDir(Client client) async {
-    if(!isMkdir) {
+    if (!isMkdir) {
       await client.mkdirAll(webdavPath.value);
       isMkdir = true;
     }
