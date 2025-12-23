@@ -205,7 +205,7 @@ class _BackupPageState extends State<BackupPage> {
             TextField(
                 onChanged: (s) => controller.webdavUrl.updateValueNotEquate(s),
                 controller: TextEditingController(text: controller.webdavUrl.value),
-                decoration: InputDecoration(border: const OutlineInputBorder(), label: const Text("URL"), hintText: SettingWebdavMixin.webdavUrlDefault)),
+                decoration: InputDecoration(border: const OutlineInputBorder(), label: const Text("URL"), hintText: controller.webdavUrlBuild.defaultValue)),
             const SizedBox(
               height: 8,
             ),
