@@ -141,7 +141,7 @@ class PandaTvDanmaku implements LiveDanmaku {
     // 提取弹幕内容
     final msgMatch = _msgRegex.firstMatch(msg);
     if (msgMatch == null) return [];
-    final message = msgMatch.group(1)!;
+    var message = msgMatch.group(1)!;
 
     // 提取发送者
     final senderMatch = _senderRegex.firstMatch(msg);
@@ -155,6 +155,7 @@ class PandaTvDanmaku implements LiveDanmaku {
     final idxMatch = _idxRegex.firstMatch(msg);
     final idx = idxMatch != null ? int.tryParse(idxMatch.group(1)!) ?? 0 : 0;
 
+    message = message.replaceAll("\\n", "\n");
     return [
       LiveMessage(
         type: LiveMessageType.chat,
