@@ -1,6 +1,7 @@
 import 'dart:io';
 
 // import 'package:floating/floating.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/core/common/core_log.dart';
@@ -17,11 +18,12 @@ import 'package:pure_live/routes/app_navigation.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../common/widgets/utils.dart';
 import 'widgets/index.dart';
 
 class LivePlayPage extends GetView<LivePlayController> {
   LivePlayPage({super.key});
-  
+
   Future<bool> onWillPop() async {
     try {
       var exit = await controller.onBackPressed();
@@ -259,6 +261,19 @@ class LivePlayPage extends GetView<LivePlayController> {
                                     child: MenuListTile(
                                         leading: Icon(Icons.share_arrival_time_outlined), text: "${S.current.auto_shutdown_time}：${TimeUtil.secondValueToStr(controller.countdown.value)}")))),
 
+                          // 复制直播间链接
+                          PopupMenuItem(
+                            value: 7,
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: MenuListTile(
+                              leading: Icon(Icons.copy_outlined),
+                              text: "复制直播间链接",
+                            ),
+                            onTap: () {
+                              Utils.copyToClipboard(controller.currentSite.liveSite.getJumpToWebUrl(controller.liveRoomRx.toLiveRoom()));
+                            }
+                          ),
+
                           /// 其他跳转
                           ...controller.currentSite.liveSite.jumpItems(controller.liveRoomRx.toLiveRoom()).map((e) => PopupMenuItem(
                                 padding: EdgeInsets.symmetric(horizontal: 12),
@@ -451,7 +466,7 @@ class _ResolutionsRowState extends State<ResolutionsRow> {
               itemBuilder: (context) {
                 final items = <PopupMenuItem<String>>[];
                 var urls = rate.playUrlList;
-                if(urls.isNullOrEmpty) urls = controller.playUrls;
+                if (urls.isNullOrEmpty) urls = controller.playUrls;
                 for (int i = 0; i < urls.length; i++) {
                   items.add(PopupMenuItem<String>(
                     value: i.toString(),
