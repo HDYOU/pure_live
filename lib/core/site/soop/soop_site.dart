@@ -253,7 +253,9 @@ class SoopSite extends LiveSite with SoopSiteMixin {
       );
       resultText = JsonUtil.decode(resultText);
       CoreLog.d("live roome: ${jsonEncode(resultText)}");
-      if (resultText['data']['code'] == -3002) {
+      CoreLog.d("code: ${resultText['data']['code']}");
+      var code = resultText['data']['code'] ?? 1;
+      if (code < -2000) {
         // 无法获取信息
         CoreLog.w("get info by PlayApi");
         return getLiveRoomByApi(playerLiveApiData, danmakuArgs);
@@ -315,7 +317,7 @@ class SoopSite extends LiveSite with SoopSiteMixin {
 
     var bno = jsonObj["BNO"].toString();
     var nick = jsonObj["BJNICK"];
-    //CoreLog.d(jsonEncode(jsonObj));
+    CoreLog.d("jsonObj: ${jsonEncode(jsonObj)}");
 
     var jsonObj2 = jsonObj["CATEGORY_TAGS"];
     var area = "";
@@ -334,7 +336,7 @@ class SoopSite extends LiveSite with SoopSiteMixin {
       // "broad_bps": jsonObj["broad_bps"],
       "viewpreset": jsonObj["VIEWPRESET"],
     };
-    var isLiving = true;
+    var isLiving = jsonObj["RESULT"] == 1;
     return LiveRoom(
       cover: cover,
       watching: jsonObj["view_cnt"].toString(),
