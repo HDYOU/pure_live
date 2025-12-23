@@ -105,7 +105,7 @@ class SoopDanmaku implements LiveDanmaku {
     webScoketUtils?.sendMessage(connectPacket);
 
     // 延迟发送加入数据包
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 200));
     final joinPacket = '${esc}0002${_calculateByteSize(danmakuArgs.chatNo).toString().padLeft(6, '0')}00$f${danmakuArgs.chatNo}${f * 5}';
     webScoketUtils?.sendMessage(joinPacket);
   }

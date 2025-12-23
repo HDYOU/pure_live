@@ -232,25 +232,32 @@ class SoopSite extends LiveSite with SoopSiteMixin {
 
   @override
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
-    var roomId = detail.roomId ?? "";
-    var url = "http://api.m.sooplive.co.kr/broad/a/watch";
-    var danmakuArgs = geDanmakuArgs(roomId: roomId);
-    var resultText = await HttpClient.instance.postJson(
-      url,
-      formUrlEncoded: true,
-      data: {
-        'bj_id': roomId,
-        'bid': roomId,
-        'broad_no': '',
-        'agent': 'web',
-        'confirm_adult': 'true',
-        'player_type': 'webm',
-        'mode': 'live',
-      },
-      header: getHeaders(),
-    );
     try {
+      var roomId = detail.roomId ?? "";
+      var url = "http://api.m.sooplive.co.kr/broad/a/watch";
+      var playerLiveApiData = getPlayerLiveApiData(roomId: roomId);
+      var danmakuArgs = geDanmakuArgs(playerLiveApiData, roomId);
+      var resultText = await HttpClient.instance.postJson(
+        url,
+        formUrlEncoded: true,
+        data: {
+          'bj_id': roomId,
+          'bid': roomId,
+          'broad_no': '',
+          'agent': 'web',
+          'confirm_adult': 'true',
+          'player_type': 'webm',
+          'mode': 'live',
+        },
+        header: getHeaders(),
+      );
       resultText = JsonUtil.decode(resultText);
+      CoreLog.d("live roome: ${jsonEncode(resultText)}");
+      if (resultText['data']['code'] == -3002) {
+        // 无法获取信息
+        CoreLog.w("get info by PlayApi");
+        return getLiveRoomByApi(playerLiveApiData, danmakuArgs);
+      }
       if (resultText['result'] != 1) {
         // 离线状态
         return getLiveRoomWithError(detail);
@@ -272,8 +279,8 @@ class SoopSite extends LiveSite with SoopSiteMixin {
       var cover = validImgUrl("${jsonObj['thumbnail']}?_t=$millisecondsSinceEpoch2");
       var avatar = validImgUrl("${jsonObj['profile_thumbnail']}");
       var data = {
-        "hls_authentication_key": jsonObj["hls_authentication_key"],
-        "broad_bps": jsonObj["broad_bps"],
+        // "hls_authentication_key": jsonObj["hls_authentication_key"],
+        // "broad_bps": jsonObj["broad_bps"],
         "viewpreset": jsonObj["viewpreset"],
       };
       var isLiving = true;
@@ -300,6 +307,51 @@ class SoopSite extends LiveSite with SoopSiteMixin {
       CoreLog.error(e);
       return getLiveRoomWithError(detail);
     }
+  }
+
+  Future<LiveRoom> getLiveRoomByApi(Future<Map> playerLiveApiData, Future<DanmakuArgs?> danmakuArgs) async {
+    var playerLiveApi = await playerLiveApiData;
+    var jsonObj = playerLiveApi["CHANNEL"];
+
+    var bno = jsonObj["BNO"].toString();
+    var nick = jsonObj["BJNICK"];
+    //CoreLog.d(jsonEncode(jsonObj));
+
+    var jsonObj2 = jsonObj["CATEGORY_TAGS"];
+    var area = "";
+    if (jsonObj2 != null) {
+      var sList = (jsonObj2 as List);
+      if (sList.isNotEmpty) {
+        area = sList[0];
+      }
+    }
+    var sRoomId = jsonObj["BJID"].toString();
+    var millisecondsSinceEpoch2 = DateTime.now().millisecondsSinceEpoch;
+    var cover = validImgUrl("https://liveimg.sooplive.co.kr/m/${bno}?_t=$millisecondsSinceEpoch2");
+    var avatar = validImgUrl("https://stimg.sooplive.co.kr/LOGO/${sRoomId.substring(0, 2)}/$sRoomId/$sRoomId.jpg");
+    var data = {
+      // "hls_authentication_key": jsonObj["hls_authentication_key"],
+      // "broad_bps": jsonObj["broad_bps"],
+      "viewpreset": jsonObj["VIEWPRESET"],
+    };
+    var isLiving = true;
+    return LiveRoom(
+      cover: cover,
+      watching: jsonObj["view_cnt"].toString(),
+      roomId: jsonObj["BJID"].toString(),
+      userId: bno,
+      area: area,
+      title: jsonObj["TITLE"].toString(),
+      nick: nick,
+      avatar: avatar,
+      introduction: '',
+      notice: '',
+      status: isLiving,
+      liveStatus: isLiving ? LiveStatus.live : LiveStatus.offline,
+      platform: Sites.soopSite,
+      data: data,
+      danmakuData: await danmakuArgs,
+    );
   }
 
   Future<String> getCdnUrl({required String bno, String quality = "master"}) async {
@@ -348,19 +400,24 @@ class SoopSite extends LiveSite with SoopSiteMixin {
     return aid;
   }
 
-  Future<DanmakuArgs?> geDanmakuArgs({required String roomId}) async {
+  Future<Map> getPlayerLiveApiData({required String roomId}) async {
+    var url = "https://live.sooplive.co.kr/afreeca/player_live_api.php";
+    var resultText = await HttpClient.instance.postJson(
+      url,
+      formUrlEncoded: true,
+      queryParameters: {
+        'bjid': roomId,
+      },
+      data: {"bid": roomId, "bno": "", "type": "live", "pwd": "", "player_type": "html5", "stream_type": "common", "quality": "HD", "mode": "landing", "from_api": "0", "is_revive": "false"},
+      header: getHeaders(),
+    );
+    resultText = JsonUtil.decode(resultText);
+    return resultText;
+  }
+
+  Future<DanmakuArgs?> geDanmakuArgs(Future<Map> resultTextFuture, String roomId) async {
     try {
-      var url = "https://live.sooplive.co.kr/afreeca/player_live_api.php";
-      var resultText = await HttpClient.instance.postJson(
-        url,
-        formUrlEncoded: true,
-        queryParameters: {
-          'bjid': roomId,
-        },
-        data: {"bid": roomId, "bno": "", "type": "live", "pwd": "", "player_type": "html5", "stream_type": "common", "quality": "HD", "mode": "landing", "from_api": "0", "is_revive": "false"},
-        header: getHeaders(),
-      );
-      resultText = JsonUtil.decode(resultText);
+      var resultText = await resultTextFuture;
       var jsonObj = resultText['CHANNEL'];
       var chatNo = jsonObj["CHATNO"];
       var chatDomain = jsonObj["CHDOMAIN"];
