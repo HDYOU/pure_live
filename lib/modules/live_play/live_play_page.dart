@@ -41,7 +41,7 @@ class LivePlayPage extends GetView<LivePlayController> {
   Row buildTableTarLeft() {
     return Row(children: [
       /// 头像
-      CacheNetWorkUtils.getCircleAvatar(controller.liveRoomRx.avatar.value, radius: 20),
+      CacheNetWorkUtils.getCircleAvatar(controller.liveRoomRx.avatar.value, radius: 20, siteKey: controller.liveRoomRx.platform.value),
       const SizedBox(width: 8),
 
       /// 右边
@@ -555,7 +555,7 @@ class _FavoriteFloatingButtonState extends State<FavoriteFloatingButton> {
                 }
               });
             },
-            child: CacheNetWorkUtils.getCircleAvatar(widget.room.avatar, radius: 18),
+            child: CacheNetWorkUtils.getCircleAvatar(widget.room.avatar, radius: 18, siteKey: widget.room.platform),
           )
         : FloatingActionButton.extended(
             key: UniqueKey(),
@@ -566,7 +566,7 @@ class _FavoriteFloatingButtonState extends State<FavoriteFloatingButton> {
               // setState(() => controller.isFavorite.toggle);
               SettingsService.instance.addRoom(widget.room);
             },
-            icon: CacheNetWorkUtils.getCircleAvatar(widget.room.avatar, radius: 18),
+            icon: CacheNetWorkUtils.getCircleAvatar(widget.room.avatar, radius: 18, siteKey: widget.room.platform),
             label: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

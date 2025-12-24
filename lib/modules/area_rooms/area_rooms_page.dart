@@ -85,7 +85,7 @@ class _FavoriteAreaFloatingButtonState extends State<FavoriteAreaFloatingButton>
           }
         });
       },
-      child: CacheNetWorkUtils.getCircleAvatar(widget.area.areaPic, radius: 18),
+      child: CacheNetWorkUtils.getCircleAvatar(widget.area.areaPic, radius: 18, siteKey: widget.area.platform),
     )
         : FloatingActionButton.extended(
       key: UniqueKey(),
@@ -97,7 +97,7 @@ class _FavoriteAreaFloatingButtonState extends State<FavoriteAreaFloatingButton>
         setState(() => isFavorite = !isFavorite);
         settings.addArea(widget.area);
       },
-      icon: CacheNetWorkUtils.getCircleAvatar(widget.area.areaPic, radius: 18),
+      icon: CacheNetWorkUtils.getCircleAvatar(widget.area.areaPic, radius: 18, siteKey: widget.area.platform),
       label: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

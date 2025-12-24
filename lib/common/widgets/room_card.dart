@@ -81,7 +81,7 @@ class RoomCard extends StatelessWidget {
                               size: dense ? 36 : 60,
                             ),
                           )
-                        : CacheNetWorkUtils.getCacheImageV2(room.cover!),
+                        : CacheNetWorkUtils.getCacheImageV2(room.cover!, siteKey: room.platform),
                   ),
                 ),
                 if (room.isRecord == true)
@@ -131,7 +131,7 @@ class RoomCard extends StatelessWidget {
               minLeadingWidth: dense ? 34 : null,
               contentPadding: dense ? const EdgeInsets.only(left: 8, right: 10) : null,
               horizontalTitleGap: dense ? 8 : null,
-              leading: CacheNetWorkUtils.getCircleAvatar(room.avatar, radius: 17),
+              leading: CacheNetWorkUtils.getCircleAvatar(room.avatar, radius: 17, siteKey: room.platform),
               title: Text(
                 room.title ?? '',
                 maxLines: 1,

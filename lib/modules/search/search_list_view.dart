@@ -53,7 +53,7 @@ class _OwnerCardState extends State<OwnerCard> {
     return Card(
       child: ListTile(
         onTap: () => _onTap(context),
-        leading: CacheNetWorkUtils.getCircleAvatar(widget.room.avatar, radius: 20),
+        leading: CacheNetWorkUtils.getCircleAvatar(widget.room.avatar, radius: 20, siteKey: widget.room.platform),
         title: Text(
           widget.room.title != null ? '${widget.room.title}' : '',
           maxLines: 1,

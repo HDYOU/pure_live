@@ -21,6 +21,15 @@ final class SettingsNetwork {
                   value: SettingsService.instance.networkImageProxy.value,
                   onChanged: (bool value) => SettingsService.instance.networkImageProxy.value = value,
                 )),
+            Obx(() => Visibility(
+              visible: SettingsService.instance.networkImageProxy.value,
+              child: SettingsListItem(
+              leading: const Icon(Icons.vaping_rooms_outlined),
+              title: Text("图片代理排除站点"),
+              onTap: () async {
+                PlatformSelectorDialog.showPreferPlatformSelectorDialog("图片代理排除站点", SettingsService.instance.networkImageProxyExcludeList);
+              },
+            ),)),
             SettingsListItem(
               leading: const Icon(Icons.vaping_rooms_outlined),
               title: Text("API请求代理"),
