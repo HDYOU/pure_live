@@ -166,7 +166,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var response = await getGplResponse(liveGpl);
 
     // CoreLog.d("data response:${jsonEncode(response).substring(0,1000)}");
-    var directoriesWithTags = response['data']['directoriesWithTags'];
+    var directoriesWithTags = response['data']['directoriesWithTags'] ?? {};
     var edges = (directoriesWithTags['edges'] ?? []) as List;
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
@@ -258,7 +258,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var response = await getGplResponse(liveGpl);
 
     CoreLog.d("data response:${jsonEncode(response)}");
-    var directoriesWithTags = response[0]['data']['game']['streams'];
+    var directoriesWithTags = response[0]['data']['game']['streams'] ?? {};
     var edges = (directoriesWithTags['edges'] ?? []) as List;
     var pageInfo = directoriesWithTags['pageInfo'];
     var hasNextPage = pageInfo['hasNextPage'];
@@ -507,7 +507,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var response = await getGplResponse(liveGpl);
 
     CoreLog.d("data response:${jsonEncode(response)}");
-    var directoriesWithTags = response['data']['sideNav']['sections']['edges'][0]['node']['content'];
+    var directoriesWithTags = response['data']['sideNav']['sections']['edges'][0]['node']['content'] ?? {};
     var edges = (directoriesWithTags['edges'] ?? []) as List;
     List<LiveRoom> subs = [];
     for (var item in edges) {
@@ -601,7 +601,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
     var response = await getGplResponse(liveGpl);
 
     // CoreLog.d("data response:${jsonEncode(response)}");
-    var directoriesWithTags = response['data']['searchFor']['channels'];
+    var directoriesWithTags = response['data']['searchFor']['channels'] ?? {};
     cursor = directoriesWithTags["cursor"] ?? "";
     saveCursor(cursorType, cursorId, page, cursor);
     var edges = (directoriesWithTags['edges'] ?? []) as List;
