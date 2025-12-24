@@ -313,15 +313,15 @@ class SoopSite extends LiveSite with SoopSiteMixin {
 
   Future<LiveRoom> getLiveRoomByApi(Future<Map> playerLiveApiData, Future<DanmakuArgs?> danmakuArgs, LiveRoom detail) async {
     var playerLiveApi = await playerLiveApiData;
-    if (playerLiveApi['result'] != 1) {
+    var jsonObj = playerLiveApi["CHANNEL"];
+    CoreLog.d("playerLiveApi: ${jsonEncode(jsonObj)}");
+    if (jsonObj['RESULT'] != 1) {
       // 离线状态
       return getLiveRoomWithError(detail);
     }
-    var jsonObj = playerLiveApi["CHANNEL"];
 
     var bno = jsonObj["BNO"].toString();
     var nick = jsonObj["BJNICK"];
-    CoreLog.d("jsonObj: ${jsonEncode(jsonObj)}");
 
     var jsonObj2 = jsonObj["CATEGORY_TAGS"];
     var area = "";
