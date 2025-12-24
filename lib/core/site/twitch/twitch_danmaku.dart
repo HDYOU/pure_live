@@ -12,7 +12,7 @@ class TwitchDanmaku implements LiveDanmaku {
   WebScoketUtils? webScoketUtils;
 
   @override
-  int heartbeatTime = 40 * 1000; //默认是40s
+  int heartbeatTime = 60 * 1000; //默认是40s
 
   var serverUrl = "wss://irc-ws.chat.twitch.tv";
 

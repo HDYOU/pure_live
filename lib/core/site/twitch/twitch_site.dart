@@ -55,7 +55,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   void getRequestHeaders() {
     headers['device-id'] = getDeviceId();
-    headers["Cookie"]= SettingsService.instance.siteCookies[id] ?? "";
+    headers["Cookie"] = SettingsService.instance.siteCookies[id] ?? "";
 // no token
 // no cookie
   }
@@ -86,28 +86,33 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
-    // CoreLog.d("getCategores .....");
-    var liveGpl = buildPersistedRequest("SearchCategoryTags", "b4cb189d8d17aadf29c61e9d7c7e7dcfc932e93b77b3209af5661bffb484195f", {"userQuery": "", "limit": 100});
+    try {
+      // CoreLog.d("getCategores .....");
+      var liveGpl = buildPersistedRequest("SearchCategoryTags", "b4cb189d8d17aadf29c61e9d7c7e7dcfc932e93b77b3209af5661bffb484195f", {"userQuery": "", "limit": 100});
 
-    var response = await getGplResponse(liveGpl);
+      var response = await getGplResponse(liveGpl);
 
-    List<LiveCategory> categories = [];
-    // CoreLog.d("response:${jsonEncode(response)}");
-    var data = response['data'];
-    var searchCategoryTags = data['searchCategoryTags'];
-    for (var item in searchCategoryTags) {
-      categories.add(LiveCategory(id: item["id"], name: item["tagName"], children: []));
+      List<LiveCategory> categories = [];
+      // CoreLog.d("response:${jsonEncode(response)}");
+      var data = response['data'];
+      var searchCategoryTags = data['searchCategoryTags'];
+      for (var item in searchCategoryTags) {
+        categories.add(LiveCategory(id: item["id"], name: item["tagName"], children: []));
+      }
+
+      List<Future> futures = [];
+      for (var item in categories) {
+        futures.add(Future(() async {
+          var items = await getAllSubCategores(item, 1, 30, []);
+          item.children.addAll(items);
+        }));
+      }
+      await Future.wait(futures);
+      return categories;
+    } catch (e) {
+      CoreLog.error(e);
+      return [];
     }
-
-    List<Future> futures = [];
-    for (var item in categories) {
-      futures.add(Future(() async {
-        var items = await getAllSubCategores(item, 1, 30, []);
-        item.children.addAll(items);
-      }));
-    }
-    await Future.wait(futures);
-    return categories;
   }
 
   Future<List<LiveArea>> getAllSubCategores(LiveCategory liveCategory, int page, int pageSize, List<LiveArea> allSubCategores) async {
@@ -194,15 +199,16 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
   /// 读取类目下房间
   @override
   Future<LiveCategoryResult> getCategoryRooms(LiveArea category, {int page = 1}) async {
-    var cursorType = "getCategoryRooms";
-    var cursorId = category.shortName!;
-    String cursor = getCursor(cursorType, cursorId, page);
-    CoreLog.d("category :${jsonEncode(category.areaName)} page:${page} key:${buildCursorKey(cursorType, cursorId, page)} cursor:${cursor}");
-    if (cursor.isEmpty && page > 1) {
-      return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
-    }
-    var params = [
-      /*{
+    try {
+      var cursorType = "getCategoryRooms";
+      var cursorId = category.shortName!;
+      String cursor = getCursor(cursorType, cursorId, page);
+      CoreLog.d("category :${jsonEncode(category.areaName)} page:${page} key:${buildCursorKey(cursorType, cursorId, page)} cursor:${cursor}");
+      if (cursor.isEmpty && page > 1) {
+        return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
+      }
+      var params = [
+        /*{
         "operationName": "CategoryChannels_InternationalSection",
         "variables": {
           "imageWidth": 50,
@@ -228,67 +234,72 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
           }
         }
       },*/
-      {
-        "operationName": "DirectoryPage_Game",
-        "variables": {
-          "imageWidth": 50,
-          "slug": category.shortName,
-          "options": {
-            "sort": "VIEWER_COUNT",
-            "recommendationsContext": {"platform": "web"},
-            "requestID": "JIRA-VXP-2397",
-            "freeformTags": null,
-            "tags": [],
-            "broadcasterLanguages": [
-              "ZH", "KO",
-            ],
-            "systemFilters": []
+        {
+          "operationName": "DirectoryPage_Game",
+          "variables": {
+            "imageWidth": 50,
+            "slug": category.shortName,
+            "options": {
+              "sort": "VIEWER_COUNT",
+              "recommendationsContext": {"platform": "web"},
+              "requestID": "JIRA-VXP-2397",
+              "freeformTags": null,
+              "tags": [],
+              "broadcasterLanguages": [
+                "ZH",
+                "KO",
+              ],
+              "systemFilters": []
+            },
+            "sortTypeIsRecency": false,
+            "limit": 30,
+            "includeCostreaming": true,
+            if (cursor.isNotEmpty) "cursor": cursor,
           },
-          "sortTypeIsRecency": false,
-          "limit": 30,
-          "includeCostreaming": true,
-          if (cursor.isNotEmpty) "cursor": cursor,
-        },
-        "extensions": {
-          "persistedQuery": {"version": 1, "sha256Hash": "76cb069d835b8a02914c08dc42c421d0dafda8af5b113a3f19141824b901402f"}
+          "extensions": {
+            "persistedQuery": {"version": 1, "sha256Hash": "76cb069d835b8a02914c08dc42c421d0dafda8af5b113a3f19141824b901402f"}
+          }
         }
-      }
-    ];
-    var liveGpl = jsonEncode(params);
-    var response = await getGplResponse(liveGpl);
+      ];
+      var liveGpl = jsonEncode(params);
+      var response = await getGplResponse(liveGpl);
 
-    CoreLog.d("data response:${jsonEncode(response)}");
-    var directoriesWithTags = response[0]['data']['game']['streams'] ?? {};
-    var edges = (directoriesWithTags['edges'] ?? []) as List;
-    var pageInfo = directoriesWithTags['pageInfo'];
-    var hasNextPage = pageInfo['hasNextPage'];
-    if(edges.isNullOrEmpty) {
-      return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
+      CoreLog.d("data response:${jsonEncode(response)}");
+      var directoriesWithTags = response[0]['data']['game']['streams'] ?? {};
+      var edges = (directoriesWithTags['edges'] ?? []) as List;
+      var pageInfo = directoriesWithTags['pageInfo'];
+      var hasNextPage = pageInfo['hasNextPage'];
+      if (edges.isNullOrEmpty) {
+        return Future.value(LiveCategoryResult(hasMore: false, items: <LiveRoom>[]));
+      }
+      cursor = edges.last["cursor"] ?? "";
+      if (!hasNextPage) cursor = "";
+      saveCursor(cursorType, cursorId, page, cursor);
+      List<LiveRoom> subs = [];
+      for (var item in edges) {
+        var node = item['node'];
+        var subItem = LiveRoom(
+            roomId: node["broadcaster"]["login"],
+            title: node["title"],
+            cover: (node["previewImageURL"] ?? "").replaceFirst("https://", "https://i2.wp.com/").toString().appendTxt("?&t=${DateTime.now().millisecondsSinceEpoch ~/ 1000}"),
+            nick: node["broadcaster"]["displayName"],
+            avatar: node["broadcaster"]["profileImageURL"].replaceFirst("https://", "https://i2.wp.com/"),
+            watching: (node["viewersCount"] ?? 0).toString(),
+            status: true,
+            introduction: "",
+            notice: "",
+            danmakuData: node["broadcaster"]["id"],
+            platform: id,
+            liveStatus: LiveStatus.live,
+            area: node["game"]["displayName"],
+            data: null);
+        subs.add(subItem);
+      }
+      return Future.value(LiveCategoryResult(hasMore: subs.isNotEmpty, items: subs));
+    } catch (e) {
+      CoreLog.error(e);
+      return Future.value(LiveCategoryResult(hasMore: false, items: []));
     }
-    cursor = edges.last["cursor"] ?? "";
-    if (!hasNextPage) cursor = "";
-    saveCursor(cursorType, cursorId, page, cursor);
-    List<LiveRoom> subs = [];
-    for (var item in edges) {
-      var node = item['node'];
-      var subItem = LiveRoom(
-          roomId: node["broadcaster"]["login"],
-          title: node["title"],
-          cover: (node["previewImageURL"] ?? "").replaceFirst("https://", "https://i2.wp.com/").toString().appendTxt("?&t=${DateTime.now().millisecondsSinceEpoch ~/ 1000}"),
-          nick: node["broadcaster"]["displayName"],
-          avatar: node["broadcaster"]["profileImageURL"].replaceFirst("https://", "https://i2.wp.com/"),
-          watching: (node["viewersCount"] ?? 0).toString(),
-          status: true,
-          introduction: "",
-          notice: "",
-          danmakuData: node["broadcaster"]["id"],
-          platform: id,
-          liveStatus: LiveStatus.live,
-          area: node["game"]["displayName"],
-          data: null);
-      subs.add(subItem);
-    }
-    return Future.value(LiveCategoryResult(hasMore: false, items: subs));
   }
 
   String buildPlaybackAccessTokenPersistedRequest(String roomId) {
@@ -403,7 +414,7 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
       var roomDetail = toRoomDetail(roomInfo, detail.roomId!);
       roomDetail.data = otherList;
       return roomDetail;
-    } catch(e) {
+    } catch (e) {
       CoreLog.error(e);
       return getLiveRoomWithError(detail);
     }
@@ -488,12 +499,11 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
         "contextChannelName": "woojungx4"
       },
       "options": {
-        "recommendationsContext": {
-          "platform": "web"
-        },
+        "recommendationsContext": {"platform": "web"},
         "sort": "VIEWER_COUNT",
         "broadcasterLanguages": [
-          "ZH", "KO",
+          "ZH",
+          "KO",
         ]
       },
       "creatorAnniversariesFeature": false,
