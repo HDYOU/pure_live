@@ -258,7 +258,7 @@ class SoopSite extends LiveSite with SoopSiteMixin {
       if (code < -2000) {
         // 无法获取信息
         CoreLog.w("get info by PlayApi");
-        return getLiveRoomByApi(playerLiveApiData, danmakuArgs);
+        return getLiveRoomByApi(playerLiveApiData, danmakuArgs, detail);
       }
       if (resultText['result'] != 1) {
         // 离线状态
@@ -311,8 +311,12 @@ class SoopSite extends LiveSite with SoopSiteMixin {
     }
   }
 
-  Future<LiveRoom> getLiveRoomByApi(Future<Map> playerLiveApiData, Future<DanmakuArgs?> danmakuArgs) async {
+  Future<LiveRoom> getLiveRoomByApi(Future<Map> playerLiveApiData, Future<DanmakuArgs?> danmakuArgs, LiveRoom detail) async {
     var playerLiveApi = await playerLiveApiData;
+    if (playerLiveApi['result'] != 1) {
+      // 离线状态
+      return getLiveRoomWithError(detail);
+    }
     var jsonObj = playerLiveApi["CHANNEL"];
 
     var bno = jsonObj["BNO"].toString();
