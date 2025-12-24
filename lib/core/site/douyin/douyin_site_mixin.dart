@@ -1,14 +1,10 @@
 import 'package:dio/dio.dart' as dio;
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/common/core_log.dart';
-import 'package:pure_live/core/site/douyin/douyin_danmaku.dart';
 import 'package:pure_live/core/interface/live_site_mixin.dart';
+import 'package:pure_live/core/site/douyin/douyin_danmaku.dart';
 
-import '../../sites.dart';
-
-mixin DouyinSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
-  var platform = Sites.douyinSite;
-
+mixin DouyinSiteMixin on SiteMixin {
   @override
   String getJumpToNativeUrl(LiveRoom liveRoom) {
     try {
@@ -47,15 +43,15 @@ mixin DouyinSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
 
     if (realUrl.contains("v.douyin.com")) {
       final id = await getRealDouyinUrl(realUrl);
-      if(id.isEmpty) return siteParseBean;
-      return SiteParseBean(roomId: id, platform: platform);
+      if (id.isEmpty) return siteParseBean;
+      return SiteParseBean(roomId: id, platform: id);
     }
 
     List<RegExp> regExpBeanList = [
       // 抖音
       RegExp(r"live\.douyin\.com/([\d|\w]+)"),
     ];
-    siteParseBean = await parseUrl(regExpBeanList, realUrl, platform);
+    siteParseBean = await parseUrl(regExpBeanList, realUrl, id);
     return siteParseBean;
   }
 

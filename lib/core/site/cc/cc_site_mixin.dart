@@ -1,13 +1,10 @@
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/interface/live_site_mixin.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../common/core_log.dart';
 
-mixin CCSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
-  final platform = Sites.ccSite;
-
+mixin CCSiteMixin on SiteMixin {
   @override
   String getJumpToNativeUrl(LiveRoom liveRoom) {
     try {
@@ -26,8 +23,7 @@ mixin CCSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
     var siteParseBean = emptySiteParseBean;
     if (realUrl.isEmpty) return siteParseBean;
     // 解析跳转
-    List<RegExp> regExpJumpList = [
-    ];
+    List<RegExp> regExpJumpList = [];
     siteParseBean = await parseJumpUrl(regExpJumpList, realUrl);
     if (siteParseBean.roomId.isNotEmpty) {
       return siteParseBean;
@@ -38,7 +34,7 @@ mixin CCSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
       RegExp(r"cc\.163\.com/([a-zA-Z0-9]+)$"),
       RegExp(r"cc\.163\.com/cc/([a-zA-Z0-9]+)$"),
     ];
-    siteParseBean = await parseUrl(regExpBeanList, realUrl, platform);
+    siteParseBean = await parseUrl(regExpBeanList, realUrl, id);
     return siteParseBean;
   }
 

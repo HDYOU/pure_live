@@ -230,3 +230,14 @@ class OtherJumpItem {
     required this.onTap,
   });
 }
+
+/// 跳转
+mixin SiteInfo {
+  String get id => '';
+  String get name => '';
+}
+
+/// --- 混合所有类
+class SiteMixin with SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, SiteOtherJump, SiteInfo {
+
+}

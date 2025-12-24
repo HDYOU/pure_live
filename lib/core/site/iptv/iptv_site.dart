@@ -16,7 +16,7 @@ import 'package:pure_live/core/interface/live_danmaku.dart';
 
 import 'iptv_site_mixin.dart';
 
-class IptvSite extends LiveSite with SiteMixin {
+class IptvSite extends LiveSite with IptvSiteMixin {
   @override
   String get id => 'iptv';
 

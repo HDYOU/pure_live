@@ -6,18 +6,15 @@ import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/interface/live_site_mixin.dart';
-import 'package:pure_live/core/site/kuaishou/kuaishou_site.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../sites.dart';
 
-mixin TwitchSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
-  var platform =  Sites.twitchSite;
+mixin TwitchSiteMixin on SiteMixin {
   @override
   String getJumpToNativeUrl(LiveRoom liveRoom) {
     try {
-      var appUrl =
-      "twitch://player/live?broad_no=${liveRoom.userId}&user_id=${liveRoom.roomId}&channel=";
+      var appUrl = "twitch://player/live?broad_no=${liveRoom.userId}&user_id=${liveRoom.roomId}&channel=";
       return appUrl;
     } catch (e) {
       return "";
@@ -90,18 +87,17 @@ mixin TwitchSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
     return false;
   }
 
-
   @override
   Future<SiteParseBean> parse(String url) async {
     String realUrl = getHttpUrl(url);
     var siteParseBean = emptySiteParseBean;
-    if(realUrl.isEmpty) return siteParseBean;
+    if (realUrl.isEmpty) return siteParseBean;
     // 解析跳转
     List<RegExp> regExpJumpList = [
       // 网站 解析跳转
     ];
     siteParseBean = await parseJumpUrl(regExpJumpList, realUrl);
-    if(siteParseBean.roomId.isNotEmpty) {
+    if (siteParseBean.roomId.isNotEmpty) {
       return siteParseBean;
     }
 
@@ -110,7 +106,7 @@ mixin TwitchSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
       RegExp(r"twitch\.tv/([^/]+)"),
       RegExp(r"twitch\.com/([^/]+)"),
     ];
-    siteParseBean = await parseUrl(regExpBeanList, realUrl, platform);
+    siteParseBean = await parseUrl(regExpBeanList, realUrl, id);
     return siteParseBean;
   }
 

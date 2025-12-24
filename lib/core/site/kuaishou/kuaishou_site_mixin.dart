@@ -11,8 +11,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../sites.dart';
 
-mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, SiteOtherJump {
-  var platform =  Sites.kuaishouSite;
+mixin KuaishouSiteMixin on SiteMixin {
   @override
   String getJumpToNativeUrl(LiveRoom liveRoom) {
     try {
@@ -50,7 +49,7 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
     'User-Agent':
         // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
         // "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/118.0.0.0",
-    webLoginUserAgent() ?? "",
+        webLoginUserAgent() ?? "",
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
     'connection': 'keep-alive',
     'sec-ch-ua': 'Google Chrome;v=107, Chromium;v=107, Not=A?Brand;v=24',
@@ -60,8 +59,6 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
     'Sec-Fetch-Site': 'same-origin',
     'Sec-Fetch-User': '?1'
   };
-
-
 
   @override
   URLRequest webLoginURLRequest() {
@@ -86,7 +83,7 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
     try {
       var list = ["kwfv1"];
       var keyFlag = list.every((e) => cookie.contains(e));
-      if(!keyFlag){
+      if (!keyFlag) {
         return false;
       }
       userName.value = "Cookie";
@@ -106,18 +103,17 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
     return false;
   }
 
-
   @override
   Future<SiteParseBean> parse(String url) async {
     String realUrl = getHttpUrl(url);
     var siteParseBean = emptySiteParseBean;
-    if(realUrl.isEmpty) return siteParseBean;
+    if (realUrl.isEmpty) return siteParseBean;
     // 解析跳转
     List<RegExp> regExpJumpList = [
       // 网站 解析跳转
     ];
     siteParseBean = await parseJumpUrl(regExpJumpList, realUrl);
-    if(siteParseBean.roomId.isNotEmpty) {
+    if (siteParseBean.roomId.isNotEmpty) {
       return siteParseBean;
     }
 
@@ -125,7 +121,7 @@ mixin KuaishouSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, S
       // 快手
       RegExp(r"live\.kuaishou\.com/u/([a-zA-Z0-9]+)$"),
     ];
-    siteParseBean = await parseUrl(regExpBeanList, realUrl, platform);
+    siteParseBean = await parseUrl(regExpBeanList, realUrl, id);
     return siteParseBean;
   }
 

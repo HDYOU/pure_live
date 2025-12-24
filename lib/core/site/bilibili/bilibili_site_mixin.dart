@@ -13,13 +13,12 @@ import 'package:pure_live/core/site/bilibili/bilibili_site.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-mixin BilibiliSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
-  var platform =  Sites.bilibiliSite;
+mixin BilibiliSiteMixin on SiteMixin {
   final Map<String, String> loginHeaders = {
-    'User-Agent':
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/118.0.0.0",
+    'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/118.0.0.0",
     // 'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
   };
+
   /// ------------------ 登录
   @override
   bool isSupportLogin() => true;
@@ -171,14 +170,14 @@ mixin BilibiliSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
   Future<SiteParseBean> parse(String url) async {
     String realUrl = getHttpUrl(url);
     var siteParseBean = emptySiteParseBean;
-    if(realUrl.isEmpty) return siteParseBean;
+    if (realUrl.isEmpty) return siteParseBean;
     // 解析跳转
     List<RegExp> regExpJumpList = [
       // bilibili 网站 解析跳转
       RegExp(r"https?:\/\/b23.tv\/[0-9a-z-A-Z]+")
     ];
     siteParseBean = await parseJumpUrl(regExpJumpList, realUrl);
-    if(siteParseBean.roomId.isNotEmpty) {
+    if (siteParseBean.roomId.isNotEmpty) {
       return siteParseBean;
     }
 
@@ -187,7 +186,7 @@ mixin BilibiliSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
       RegExp(r"bilibili\.com/([\d|\w]+)$"),
       RegExp(r"bilibili\.com/h5/([\d\w]+)$"),
     ];
-    siteParseBean = await parseUrl(regExpBeanList, realUrl, platform);
+    siteParseBean = await parseUrl(regExpBeanList, realUrl, id);
     return siteParseBean;
   }
 

@@ -1,9 +1,7 @@
 import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/core/interface/live_site_mixin.dart';
-import 'package:pure_live/core/sites.dart';
 
-mixin YYSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
-  var platform =  Sites.yySite;
+mixin YYSiteMixin on SiteMixin {
   /// ------------------ 登录
   @override
   bool isSupportLogin() => false;
@@ -30,13 +28,13 @@ mixin YYSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
   Future<SiteParseBean> parse(String url) async {
     String realUrl = getHttpUrl(url);
     var siteParseBean = emptySiteParseBean;
-    if(realUrl.isEmpty) return siteParseBean;
+    if (realUrl.isEmpty) return siteParseBean;
     // 解析跳转
     List<RegExp> regExpJumpList = [
       // 网站 解析跳转
     ];
     siteParseBean = await parseJumpUrl(regExpJumpList, realUrl);
-    if(siteParseBean.roomId.isNotEmpty) {
+    if (siteParseBean.roomId.isNotEmpty) {
       return siteParseBean;
     }
 
@@ -44,7 +42,7 @@ mixin YYSiteMixin on SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse {
       // 虎牙
       RegExp(r"yy\.com/([\d|\w]+)"),
     ];
-    siteParseBean = await parseUrl(regExpBeanList, realUrl, platform);
+    siteParseBean = await parseUrl(regExpBeanList, realUrl, id);
     return siteParseBean;
   }
 }
