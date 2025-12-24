@@ -291,7 +291,7 @@ class YYSite extends LiveSite with YYSiteMixin {
     var qn = quality.data?.toString() ?? '';
     // return quality.playUrlList;
     // 获取直播数据
-    final liveData = await getLiveStreamObj(detail: detail,qn: qn);
+    final liveData = await getLiveStreamObj(detail: detail, qn: qn);
 
     // 解析直播地址
     final avpInfoRes = liveData['avp_info_res'] as Map<String, dynamic>;
@@ -371,27 +371,27 @@ class YYSite extends LiveSite with YYSiteMixin {
 
   @override
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
-    var roomId = detail.roomId ?? "";
-    var userId = detail.userId ?? "";
-    if (userId.isEmpty) {
-      var url = "https://www.yy.com/$roomId";
-      var resultText = await HttpClient.instance.getText(
+    try {
+      var roomId = detail.roomId ?? "";
+      var userId = detail.userId ?? "";
+      if (userId.isEmpty) {
+        var url = "https://www.yy.com/$roomId";
+        var resultText = await HttpClient.instance.getText(
+          url,
+          header: getHeaders(),
+        );
+
+        // var anchorName = RegExp(r'nick: "(.*?)",\n\\s+logo', multiLine: true).firstMatch(resultText)?.group(1) ?? "";
+        // var cid = RegExp(r'sid : "(.*?)",\n\\s+ssid', multiLine: true).firstMatch(resultText)?.group(1) ?? "";
+        var userId = RegExp(r'sid : "(.*?)",\n\\s+ssid', multiLine: true).firstMatch(resultText)?.group(1) ?? "";
+        detail.userId = userId;
+      }
+
+      var url = "https://www.yy.com/api/liveInfoDetail/$roomId/$roomId/$userId";
+      var newResultText = await HttpClient.instance.getJson(
         url,
         header: getHeaders(),
       );
-
-      // var anchorName = RegExp(r'nick: "(.*?)",\n\\s+logo', multiLine: true).firstMatch(resultText)?.group(1) ?? "";
-      // var cid = RegExp(r'sid : "(.*?)",\n\\s+ssid', multiLine: true).firstMatch(resultText)?.group(1) ?? "";
-      var userId = RegExp(r'sid : "(.*?)",\n\\s+ssid', multiLine: true).firstMatch(resultText)?.group(1) ?? "";
-      detail.userId = userId;
-    }
-
-    var url = "https://www.yy.com/api/liveInfoDetail/$roomId/$roomId/$userId";
-    var newResultText = await HttpClient.instance.getJson(
-      url,
-      header: getHeaders(),
-    );
-    try {
       var resultJson = JsonUtil.decode(newResultText);
       if (resultJson["resultCode"] != 0) {
         // 离线状态

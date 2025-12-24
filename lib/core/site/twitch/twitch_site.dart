@@ -384,24 +384,29 @@ class TwitchSite extends LiveSite with TwitchSiteMixin {
 
   @override
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
-    String roomId = detail.roomId!;
-    var queries = _getRoomInfoPersistedRequestList(roomId);
-    var len = queries.length;
-    queries.add(buildPlaybackAccessTokenPersistedRequest(roomId));
-    String requestQuery = "[${queries.map((q) => q.toString()).join(',')}]";
-    // CoreLog.i("twitch-queries:$requestQuery");
-    getRequestHeaders();
-    var response = await getGplResponse(requestQuery);
-    // CoreLog.d("twitch-response:${jsonEncode(response)}");
-    response = (response as List);
-    var sublist = response.sublist(0, len);
-    var otherList = response.sublist(len);
+    try {
+      String roomId = detail.roomId!;
+      var queries = _getRoomInfoPersistedRequestList(roomId);
+      var len = queries.length;
+      queries.add(buildPlaybackAccessTokenPersistedRequest(roomId));
+      String requestQuery = "[${queries.map((q) => q.toString()).join(',')}]";
+      // CoreLog.i("twitch-queries:$requestQuery");
+      getRequestHeaders();
+      var response = await getGplResponse(requestQuery);
+      // CoreLog.d("twitch-response:${jsonEncode(response)}");
+      response = (response as List);
+      var sublist = response.sublist(0, len);
+      var otherList = response.sublist(len);
 
-    var roomInfo = _decodeRoomInfo(sublist);
-    // var roomInfo = await _getRoomInfo(detail.roomId!);
-    var roomDetail = toRoomDetail(roomInfo, detail.roomId!);
-    roomDetail.data = otherList;
-    return roomDetail;
+      var roomInfo = _decodeRoomInfo(sublist);
+      // var roomInfo = await _getRoomInfo(detail.roomId!);
+      var roomDetail = toRoomDetail(roomInfo, detail.roomId!);
+      roomDetail.data = otherList;
+      return roomDetail;
+    } catch(e) {
+      CoreLog.error(e);
+      return getLiveRoomWithError(detail);
+    }
   }
 
   LiveRoom toRoomDetail(List<TwitchResponse> roomInfo, String tmpRoomId) {

@@ -135,18 +135,19 @@ class PandaTvSite extends LiveSite with PandaTvSiteMixin {
 
   @override
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
-    var roomId = detail.roomId ?? "";
-    var url = "https://api.pandalive.co.kr/v1/live/play";
-    var resultText = await HttpClient.instance.postJson(
-      url,
-      formUrlEncoded: true,
-      data: {
-        'userId': roomId,
-        'action': 'watch',
-      },
-      header: getHeaders(),
-    );
     try {
+      var roomId = detail.roomId ?? "";
+      var url = "https://api.pandalive.co.kr/v1/live/play";
+      var resultText = await HttpClient.instance.postJson(
+        url,
+        formUrlEncoded: true,
+        data: {
+          'userId': roomId,
+          'action': 'watch',
+        },
+        header: getHeaders(),
+      );
+
       CoreLog.d("resultText: ${jsonEncode(resultText)}");
       resultText = JsonUtil.decode(resultText);
       if (resultText['result'] != true) {

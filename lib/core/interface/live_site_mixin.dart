@@ -58,9 +58,14 @@ mixin class SiteAccount {
   }
 
   /// web登录请求
-  URLRequest webLoginURLRequest() => URLRequest(headers: {}, url: WebUri(""),);
+  URLRequest webLoginURLRequest() => URLRequest(
+        headers: {},
+        url: WebUri(""),
+      );
 
-  String? webLoginUserAgent() {return null;}
+  String? webLoginUserAgent() {
+    return null;
+  }
 
   /// web登录处理，判断是否成功
   bool webLoginHandle(WebUri? uri) => false;
@@ -74,7 +79,6 @@ mixin class SiteAccount {
   Future<QRBean> pollQRStatus(Site site, QRBean qrBean) async {
     return qrBean;
   }
-
 }
 
 /// 二维码状态
@@ -126,6 +130,7 @@ mixin class SiteOpen {
 // 站点解析
 final emptySiteParseBean = SiteParseBean(roomId: '', platform: '');
 final urlRegExp = RegExp(r"((https?:www\.)|(https?:\/\/)|(www\.))[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9]{1,6}(\/[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)?");
+
 mixin class SiteParse {
   /// 站点解析 url
   Future<SiteParseBean> parse(String url) async {
@@ -145,7 +150,7 @@ mixin class SiteParse {
     for (var i = 0; i < regExpJumpList.length; i++) {
       var regExp = regExpJumpList[i];
       var u = regExp.firstMatch(realUrl)?.group(0) ?? "";
-      if(u != "") {
+      if (u != "") {
         var location = await getHttpResponseLocation(u);
         return await parse(location);
       }
@@ -188,7 +193,6 @@ mixin class SiteParse {
     }
     return "";
   }
-
 }
 
 class SiteParseBean {
@@ -232,12 +236,11 @@ class OtherJumpItem {
 }
 
 /// 跳转
-mixin SiteInfo {
+mixin class SiteInfo {
   String get id => '';
+
   String get name => '';
 }
 
 /// --- 混合所有类
-class SiteMixin with SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, SiteOtherJump, SiteInfo {
-
-}
+class SiteMixin with SiteAccount, SiteVideoHeaders, SiteOpen, SiteParse, SiteOtherJump, SiteInfo {}
