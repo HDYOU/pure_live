@@ -336,7 +336,7 @@ class SoopSite extends LiveSite with SoopSiteMixin {
       // "broad_bps": jsonObj["broad_bps"],
       "viewpreset": jsonObj["VIEWPRESET"],
     };
-    var isLiving = jsonObj["RESULT"] == 1;
+    var isLiving = jsonObj["VIEWPRESET"] != null;
     return LiveRoom(
       cover: cover,
       watching: jsonObj["view_cnt"].toString(),
