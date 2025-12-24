@@ -10,12 +10,11 @@ import 'package:keframe/keframe.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/widgets/utils.dart';
 import 'package:pure_live/core/common/core_log.dart';
+import 'package:pure_live/modules/live_play/widgets/opacity_animation.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
 import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/plugins/extension/string_extension.dart';
-
-import '../slide_animation.dart';
 
 class VideoControllerPanel extends StatefulWidget {
   final VideoController controller;
@@ -380,22 +379,23 @@ Widget showDialogListBody(VideoController controller, RxList<LiveRoom> rooms, {i
           : SizeCacheWidget(
               estimateCount: 20 * 2,
               child: MasonryGridView.count(
-                cacheExtent: 30,
-                padding: const EdgeInsets.all(5),
-                controller: ScrollController(),
-                crossAxisCount: crossAxisCount,
-                itemCount: rooms.length,
-                itemBuilder: (context, index) => FrameSeparateWidget(
-                    index: index,
-                    placeHolder: const SizedBox(width: 220.0, height: 200),
-                    child: SlideTansWidget(child: RoomCard(
-                      room: isReverse ? rooms[rooms.length - 1 - index] : rooms[index],
-                      dense: dense,
-                      onTap: () {
-                        resetRoomInDialog(controller, isReverse ? rooms[rooms.length - 1 - index] : rooms[index], isBottomSheet: isBottomSheet);
-                      },
-                    )),
-              ))),
+                  cacheExtent: 30,
+                  padding: const EdgeInsets.all(5),
+                  controller: ScrollController(),
+                  crossAxisCount: crossAxisCount,
+                  itemCount: rooms.length,
+                  itemBuilder: (context, index) => FrameSeparateWidget(
+                        index: index,
+                        placeHolder: const SizedBox(width: 220.0, height: 200),
+                        child: OpacityTansWidget(
+                            child: RoomCard(
+                          room: isReverse ? rooms[rooms.length - 1 - index] : rooms[index],
+                          dense: dense,
+                          onTap: () {
+                            resetRoomInDialog(controller, isReverse ? rooms[rooms.length - 1 - index] : rooms[index], isBottomSheet: isBottomSheet);
+                          },
+                        )),
+                      ))),
     );
   });
 }

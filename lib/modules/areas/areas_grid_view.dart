@@ -6,8 +6,8 @@ import 'package:pure_live/common/widgets/keep_alive_wrapper.dart';
 import 'package:pure_live/common/widgets/status/app_loadding_widget.dart';
 import 'package:pure_live/model/live_category.dart';
 import 'package:pure_live/modules/areas/areas_list_controller.dart';
+import 'package:pure_live/modules/live_play/widgets/opacity_animation.dart';
 
-import '../live_play/widgets/slide_animation.dart';
 import 'widgets/area_card.dart';
 
 class AreaGridView extends StatefulWidget {
@@ -69,7 +69,8 @@ class _AreaGridViewState extends State<AreaGridView> with SingleTickerProviderSt
                   controller: ScrollController(),
                   crossAxisCount: crossAxisCount,
                   itemCount: category.children.length,
-                  itemBuilder: (context, index) => FrameSeparateWidget(index: index, placeHolder: const SizedBox(width: 220.0, height: 200), child: SlideTansWidget(child: AreaCard(category: category.children[index]))),
+                  itemBuilder: (context, index) =>
+                      FrameSeparateWidget(index: index, placeHolder: const SizedBox(width: 220.0, height: 200), child: OpacityTansWidget(child: AreaCard(category: category.children[index]))),
                 ))
             : EmptyView(
                 icon: Icons.area_chart_outlined,

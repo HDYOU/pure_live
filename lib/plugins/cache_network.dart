@@ -2,6 +2,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/core/common/core_log.dart';
+import 'package:pure_live/modules/live_play/widgets/opacity_animation.dart';
 import 'package:pure_live/plugins/extension/string_extension.dart';
 
 import 'image/extended_image_extension.dart';
@@ -132,7 +133,7 @@ class CacheNetWorkUtils {
           //return null;
           //return state.completedWidget;
           case LoadState.completed:
-            return state.completedWidget;
+            return OpacityTansWidget(child: state.completedWidget,);
           case LoadState.failed:
             return const Icon(
               Icons.image_not_supported_outlined,

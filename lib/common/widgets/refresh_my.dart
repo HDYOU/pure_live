@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:keframe/keframe.dart';
+import 'package:pure_live/modules/live_play/widgets/opacity_animation.dart';
 import 'package:pure_live/modules/util/listen_list_util.dart';
 
-import '../../modules/live_play/widgets/slide_animation.dart';
 import '../base/base_controller.dart';
 import '../l10n/generated/l10n.dart';
 import 'empty_view.dart';
@@ -78,7 +78,8 @@ class _RefreshMyState extends State<RefreshMy> with AutomaticKeepAliveClientMixi
   Widget build(BuildContext context) {
     super.build(context);
     var itemBuilder = widget.itemBuilder ??
-        (context, index) => FrameSeparateWidget(index: index, placeHolder: const SizedBox(width: 220.0, height: 200), child: SlideTansWidget(child: RoomCard(room: widget.pageController.list[index], dense: true)));
+        (context, index) =>
+            FrameSeparateWidget(index: index, placeHolder: const SizedBox(width: 220.0, height: 200), child: OpacityTansWidget(child: RoomCard(room: widget.pageController.list[index], dense: true)));
 
     return LayoutBuilder(builder: (context, constraint) {
       final crossAxisCount = RefreshGridUtil.getCrossAxisCount(constraint);

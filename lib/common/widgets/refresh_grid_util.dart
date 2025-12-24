@@ -7,8 +7,8 @@ import 'package:pure_live/common/base/base_controller.dart';
 import 'package:pure_live/common/l10n/generated/l10n.dart';
 import 'package:pure_live/common/widgets/room_card.dart';
 import 'package:pure_live/common/widgets/status/app_loadding_widget.dart';
+import 'package:pure_live/modules/live_play/widgets/opacity_animation.dart';
 
-import '../../modules/live_play/widgets/slide_animation.dart';
 import 'empty_view.dart';
 import 'refresh_my.dart';
 
@@ -25,7 +25,8 @@ final class RefreshGridUtil {
   }
 
   static Widget buildRoomCardV1(BasePageController controller, {IndexedWidgetBuilder? itemBuilder}) {
-    itemBuilder ??= (context, index) => FrameSeparateWidget(index: index, placeHolder: const SizedBox(width: 220.0, height: 200), child: SlideTansWidget(child: RoomCard(room: controller.list[index], dense: true)));
+    itemBuilder ??= (context, index) =>
+        FrameSeparateWidget(index: index, placeHolder: const SizedBox(width: 220.0, height: 200), child: OpacityTansWidget(child: RoomCard(room: controller.list[index], dense: true)));
     return LayoutBuilder(
       builder: (context, constraint) {
         final crossAxisCount = getCrossAxisCount(constraint);

@@ -2,12 +2,11 @@ import 'package:get/get.dart';
 import 'package:keframe/keframe.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/widgets/refresh_grid_util.dart';
+import 'package:pure_live/modules/live_play/widgets/opacity_animation.dart';
 import 'package:pure_live/modules/search/search_list_controller.dart';
 import 'package:pure_live/plugins/cache_network.dart';
 import 'package:pure_live/plugins/extension/string_extension.dart';
 import 'package:pure_live/routes/app_navigation.dart';
-
-import '../live_play/widgets/slide_animation.dart';
 
 class SearchListView extends StatelessWidget {
   final String tag;
@@ -22,7 +21,7 @@ class SearchListView extends StatelessWidget {
         itemBuilder: (context, index) => FrameSeparateWidget(
             index: index,
             placeHolder: const SizedBox(width: 220.0, height: 200),
-            child: SlideTansWidget(
+            child: OpacityTansWidget(
                 child: RoomCard(
               room: controller.list[index],
               dense: true,
