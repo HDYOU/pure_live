@@ -16,10 +16,10 @@ class SiteWidget {
   }
 
   /// 获取站点 logo Image
-  static Widget getSiteLogo(Site site) {
+  static Widget getSiteLogo(Site site, {double? size}) {
     var iconData = site.iconData;
     if(iconData != null) {
-      return Icon(iconData, color: site.iconDataColor,);
+      return Icon(iconData, color: site.iconDataColor, size: size,);
     }
     return ExtendedImage.asset(
       // key: ValueKey(site.id),
@@ -32,18 +32,18 @@ class SiteWidget {
   }
 
   /// 获取站点 logo Image
-  static Widget? getSiteLogeImage(String siteId) {
+  static Widget? getSiteLogeImage(String siteId, {double? size}) {
     // return siteLogeImageMap[siteId];
-    return getSiteLogo(Sites.of(siteId));
+    return getSiteLogo(Sites.of(siteId), size: size);
   }
 
   /// 获取站点 Tab
-  static Tab getSiteTab(Site site) {
+  static Tab getSiteTab(Site site, {double? size}) {
     return Tab(
       // key: ValueKey(site.id),
       text: Sites.getSiteName(site.id),
       iconMargin: const EdgeInsets.all(0),
-      icon: getSiteLogeImage(site.id),
+      icon: getSiteLogeImage(site.id, size: size),
     );
   }
 

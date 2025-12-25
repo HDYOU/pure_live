@@ -112,7 +112,8 @@ class RoomCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // 平台图标
-                        if(room.platform.isNotNullOrEmpty) SiteWidget.getSiteLogeImage(room.platform!)!,
+                        if(room.platform.isNotNullOrEmpty)
+                          SiteWidget.getSiteLogeImage(room.platform!,size: 20)!,
                         // 录播标志
                         if (room.isRecord == true || room.liveStatus == LiveStatus.replay)
                         Positioned(
@@ -120,9 +121,10 @@ class RoomCard extends StatelessWidget {
                           top: dense ? 0 : 2,
                           child: CountChip(
                             icon: Icons.videocam_rounded,
-                            count: S.current.replay,
+                            count: "",
                             dense: dense,
                             color: Theme.of(context).colorScheme.error,
+                            size: 12,
                           ),
                         ),
                       ],
