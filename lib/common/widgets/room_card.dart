@@ -4,6 +4,9 @@ import 'package:pure_live/modules/util/site_logo_widget.dart';
 import 'package:pure_live/plugins/cache_network.dart';
 import 'package:pure_live/plugins/extension/string_extension.dart';
 import 'package:pure_live/routes/app_navigation.dart';
+import 'package:remixicon/remixicon.dart';
+
+import 'app_style.dart';
 
 // ignore: must_be_immutable
 class RoomCard extends StatelessWidget {
@@ -84,46 +87,106 @@ class RoomCard extends StatelessWidget {
                         : CacheNetWorkUtils.getCacheImageV2(room.cover!, siteKey: room.platform),
                   ),
                 ),
-                if (room.isRecord == true)
-                  // 录播标志
-                  Positioned(
-                    right: dense ? 0 : 2,
-                    top: dense ? 0 : 2,
-                    child: CountChip(
-                      icon: Icons.videocam_rounded,
-                      count: S.current.replay,
-                      dense: dense,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                // 平台图标
+
+                // 图片顶部
                 Positioned(
-                  left: dense ? 5 : 7,
-                  top: dense ? 5 : 7,
-                  child: SiteWidget.getSiteLogeImage(room.platform!)!,
+                  right: 0,
+                  left: 0,
+                  top: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8,
+                    ),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black87,
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // 平台图标
+                        if(room.platform.isNotNullOrEmpty) SiteWidget.getSiteLogeImage(room.platform!)!,
+                        // 录播标志
+                        if (room.isRecord == true || room.liveStatus == LiveStatus.replay)
+                        Positioned(
+                          right: dense ? 0 : 2,
+                          top: dense ? 0 : 2,
+                          child: CountChip(
+                            icon: Icons.videocam_rounded,
+                            count: S.current.replay,
+                            dense: dense,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                // 人气值
-                if (room.liveStatus == LiveStatus.live || room.liveStatus == LiveStatus.replay)
-                  Positioned(
-                    right: dense ? 0 : 2,
-                    bottom: dense ? 0 : 2,
-                    child: CountChip(
-                      icon: Icons.whatshot_rounded,
-                      count: readableCount(readableCountStrToNum(room.watching ?? "0").toString()),
-                      dense: dense,
+
+                // 图片底部
+                Positioned(
+                  right: 0,
+                  left: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8,
+                    ),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black87,
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // 分区信息
+                        Padding(
+                          padding: const EdgeInsets.only(left: 3),
+                          child: Text(
+                            room.area ?? "",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        // 人气值
+                        if (room.liveStatus == LiveStatus.live || room.liveStatus == LiveStatus.replay)
+                        Row(
+                          children: [
+                            const Icon(
+                              Remix.fire_fill,
+                              color: Colors.red,
+                              size: 14,
+                            ),
+                            AppStyle.hGap4,
+                            Text(
+                              readableCount(readableCountStrToNum(room.watching ?? "0").toString()),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                // 分类
-                if (room.area.isNotNullOrEmpty)
-                  Positioned(
-                    left: dense ? 0 : 2,
-                    bottom: dense ? 0 : 2,
-                    child: CountChip(
-                      // icon: Icons.snowshoeing_rounded,
-                      count: room.area ?? "",
-                      dense: dense,
-                    ),
-                  ),
+                ),
               ],
             ),
             ListTile(
@@ -148,6 +211,7 @@ class RoomCard extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: dense ? 12 : 14,
+                  color: Colors.grey,
                 ),
               ),
               trailing: dense
