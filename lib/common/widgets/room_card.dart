@@ -112,20 +112,23 @@ class RoomCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // 平台图标
-                        if(room.platform.isNotNullOrEmpty)
-                          SiteWidget.getSiteLogeImage(room.platform!,size: 20)!,
-                        // 录播标志
-                        if (room.isRecord == true || room.liveStatus == LiveStatus.replay)
-                        Positioned(
-                          right: dense ? 0 : 2,
-                          top: dense ? 0 : 2,
-                          child: CountChip(
-                            icon: Icons.videocam_rounded,
-                            count: "",
-                            dense: dense,
-                            color: Theme.of(context).colorScheme.error,
-                            size: 12,
+                        if (room.platform.isNotNullOrEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 3),
+                            child: SiteWidget.getSiteLogeImage(room.platform!, size: 20)!,
                           ),
+                        Row(
+                          children: [
+                            // 录播标志
+                            if (room.isRecord == true || room.liveStatus == LiveStatus.replay)
+                              CountChip(
+                                icon: Icons.videocam_rounded,
+                                count: "",
+                                dense: dense,
+                                color: Theme.of(context).colorScheme.error,
+                                size: 12,
+                              ),
+                          ],
                         ),
                       ],
                     ),
@@ -168,23 +171,23 @@ class RoomCard extends StatelessWidget {
                         ),
                         // 人气值
                         if (room.liveStatus == LiveStatus.live || room.liveStatus == LiveStatus.replay)
-                        Row(
-                          children: [
-                            const Icon(
-                              Remix.fire_fill,
-                              color: Colors.red,
-                              size: 14,
-                            ),
-                            AppStyle.hGap4,
-                            Text(
-                              readableCount(readableCountStrToNum(room.watching ?? "0").toString()),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.white,
+                          Row(
+                            children: [
+                              const Icon(
+                                Remix.fire_fill,
+                                color: Colors.red,
+                                size: 14,
                               ),
-                            ),
-                          ],
-                        ),
+                              AppStyle.hGap4,
+                              Text(
+                                readableCount(readableCountStrToNum(room.watching ?? "0").toString()),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
@@ -303,7 +306,7 @@ class CountChip extends StatelessWidget {
               Icon(
                 icon,
                 color: Colors.white.withValues(alpha: 0.8),
-                size: size !=null ? size! * 1.2: size,
+                size: size != null ? size! * 1.2 : size,
               ),
             Text(
               count,
