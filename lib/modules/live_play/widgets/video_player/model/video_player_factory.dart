@@ -13,7 +13,7 @@ final class VideoPlayerFactory{
   static List<VideoPlayerInterFace> allVideoPlayerList() {
     var list = <VideoPlayerInterFace>[
       GsyVideoPlay(playerName: "Exo ${S.current.player}", playerType: GsyVideoPlayerType.exo),
-      GsyVideoPlay(playerName: "${S.current.player_system} ${S.current.player}", playerType: GsyVideoPlayerType.sysytem),
+      // GsyVideoPlay(playerName: "${S.current.player_system} ${S.current.player}", playerType: GsyVideoPlayerType.sysytem),
       GsyVideoPlay(playerName: "IJK ${S.current.player}", playerType: GsyVideoPlayerType.ijk),
       GsyVideoPlay(playerName: "${S.current.player_ali} ${S.current.player}", playerType: GsyVideoPlayerType.ali),
       MpvVideoPlay(playerName: "MPV ${S.current.player}",),
