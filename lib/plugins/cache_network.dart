@@ -115,6 +115,11 @@ class CacheNetWorkUtils {
             //   "assets/images/loading.gif",
             //   fit: BoxFit.fitWidth,
             // );
+            return const Icon(
+              Icons.image,
+              color: Colors.grey,
+              size: 24,
+            );
             return Container(
               color: Colors.grey,
             );
@@ -135,6 +140,11 @@ class CacheNetWorkUtils {
           case LoadState.completed:
             return OpacityTansWidget(child: state.completedWidget,);
           case LoadState.failed:
+            return const Icon(
+              Icons.broken_image,
+              color: Colors.grey,
+              size: 24,
+            );
             return const Icon(
               Icons.image_not_supported_outlined,
             );

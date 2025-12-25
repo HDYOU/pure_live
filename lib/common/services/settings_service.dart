@@ -25,6 +25,8 @@ class SettingsService extends GetxController
 {
   static SettingsService get instance => Get.find<SettingsService>();
 
+  var playerShowSuperChat = true.obs;
+
   SettingsService() {
     enableDynamicTheme.listen((bool value) {
       PrefUtil.setBool('enableDynamicTheme', value);

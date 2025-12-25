@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:fvp/fvp.dart';
 import 'package:get/get.dart';
-import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart' as video_player;
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller_panel.dart';
@@ -50,6 +53,7 @@ class FvpVideoPlay extends VideoPlayerInterFace {
       Uri.parse(""),
       videoPlayerOptions: options,
     );
+
     chewieController.value = ChewieController(
       videoPlayerController: videoPlayerController.value,
       autoPlay: false,
@@ -254,6 +258,7 @@ class FvpVideoPlay extends VideoPlayerInterFace {
   Widget getVideoPlayerWidget() {
     try {
       return StreamBuilder(
+          key: controller.playerKey,
           initialData: chewieController.value,
           stream: chewieController.stream,
           builder: (s, d) => d.data == null
@@ -299,5 +304,47 @@ class FvpVideoPlay extends VideoPlayerInterFace {
   @override
   void enableRotation() {
     // chewieController.value.enableRotation();
+  }
+
+  @override
+  Future<void> setVolume(double volume) async {
+    try {
+      // if (player == null) return;
+      final normalized = volume.clamp(0.0, 1.0);
+      videoPlayerController.value.setVolume(normalized);
+    } catch(e) {
+      CoreLog.error(e);
+    }
+  }
+
+  @override
+  Future<Uint8List?> snapshot() async {
+    try {
+      var player = videoPlayerController.value;
+      var mediaInfo = player.getMediaInfo()!;
+      var codec = mediaInfo.video?.firstOrNull?.codec;
+      var width = codec?.width;
+      var height = codec?.height;
+      final Uint8List? rgbaData = await player.snapshot(width: width, height: height);
+
+      if (rgbaData == null || width == null || height == null) {
+        return null;
+      }
+      final completer = Completer<ui.Image>();
+      ui.decodeImageFromPixels(
+        rgbaData,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        completer.complete,
+      );
+      final ui.Image image = await completer.future;
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      return byteData?.buffer.asUint8List();
+
+    } catch (e){
+      CoreLog.w("$e");
+      return null;
+    }
   }
 }

@@ -2,15 +2,18 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:keframe/keframe.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/widgets/utils.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/modules/live_play/widgets/opacity_animation.dart';
+import 'package:pure_live/modules/live_play/widgets/video_player/model/video_play_impl.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
 import 'package:pure_live/plugins/barrage.dart';
@@ -301,6 +304,17 @@ class TopActionBar extends StatelessWidget {
               ),
             ),
 
+            /// 历史记录
+            IconButton(
+              onPressed: () {
+                saveScreenshot(controller.videoPlayer);
+              },
+              icon: const Icon(
+                Icons.photo_camera_outlined,
+                color: Colors.white,
+              ),
+            ),
+
             /// 时间，电池电量信息等
             if (controller.videoPlayer.fullscreenUI) ...[
               const DatetimeInfo(),
@@ -313,6 +327,54 @@ class TopActionBar extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// 截图
+Future saveScreenshot(VideoPlayerInterFace videoPlayer) async {
+  try {
+    SmartDialog.showLoading(msg: "正在保存截图");
+    //检查相册权限,仅iOS需要
+    var permission = await Utils.checkPhotoPermission();
+    if (!permission) {
+      SmartDialog.showToast("没有相册权限");
+      SmartDialog.dismiss(status: SmartStatus.loading);
+      return;
+    }
+
+    Uint8List? pngBytes = await videoPlayer.snapshot();
+    if (pngBytes == null) {
+      SmartDialog.showToast("截图失败,数据为空");
+      SmartDialog.dismiss(status: SmartStatus.loading);
+      return;
+    }
+
+    if (Platform.isIOS || Platform.isAndroid) {
+      await ImageGallerySaverPlus.saveImage(
+        pngBytes,
+        quality: 100,
+      );
+      SmartDialog.showToast("已保存截图至相册");
+    } else {
+      //选择保存文件夹
+      var path = await FilePicker.platform.saveFile(
+        allowedExtensions: ["png"],
+        type: FileType.image,
+        fileName: "${DateTime.now().millisecondsSinceEpoch}.png",
+      );
+      if (path == null) {
+        SmartDialog.showToast("取消保存");
+        SmartDialog.dismiss(status: SmartStatus.loading);
+        return;
+      }
+      await File(path).writeAsBytes(pngBytes);
+      SmartDialog.showToast("已保存截图至 $path");
+    }
+  } catch (e) {
+    CoreLog.logPrint(e);
+    SmartDialog.showToast("截图失败");
+  } finally {
+    SmartDialog.dismiss(status: SmartStatus.loading);
   }
 }
 

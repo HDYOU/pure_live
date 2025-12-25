@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pure_live/common/widgets/app_style.dart';
+import '../app_style.dart';
 
 class SettingsNumber extends StatelessWidget {
   final String title;
@@ -12,17 +12,18 @@ class SettingsNumber extends StatelessWidget {
   final int max;
   final String? displayValue;
   final Function(int)? onChanged;
-  const SettingsNumber(
-      {required this.title,
-      required this.value,
-      required this.max,
-      this.subtitle,
-      this.onChanged,
-      this.step = 1,
-      this.min = 0,
-      this.unit = '',
-      this.displayValue,
-      super.key});
+  const SettingsNumber({
+    required this.title,
+    required this.value,
+    required this.max,
+    this.subtitle,
+    this.onChanged,
+    this.step = 1,
+    this.min = 0,
+    this.unit = '',
+    this.displayValue,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +45,7 @@ class SettingsNumber extends StatelessWidget {
       contentPadding: AppStyle.edgeInsetsL16.copyWith(right: 12),
       trailing: Container(
         decoration: BoxDecoration(
-          color: Colors.grey.withValues(alpha: .1),
+          color: Colors.grey.withAlpha(25),
           borderRadius: AppStyle.radius24,
         ),
         height: 36,
@@ -65,16 +66,15 @@ class SettingsNumber extends StatelessWidget {
               },
               icon: Icon(
                 Icons.remove,
-                color: Get.textTheme.bodyMedium!.color!.withValues(alpha: .6),
+                color: Get.textTheme.bodyMedium!.color!.withAlpha(150),
               ),
             ),
             Text(
               displayValue ?? "$value$unit",
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(color: Colors.grey),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium!.copyWith(color: Colors.grey),
             ),
             IconButton(
               padding: AppStyle.edgeInsetsA4,
@@ -90,17 +90,17 @@ class SettingsNumber extends StatelessWidget {
               },
               icon: Icon(
                 Icons.add,
-                color: Get.textTheme.bodyMedium!.color!.withValues(alpha: .6),
+                color: Get.textTheme.bodyMedium!.color!.withAlpha(150),
               ),
             ),
           ],
         ),
       ),
-      onTap: () => openSilder(context),
+      onTap: () => openSlider(context),
     );
   }
 
-  void openSilder(BuildContext context) {
+  void openSlider(BuildContext context) {
     var newValue = value.obs;
     showModalBottomSheet(
       context: context,

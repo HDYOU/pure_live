@@ -157,6 +157,13 @@ dependencies:
   # 防抖节流
   easy_debounce: ^2.0.3
 #  floating: ^5.0.1 #PIP画中画
+#  lottie: ^3.3.2 #lottie动画
+#  archive: ^4.0.7 #文件压缩
+#  flutter_svg: ^2.0.13
+  image_gallery_saver_plus: ^4.0.1 #图片保存到相册
+#  auto_orientation_v2: ^2.3.6 #屏幕方向
+#  volume_controller: ^3.4.0  #音量控制
+
   webdav_client:
     git:
       url: https://ghfast.top/https://github.com/wgh136/webdav_client

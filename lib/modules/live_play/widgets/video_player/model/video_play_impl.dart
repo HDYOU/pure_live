@@ -52,6 +52,12 @@ abstract class VideoPlayerInterFace {
   /// 销毁
   void dispose();
 
+  /// 截图
+  Future<Uint8List?> snapshot() async {return null;}
+
+  /// 设置音量
+  Future<void> setVolume(double volume);
+
   /// 错误播放
   final hasError = false.obs;
 
@@ -71,7 +77,7 @@ abstract class VideoPlayerInterFace {
   final isWindowFullscreen = false.obs;
 
   /// 是否 销毁全屏
-  bool isDestoried = false;
+  // bool isDestoried = false;
 
   /// 是否 竖屏
   final isVertical = false.obs;

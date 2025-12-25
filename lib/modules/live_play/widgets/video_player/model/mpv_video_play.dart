@@ -43,12 +43,20 @@ class MpvVideoPlay extends VideoPlayerInterFace{
 
   late video_player.VideoController controller;
 
+
+
+
   @override
   void init({required video_player.VideoController controller}) {
     this.controller = controller;
     ListenListUtil.clearStreamSubscriptionList(
         defaultVideoStreamSubscriptionList);
-    player = media_kit.Player();
+    player = media_kit.Player(
+      configuration: media_kit.PlayerConfiguration(
+        title: "Simple Live Player",
+        logLevel: media_kit.MPVLogLevel.error,
+      ),
+    );
     if (player.platform is media_kit.NativePlayer) {
       (player.platform as dynamic)
           .setProperty('cache', 'no'); // --cache=<yes|no|auto>
@@ -141,6 +149,16 @@ class MpvVideoPlay extends VideoPlayerInterFace{
   }
 
   @override
+  Future<Uint8List?> snapshot() async {
+    try {
+      return await player.screenshot();
+    } catch(e) {
+      CoreLog.error(e);
+      return null;
+    }
+  }
+
+  @override
   Future<void> openVideo(String datasource, Map<String, String> headers) async {
     CoreLog.d("play url: $datasource");
     // fix datasource empty error
@@ -221,6 +239,7 @@ class MpvVideoPlay extends VideoPlayerInterFace{
         body: Stack(
           children: [
             Obx(() => media_kit_video.Video(
+                  key: controller.playerKey,
                   controller: mediaPlayerController,
                   fit: SettingsService.instance.videofitArray[controller.videoFitIndex.value].fit,
                   pauseUponEnteringBackgroundMode:
@@ -283,6 +302,17 @@ class MpvVideoPlay extends VideoPlayerInterFace{
       debugPrint(stacktrace.toString());
     }
   }
+
+  @override
+  Future<void> setVolume(double volume) async {
+    try {
+      // if (player == null) return;
+      final normalized = volume.clamp(0.0, 1.0);
+      player.setVolume(normalized);
+    } catch(e) {
+      CoreLog.error(e);
+    }
+  }
 }
 
 class DesktopFullscreen extends StatelessWidget {
@@ -304,6 +334,7 @@ class DesktopFullscreen extends StatelessWidget {
         body: Stack(
           children: [
             Obx(() => media_kit_video.Video(
+                  key: controller.playerKey,
                   controller: mediaPlayerController,
                   fit: SettingsService.instance.videofitArray[controller.videoFitIndex.value].fit,
                   pauseUponEnteringBackgroundMode:

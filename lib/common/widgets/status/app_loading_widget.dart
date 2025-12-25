@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../app_style.dart';
 
-class AppLoaddingWidget extends StatelessWidget {
-  const AppLoaddingWidget({super.key});
+class AppLoadingWidget extends StatelessWidget {
+  const AppLoadingWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

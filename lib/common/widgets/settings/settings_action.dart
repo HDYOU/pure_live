@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pure_live/common/widgets/app_style.dart';
+
+import '../app_style.dart';
 
 class SettingsAction extends StatelessWidget {
   final String title;
@@ -30,7 +31,7 @@ class SettingsAction extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: AppStyle.radius8,
       ),
-      contentPadding: EdgeInsets.all(16).copyWith(right: 8),
+      contentPadding: AppStyle.edgeInsetsL16.copyWith(right: 8),
       subtitle: subtitle == null
           ? null
           : Text(
@@ -43,10 +44,9 @@ class SettingsAction extends StatelessWidget {
           if (value != null)
             Text(
               value!,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(color: Colors.grey),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium!.copyWith(color: Colors.grey),
             ),
           AppStyle.hGap4,
           const Icon(

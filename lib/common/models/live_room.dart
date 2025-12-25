@@ -103,4 +103,6 @@ class LiveRoom {
 
   @override
   int get hashCode => int.parse(roomId!);
+
+  get liveStartTime => null;
 }

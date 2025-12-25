@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pure_live/common/widgets/app_style.dart';
+import '../app_style.dart';
 
 class SettingsMenu<T> extends StatelessWidget {
   final String title;
@@ -22,13 +22,8 @@ class SettingsMenu<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       visualDensity: VisualDensity.compact,
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.bodyLarge,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: AppStyle.radius8,
-      ),
+      title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
+      shape: RoundedRectangleBorder(borderRadius: AppStyle.radius8),
       contentPadding: AppStyle.edgeInsetsL16.copyWith(right: 8),
       subtitle: subtitle == null
           ? null
@@ -41,16 +36,12 @@ class SettingsMenu<T> extends StatelessWidget {
         children: [
           Text(
             valueMap[value]!.tr,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium!
-                .copyWith(color: Colors.grey),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium!.copyWith(color: Colors.grey),
           ),
           AppStyle.hGap4,
-          const Icon(
-            Icons.chevron_right,
-            color: Colors.grey,
-          ),
+          const Icon(Icons.chevron_right, color: Colors.grey),
         ],
       ),
       onTap: () => openMenu(context),
@@ -65,24 +56,26 @@ class SettingsMenu<T> extends StatelessWidget {
       builder: (_) => SafeArea(
         top: false,
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: valueMap.keys
-                .map(
-                  (e) => RadioListTile(
-                    value: e,
-                    groupValue: value,
-                    title: Text(
-                      (valueMap[e]?.tr) ?? "???",
-                      style: Get.textTheme.bodyMedium,
+          child: RadioGroup(
+            groupValue: value,
+            onChanged: (e) {
+              Get.back();
+              onChanged?.call(e as T);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: valueMap.keys
+                  .map(
+                    (e) => RadioListTile(
+                      value: e,
+                      title: Text(
+                        (valueMap[e]?.tr) ?? "???",
+                        style: Get.textTheme.bodyMedium,
+                      ),
                     ),
-                    onChanged: (e) {
-                      Get.back();
-                      onChanged?.call(e as T);
-                    },
-                  ),
-                )
-                .toList(),
+                  )
+                  .toList(),
+            ),
           ),
         ),
       ),

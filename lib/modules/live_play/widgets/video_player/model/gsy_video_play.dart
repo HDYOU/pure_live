@@ -221,6 +221,7 @@ class GsyVideoPlay extends VideoPlayerInterFace {
   Widget getVideoPlayerWidget() {
     try {
       return StreamBuilder(
+          key: controller.playerKey,
           initialData: chewieController.value,
           stream: chewieController.stream,
           builder: (s, d) => d.data == null
@@ -271,6 +272,17 @@ class GsyVideoPlay extends VideoPlayerInterFace {
   @override
   void enableRotation() {
     chewieController.value.enableRotation();
+  }
+
+  @override
+  Future<void> setVolume(double volume) async {
+    try {
+      // if (player == null) return;
+      final normalized = volume.clamp(0.0, 1.0);
+      gsyVideoPlayerController.setVolume(normalized);
+    } catch(e) {
+      CoreLog.error(e);
+    }
   }
 
 }
