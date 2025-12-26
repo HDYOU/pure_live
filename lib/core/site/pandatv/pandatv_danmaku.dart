@@ -11,7 +11,7 @@ class PandaTvDanmaku implements LiveDanmaku {
   WebScoketUtils? webScoketUtils;
 
   @override
-  int heartbeatTime = 20 * 1000; //默认是60s
+  int heartbeatTime = 60 * 1000; //默认是60s
 
   var serverUrl = "wss://chat-ws.neolive.kr/connection/websocket";
 
