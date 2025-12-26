@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:move_to_desktop/move_to_desktop.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/common/services/shaders_service.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/modules/about/widgets/version_dialog.dart';
 import 'package:pure_live/modules/areas/areas_page.dart';
@@ -177,7 +178,8 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  void initByStart(){
+  Future<void> initByStart() async {
+    await ShadersController.instance.copyShadersToExternalDirectory();
     SettingsService.instance.syncData();
   }
 

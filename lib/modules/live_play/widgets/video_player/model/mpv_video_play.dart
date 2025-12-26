@@ -8,7 +8,6 @@ import 'package:media_kit/media_kit.dart' as media_kit;
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/common/services/shaders_service.dart';
-import 'package:pure_live/common/widgets/settings/settings_card_v2.dart';
 import 'package:pure_live/common/widgets/settings/settings_list_item.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/sites.dart';
@@ -315,7 +314,14 @@ class MpvVideoPlay extends VideoPlayerInterFace {
     'Anime4K_Upscale_CNN_x2_S.glsl'
   ];
 
-  static const List<String> superResolutionList = ["关闭", "效率", "质量"];
+  static const Map<String, List<String>?> superResolutionMap = {
+    "关闭": null,
+    "效率": mpvAnime4KShadersLite,
+    "质量": mpvAnime4KShaders,
+  };
+
+  static final List<String> superResolutionList = superResolutionMap.keys.toList();
+  static final List<List<String>?> superResolutionValueList = superResolutionMap.values.toList();
 
   var superResolutionType = 0;
 
@@ -323,28 +329,21 @@ class MpvVideoPlay extends VideoPlayerInterFace {
     var pp = player.platform as media_kit.NativePlayer;
     await pp.waitForPlayerInitialization;
     await pp.waitForVideoControllerInitializationIfAttached;
-    if (type == 2) {
+    superResolutionType = type;
+
+    var superResolutionKey = superResolutionList[superResolutionType];
+    var superResolutionPathList = superResolutionMap[superResolutionKey];
+    CoreLog.d("shadersDirectory: ${ShadersController.instance.shadersDirectory.path}");
+    if (superResolutionPathList == null) {
+      await pp.command(['change-list', 'glsl-shaders', 'clr', '']);
+    } else {
       await pp.command([
         'change-list',
         'glsl-shaders',
         'set',
         Utils.buildShadersAbsolutePath(ShadersController.instance.shadersDirectory.path, mpvAnime4KShadersLite),
       ]);
-      superResolutionType = 2;
-      return;
     }
-    if (type == 3) {
-      await pp.command([
-        'change-list',
-        'glsl-shaders',
-        'set',
-        Utils.buildShadersAbsolutePath(ShadersController.instance.shadersDirectory.path, mpvAnime4KShaders),
-      ]);
-      superResolutionType = 3;
-      return;
-    }
-    await pp.command(['change-list', 'glsl-shaders', 'clr', '']);
-    superResolutionType = 1;
   }
 
   @override

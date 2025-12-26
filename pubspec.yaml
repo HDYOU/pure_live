@@ -296,6 +296,7 @@ flutter:
     # - assets/pure_live_web/
     - assets/js/webmssdk.js
     - assets/js/
+    - assets/shaders/
     # - assets/pure_live_web/assets/
     # - assets/pure_live_web/assets/assets/icons/
     # - assets/pure_live_web/assets/assets/images/
