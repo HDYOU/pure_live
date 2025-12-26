@@ -7,6 +7,7 @@ import 'package:pure_live/core/common/http_client.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/interface/live_site.dart';
 import 'package:pure_live/core/site/cc/cc_danmaku.dart';
+import 'package:pure_live/core/site/live_util.dart';
 import 'package:pure_live/core/sites.dart';
 import 'package:pure_live/model/live_anchor_item.dart';
 import 'package:pure_live/model/live_category.dart';
@@ -48,8 +49,7 @@ class CCSite extends LiveSite with CCSiteMixin {
     return categories;
   }
 
-  final String kUserAgent =
-      "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36 Edg/117.0.0.0";
+  final String kUserAgent = "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36 Edg/117.0.0.0";
 
   Future<List<LiveArea>> getSubCategores(LiveCategory liveCategory) async {
     var result = await HttpClient.instance.getJson("https://api.cc.163.com/v1/wapcc/gamecategory", queryParameters: {
@@ -101,50 +101,81 @@ class CCSite extends LiveSite with CCSiteMixin {
     return LiveCategoryResult(hasMore: hasMore, items: items);
   }
 
+  String getPlayQuality(String key) {
+    var reflect = {
+      'blueray': '蓝光',
+      'original': '原画',
+      'low': '低清',
+      'standard': '标准',
+      'medium': '普清',
+      'high': '高清',
+      'ultra': '超清',
+    };
+    return reflect[key] ?? '原画';
+  }
+
   @override
   Future<List<LivePlayQuality>> getPlayQualites({required LiveRoom detail}) {
     List<LivePlayQuality> qualities = <LivePlayQuality>[];
-    var reflect = {
-      'blueray': '原画',
-      'original': '原画',
-      'high': '高清',
-      'medium': '标准',
-      'standard': '标准',
-      'low': '低清',
-      'ultra': '蓝光',
-    };
 
-    List<LivePlayQualityPlayUrlInfo> playUrlList = [];
+    var roomInfo = detail.data as Map;
+    var priorityDefault = ['hs', 'ks', 'ali', 'fws', 'wy'];
+    var priority = (roomInfo["quickplay"]?["priority"] ?? priorityDefault) as List;
 
-    var priority = ['hs', 'ks', 'ali', 'fws', 'wy'];
-    bool isLiveStream = detail.data['resolution'] == null;
-    Map qulityList = isLiveStream ? detail.data : detail.data['resolution'];
-    qulityList.forEach((key, value) {
-      Map cdn = isLiveStream ? value['CDN_FMT'] : value['cdn'];
-      List<String> lines = [];
-      cdn.forEach((line, lineValue) {
-        if (priority.contains(line) || true) {
-          var url = lineValue.toString();
-          if (isLiveStream) {
-            url = '${detail.link!}&$lineValue';
-          } else {
-            lines.add(lineValue.toString());
-          }
-          lines.add(url);
-          playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: url, info: "($line)"));
+    var resolution = roomInfo["quickplay"]?['resolution'] ?? {};
+    var qualityVbrMap = <int, String>{};
+    resolution.forEach((key, value) {
+      Map cdn = value['cdn'];
+      var vbr = value['vbr'];
+      qualityVbrMap[vbr] = key;
+      var livePlayQuality = LivePlayQuality(quality: getPlayQuality(key), sort: vbr, bitRate: vbr);
+      qualities.add(livePlayQuality);
+      cdn.forEach((line, url) {
+        if (priority.contains(line)) {
+          livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: url, info: "($line)"));
         }
       });
-      var qualityItem = LivePlayQuality(
-        quality: reflect[key]!,
-        sort: value['vbr'],
-        data: lines,
-        bitRate: value['vbr'] ?? 0,
-      );
-
-      qualityItem.playUrlList = playUrlList;
-
-      qualities.add(qualityItem);
     });
+
+    // stream_list
+    var streamList = roomInfo["stream_list"] ?? {};
+    var streamNameMap = {};
+    streamList.forEach((key, value) {
+      var vbr = value['vbr'];
+      var streamname = value['streamname'];
+      streamNameMap[streamname] = {"vbr": vbr, "key": key};
+    });
+
+    void setM3u8Url(String m3u8, int vbr) {
+      if (m3u8.isNotNullOrEmpty && m3u8.contains(".m3u8")) {
+        var key = qualityVbrMap[vbr] ?? "original";
+        var info = "";
+        for (var streamname in streamNameMap.keys) {
+          if (m3u8.contains(streamname)) {
+            var value = streamNameMap[streamname];
+            vbr = value['vbr'];
+            key = value['key'];
+            info = priority.firstWhere((e) => m3u8.contains(e)) ?? "";
+            info = "($info)";
+            break;
+          }
+        }
+        var livePlayQuality = LivePlayQuality(quality: getPlayQuality(key), sort: vbr, bitRate: vbr);
+        qualities.add(livePlayQuality);
+        livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: m3u8, info: info));
+      }
+    }
+
+    var keys = qualityVbrMap.keys.toList();
+    keys.sort((a, b) => b.compareTo(a));
+    if (keys.isNotEmpty) {
+      var max = keys[0];
+      var min = keys[keys.length - 1];
+      setM3u8Url((roomInfo["m3u8"] ?? "").toString(), min);
+      setM3u8Url((roomInfo["sharefile"] ?? "").toString(), max);
+    }
+
+    qualities = LiveUtil.combineLivePlayQuality(qualities);
     qualities.sort((a, b) => b.sort.compareTo(a.sort));
 
     return Future.value(qualities);
@@ -204,7 +235,7 @@ class CCSite extends LiveSite with CCSiteMixin {
       var gameType = roomInfo["gametype"];
       var channelId = roomInfo["channelid"];
       var cclId = roomInfo["ccid"];
-      CCDanmakuArgs args = CCDanmakuArgs(roomId: cclId, channelId: channelId,gameType: gameType);
+      CCDanmakuArgs args = CCDanmakuArgs(roomId: cclId, channelId: channelId, gameType: gameType);
       return LiveRoom(
         cover: roomInfo["cover"],
         watching: roomInfo["follower_num"].toString(),
@@ -220,7 +251,7 @@ class CCSite extends LiveSite with CCSiteMixin {
         platform: Sites.ccSite,
         link: roomInfo['m3u8'],
         userId: roomInfo['cid'].toString(),
-        data: roomInfo["quickplay"] ?? roomInfo["stream_list"],
+        data: roomInfo,
         danmakuData: args,
       );
     } catch (e) {
@@ -297,23 +328,22 @@ class CCSite extends LiveSite with CCSiteMixin {
   }
 
   @override
-  Future<List<LiveRoom>> getLiveRoomDetailList(
-      {required List<LiveRoom> list})  async {
-    if(list.isEmpty) {
+  Future<List<LiveRoom>> getLiveRoomDetailList({required List<LiveRoom> list}) async {
+    if (list.isEmpty) {
       return List.empty();
     }
     try {
       Map<String, LiveRoom> map = {};
       var idList = <String>[];
-      for(var room in list) {
+      for (var room in list) {
         var roomId = room.roomId;
-        if(roomId.isNullOrEmpty) {
+        if (roomId.isNullOrEmpty) {
           continue;
         }
         idList.add(roomId!);
         map[roomId] = room;
       }
-      if(idList.isEmpty) {
+      if (idList.isEmpty) {
         return List.empty();
       }
       var roomIds = idList.join(",");
@@ -324,7 +354,7 @@ class CCSite extends LiveSite with CCSiteMixin {
       // CoreLog.d(jsonEncode(values));
 
       var rsList = <LiveRoom>[];
-      for(var roomInfo in values){
+      for (var roomInfo in values) {
         var tmp = LiveRoom(
           cover: roomInfo["cover"],
           watching: roomInfo["follower_num"].toString(),
@@ -346,10 +376,9 @@ class CCSite extends LiveSite with CCSiteMixin {
       }
 
       // 没有数据的 room
-      idList.toSet().difference(keys.toSet())
-      .map( (rid) {
+      idList.toSet().difference(keys.toSet()).map((rid) {
         var liveRoom = map[rid];
-        if(liveRoom != null) {
+        if (liveRoom != null) {
           liveRoom.liveStatus = LiveStatus.offline;
           liveRoom.status = false;
           rsList.add(liveRoom);
@@ -357,16 +386,13 @@ class CCSite extends LiveSite with CCSiteMixin {
       });
       // CoreLog.d(jsonEncode(rsList));
       return rsList;
-    } catch (e)  {
+    } catch (e) {
       CoreLog.error(e);
-      for(var liveRoom in list){
+      for (var liveRoom in list) {
         liveRoom.liveStatus = LiveStatus.offline;
         liveRoom.status = false;
       }
       return list;
     }
   }
-
-
-
 }
