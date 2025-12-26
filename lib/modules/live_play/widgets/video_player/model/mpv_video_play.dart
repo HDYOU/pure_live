@@ -341,7 +341,7 @@ class MpvVideoPlay extends VideoPlayerInterFace {
         'change-list',
         'glsl-shaders',
         'set',
-        Utils.buildShadersAbsolutePath(ShadersController.instance.shadersDirectory.path, mpvAnime4KShadersLite),
+        Utils.buildShadersAbsolutePath(ShadersController.instance.shadersDirectory.path, superResolutionPathList),
       ]);
     }
   }
