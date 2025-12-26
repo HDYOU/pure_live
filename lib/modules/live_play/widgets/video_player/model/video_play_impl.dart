@@ -58,6 +58,9 @@ abstract class VideoPlayerInterFace {
   /// 设置音量
   Future<void> setVolume(double volume);
 
+  /// 播放器其他设置
+  Future<List<Widget>> playerOtherWidgets() => Future.value(<Widget>[]);
+
   /// 错误播放
   final hasError = false.obs;
 

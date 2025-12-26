@@ -7,6 +7,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pure_live/common/l10n/generated/l10n.dart';
 import 'package:pure_live/common/widgets/right_sheet.dart';
@@ -633,5 +634,17 @@ class Utils {
       return "${(size / 1024 / 1024).toStringAsFixed(2)} MB";
     }
     return "${(size / 1024 / 1024 / 1024).toStringAsFixed(2)} GB";
+  }
+
+
+  static String buildShadersAbsolutePath(
+      String baseDirectory, List<String> shaders) {
+    List<String> absolutePaths = shaders.map((shader) {
+      return path.join(baseDirectory, shader);
+    }).toList();
+    if (Platform.isWindows) {
+      return absolutePaths.join(';');
+    }
+    return absolutePaths.join(':');
   }
 }

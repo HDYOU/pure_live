@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
+import 'package:pure_live/common/services/shaders_service.dart';
 import 'package:pure_live/modules/home/home_controller.dart';
 import 'package:pure_live/modules/search/search_controller.dart' as pure_live;
 import 'package:pure_live/modules/site_account/site_account_controller.dart';
@@ -23,6 +24,7 @@ void main(List<String> args) async {
 }
 
 Future<void> initService() async {
+  Get.put(ShadersController());
   Get.put(SettingsService());
   await S.load(SettingsService.languages[SettingsService.instance.languageName.value]!);
   Get.put(AuthController());

@@ -323,6 +323,17 @@ class TopActionBar extends StatelessWidget {
 
             /// 画中画
             if (!controller.videoPlayer.fullscreenUI && controller.videoPlayer.supportPip) PIPButton(controller: controller),
+
+            // 播放器其他设置
+            IconButton(
+              onPressed: () {
+                playerOther(controller.videoPlayer);
+              },
+              icon: const Icon(
+                Icons.more_vert_rounded,
+                color: Colors.white,
+              ),
+            ),
           ]),
         ),
       ),
@@ -376,6 +387,11 @@ Future saveScreenshot(VideoPlayerInterFace videoPlayer) async {
   } finally {
     SmartDialog.dismiss(status: SmartStatus.loading);
   }
+}
+
+// 播放器其他设置
+Future playerOther(VideoPlayerInterFace videoPlayer) async {
+  Utils.showRightOrBottomSheet(title: "播放器设置", child: ListView(physics: const BouncingScrollPhysics(), children: [...await videoPlayer.playerOtherWidgets()]));
 }
 
 /// 重置直播间

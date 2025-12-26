@@ -7,22 +7,24 @@ import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart' as media_kit;
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:pure_live/common/services/settings_service.dart';
+import 'package:pure_live/common/services/shaders_service.dart';
+import 'package:pure_live/common/widgets/settings/settings_card_v2.dart';
+import 'package:pure_live/common/widgets/settings/settings_list_item.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/sites.dart';
-import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart'
-    as video_player;
+import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart' as video_player;
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller_panel.dart';
 import 'package:pure_live/modules/util/listen_list_util.dart';
 import 'package:pure_live/modules/util/rx_util.dart';
 
 import '../../../../../common/services/setting_mixin/setting_video_fit.dart';
+import '../../../../../common/widgets/utils.dart';
 import 'video_play_impl.dart';
 
-class MpvVideoPlay extends VideoPlayerInterFace{
+class MpvVideoPlay extends VideoPlayerInterFace {
   // Video player status
   // A [GlobalKey<VideoState>] is required to access the programmatic fullscreen interface.
-  late GlobalKey<media_kit_video.VideoState> key =
-      GlobalKey<media_kit_video.VideoState>();
+  late GlobalKey<media_kit_video.VideoState> key = GlobalKey<media_kit_video.VideoState>();
 
   // Create a [Player] to control playback.
   late media_kit.Player player;
@@ -33,7 +35,7 @@ class MpvVideoPlay extends VideoPlayerInterFace{
   /// 存储 Stream 流监听
   /// 默认视频 MPV 视频监听流
   final defaultVideoStreamSubscriptionList = <StreamSubscription>[];
-  
+
   @override
   final String playerName;
 
@@ -43,14 +45,10 @@ class MpvVideoPlay extends VideoPlayerInterFace{
 
   late video_player.VideoController controller;
 
-
-
-
   @override
   void init({required video_player.VideoController controller}) {
     this.controller = controller;
-    ListenListUtil.clearStreamSubscriptionList(
-        defaultVideoStreamSubscriptionList);
+    ListenListUtil.clearStreamSubscriptionList(defaultVideoStreamSubscriptionList);
     player = media_kit.Player(
       configuration: media_kit.PlayerConfiguration(
         title: "Simple Live Player",
@@ -58,12 +56,9 @@ class MpvVideoPlay extends VideoPlayerInterFace{
       ),
     );
     if (player.platform is media_kit.NativePlayer) {
-      (player.platform as dynamic)
-          .setProperty('cache', 'no'); // --cache=<yes|no|auto>
-      (player.platform as dynamic).setProperty(
-          'cache-secs', '0'); // --cache-secs=<seconds> with cache but why not.
-      (player.platform as dynamic).setProperty(
-          'demuxer-donate-buffer', 'no'); // --demuxer-donate-buffer==<yes|no>
+      (player.platform as dynamic).setProperty('cache', 'no'); // --cache=<yes|no|auto>
+      (player.platform as dynamic).setProperty('cache-secs', '0'); // --cache-secs=<seconds> with cache but why not.
+      (player.platform as dynamic).setProperty('demuxer-donate-buffer', 'no'); // --demuxer-donate-buffer==<yes|no>
     }
     var conf = media_kit_video.VideoControllerConfiguration(
       enableHardwareAcceleration: SettingsService.instance.enableCodec.value,
@@ -75,45 +70,35 @@ class MpvVideoPlay extends VideoPlayerInterFace{
         enableHardwareAcceleration: SettingsService.instance.enableCodec.value,
       );
     }
-    mediaPlayerController =
-        media_kit_video.VideoController(player, configuration: conf);
-    defaultVideoStreamSubscriptionList
-        .add(mediaPlayerController.player.stream.playing.listen((bool playing) {
+    mediaPlayerController = media_kit_video.VideoController(player, configuration: conf);
+    defaultVideoStreamSubscriptionList.add(mediaPlayerController.player.stream.playing.listen((bool playing) {
       isPlaying.updateValueNotEquate(playing);
     }));
-    defaultVideoStreamSubscriptionList
-        .add(mediaPlayerController.player.stream.error.listen((event) {
+    defaultVideoStreamSubscriptionList.add(mediaPlayerController.player.stream.error.listen((event) {
       if (event.toString().contains('Failed to open')) {
         hasError.updateValueNotEquate(true);
         isBuffering.updateValueNotEquate(false);
         isPlaying.updateValueNotEquate(false);
       }
     }));
-    defaultVideoStreamSubscriptionList
-        .add(mediaPlayerController.player.stream.buffering.listen((e) {
+    defaultVideoStreamSubscriptionList.add(mediaPlayerController.player.stream.buffering.listen((e) {
       isBuffering.updateValueNotEquate(e);
-      CoreLog.d(
-          "isBuffering : $isBuffering  hashcode: ${isBuffering.hashCode}");
+      CoreLog.d("isBuffering : $isBuffering  hashcode: ${isBuffering.hashCode}");
     }));
 
     defaultVideoStreamSubscriptionList.add(player.stream.width.listen((event) {
-      CoreLog.d(
-          'Video width:$event  W:${(player.state.width)}  H:${(player.state.height)}');
-      isVertical.updateValueNotEquate(
-          (player.state.height ?? 9) > (player.state.width ?? 16));
+      CoreLog.d('Video width:$event  W:${(player.state.width)}  H:${(player.state.height)}');
+      isVertical.updateValueNotEquate((player.state.height ?? 9) > (player.state.width ?? 16));
     }));
     defaultVideoStreamSubscriptionList.add(player.stream.height.listen((event) {
-      CoreLog.d(
-          'height:$event  W:${(player.state.width)}  H:${(player.state.height)}');
-      isVertical.updateValueNotEquate(
-          (player.state.height ?? 9) > (player.state.width ?? 16));
+      CoreLog.d('height:$event  W:${(player.state.width)}  H:${(player.state.height)}');
+      isVertical.updateValueNotEquate((player.state.height ?? 9) > (player.state.width ?? 16));
     }));
   }
 
   @override
   void dispose() {
-    ListenListUtil.clearStreamSubscriptionList(
-        defaultVideoStreamSubscriptionList);
+    ListenListUtil.clearStreamSubscriptionList(defaultVideoStreamSubscriptionList);
     if (key.currentState?.isFullscreen() ?? false) {
       key.currentState?.exitFullscreen();
     }
@@ -152,7 +137,7 @@ class MpvVideoPlay extends VideoPlayerInterFace{
   Future<Uint8List?> snapshot() async {
     try {
       return await player.screenshot();
-    } catch(e) {
+    } catch (e) {
       CoreLog.error(e);
       return null;
     }
@@ -197,15 +182,13 @@ class MpvVideoPlay extends VideoPlayerInterFace{
   bool get supportPip => true;
 
   @override
-  List<String> get supportPlatformList =>
-      ["linux", "macos", "windows", "android", "ios"];
+  List<String> get supportPlatformList => ["linux", "macos", "windows", "android", "ios"];
 
   @override
   Widget getVideoPlayerWidget() {
     key = GlobalKey<media_kit_video.VideoState>();
     try {
-      return Obx(() =>
-          media_kit_video.Video(
+      return Obx(() => media_kit_video.Video(
             key: () {
               key = GlobalKey<media_kit_video.VideoState>();
               return key;
@@ -219,13 +202,12 @@ class MpvVideoPlay extends VideoPlayerInterFace{
             aspectRatio: SettingsService.instance.videofitArray[SettingsService.instance.videoFitIndex.value].aspectRatio,
             controls: "" == Sites.iptvSite
                 ? media_kit_video.MaterialVideoControls
-                : (state) =>
-                VideoControllerPanel(
-                  controller: controller,
-                ),
+                : (state) => VideoControllerPanel(
+                      controller: controller,
+                    ),
             onEnterFullscreen: enterNativeFullscreen,
           ));
-    }catch(e) {
+    } catch (e) {
       CoreLog.error(e);
       return Container();
     }
@@ -242,13 +224,11 @@ class MpvVideoPlay extends VideoPlayerInterFace{
                   key: controller.playerKey,
                   controller: mediaPlayerController,
                   fit: SettingsService.instance.videofitArray[controller.videoFitIndex.value].fit,
-                  pauseUponEnteringBackgroundMode:
-                      !SettingsService.instance.enableBackgroundPlay.value,
+                  pauseUponEnteringBackgroundMode: !SettingsService.instance.enableBackgroundPlay.value,
                   // 进入背景模式时暂停
                   resumeUponEnteringForegroundMode: true,
                   // 进入前景模式后恢复
-                  controls: (state) =>
-                      VideoControllerPanel(controller: controller),
+                  controls: (state) => VideoControllerPanel(controller: controller),
                   onEnterFullscreen: enterNativeFullscreen,
                 ))
           ],
@@ -309,17 +289,101 @@ class MpvVideoPlay extends VideoPlayerInterFace{
       // if (player == null) return;
       final normalized = volume.clamp(0.0, 1.0);
       player.setVolume(normalized);
-    } catch(e) {
+    } catch (e) {
       CoreLog.error(e);
     }
+  }
+
+  /// 超分辨率滤镜
+  static const List<String> mpvAnime4KShaders = [
+    'Anime4K_Clamp_Highlights.glsl',
+    'Anime4K_Restore_CNN_VL.glsl',
+    'Anime4K_Upscale_CNN_x2_VL.glsl',
+    'Anime4K_AutoDownscalePre_x2.glsl',
+    'Anime4K_AutoDownscalePre_x4.glsl',
+    'Anime4K_Upscale_CNN_x2_M.glsl'
+  ];
+
+  /// 超分辨率滤镜 (轻量)
+  static const List<String> mpvAnime4KShadersLite = [
+    'Anime4K_Clamp_Highlights.glsl',
+    'Anime4K_Restore_CNN_M.glsl',
+    'Anime4K_Restore_CNN_S.glsl',
+    'Anime4K_Upscale_CNN_x2_M.glsl',
+    'Anime4K_AutoDownscalePre_x2.glsl',
+    'Anime4K_AutoDownscalePre_x4.glsl',
+    'Anime4K_Upscale_CNN_x2_S.glsl'
+  ];
+
+  static const List<String> superResolutionList = ["关闭", "效率", "质量"];
+
+  var superResolutionType = 0;
+
+  Future<void> setShader(int type, {bool synchronized = true}) async {
+    var pp = player.platform as media_kit.NativePlayer;
+    await pp.waitForPlayerInitialization;
+    await pp.waitForVideoControllerInitializationIfAttached;
+    if (type == 2) {
+      await pp.command([
+        'change-list',
+        'glsl-shaders',
+        'set',
+        Utils.buildShadersAbsolutePath(ShadersController.instance.shadersDirectory.path, mpvAnime4KShadersLite),
+      ]);
+      superResolutionType = 2;
+      return;
+    }
+    if (type == 3) {
+      await pp.command([
+        'change-list',
+        'glsl-shaders',
+        'set',
+        Utils.buildShadersAbsolutePath(ShadersController.instance.shadersDirectory.path, mpvAnime4KShaders),
+      ]);
+      superResolutionType = 3;
+      return;
+    }
+    await pp.command(['change-list', 'glsl-shaders', 'clr', '']);
+    superResolutionType = 1;
+  }
+
+  @override
+  Future<List<Widget>> playerOtherWidgets() async {
+    return [
+      SettingsListItem(
+        title: Text("超分辨率"),
+        subtitle: Text("超分辨率,放大视频"),
+        onTap: showSuperResolutionSelectorDialog,
+      ),
+    ];
+  }
+
+  void showSuperResolutionSelectorDialog() {
+    var context = Get.context!;
+    Utils.showRightOrBottomSheet(
+      title: "超分辨率",
+      child: ListView.builder(
+        padding: EdgeInsets.zero,
+        itemCount: superResolutionList.length,
+        itemBuilder: (_, i) {
+          var item = superResolutionList[i];
+          return ListTile(
+            selected: superResolutionType == i,
+            title: Text(item, style: const TextStyle(fontSize: 14)),
+            minLeadingWidth: 16,
+            onTap: () {
+              setShader(i);
+              Navigator.of(context).pop();
+            },
+          );
+        },
+      ),
+    );
   }
 }
 
 class DesktopFullscreen extends StatelessWidget {
-  const DesktopFullscreen(
-      {super.key,
-      required this.controller,
-      required this.mediaPlayerController});
+  const DesktopFullscreen({super.key, required this.controller, required this.mediaPlayerController});
 
   final video_player.VideoController controller;
   final media_kit_video.VideoController mediaPlayerController;
@@ -337,13 +401,11 @@ class DesktopFullscreen extends StatelessWidget {
                   key: controller.playerKey,
                   controller: mediaPlayerController,
                   fit: SettingsService.instance.videofitArray[controller.videoFitIndex.value].fit,
-                  pauseUponEnteringBackgroundMode:
-                      !SettingsService.instance.enableBackgroundPlay.value,
+                  pauseUponEnteringBackgroundMode: !SettingsService.instance.enableBackgroundPlay.value,
                   // 进入背景模式时暂停
                   resumeUponEnteringForegroundMode: true,
                   // 进入前景模式后恢复
-                  controls: (state) =>
-                      VideoControllerPanel(controller: controller),
+                  controls: (state) => VideoControllerPanel(controller: controller),
                 ))
           ],
         ),
