@@ -10,13 +10,16 @@ import 'package:get/get.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:keframe/keframe.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/common/widgets/rx/animated_opacity_rx.dart';
+import 'package:pure_live/common/widgets/rx/animated_positioned_rx.dart';
+import 'package:pure_live/common/widgets/rx/visibility_rx.dart';
+import 'package:pure_live/common/widgets/stream_rx_builder.dart';
 import 'package:pure_live/common/widgets/utils.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/modules/live_play/widgets/opacity_animation.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/model/video_play_impl.dart';
 import 'package:pure_live/modules/live_play/widgets/video_player/video_controller.dart';
 import 'package:pure_live/modules/settings/settings_page.dart';
-import 'package:pure_live/plugins/barrage.dart';
 import 'package:pure_live/plugins/extension/string_extension.dart';
 
 class VideoControllerPanel extends StatefulWidget {
@@ -164,7 +167,7 @@ class _VideoControllerPanelState extends State<VideoControllerPanel> {
                             ),
                             () {
                               CoreLog.d("danmakuController.getWidget ....");
-                              return controller.livePlayController.danmakuController.getWidget(key: UniqueKey());
+                              return controller.livePlayController.danmakuController.getWidget(key: controller.danmuKey);
                             }(),
                             GestureDetector(
                                 onTap: () {
@@ -238,106 +241,117 @@ class ErrorWidget extends StatelessWidget {
 
 // Top action bar widgets
 class TopActionBar extends StatelessWidget {
-  const TopActionBar({
+  TopActionBar({
     super.key,
     required this.controller,
     required this.barHeight,
-  });
+  }) {
+    child = getChild();
+  }
 
   final VideoController controller;
   final double barHeight;
+  late final Widget child;
+
+  Widget getChild() {
+    CoreLog.d("TopActionBar getChild ...");
+    return Container(
+        height: barHeight,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [Colors.transparent, Colors.black45],
+          ),
+        ),
+        child: Row(children: [
+          VisibilityRx(
+            rxValue: controller.videoPlayer.isFullscreen,
+            reverse: true,
+            child: BackButton(controller: controller),
+          ),
+          Expanded(
+            child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: StreamRxBuilder(
+                  rxValue: controller.roomRx.title,
+                  builder: (s, d) => Text(
+                    controller.roomRx.title.value ?? "",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.none),
+                  ),
+                )),
+          ),
+
+          /// 直播中的关注列表
+          IconButton(
+            onPressed: () {
+              // showFavorite(controller);
+              showDialogList(controller, Get.find<FavoriteController>().onlineRooms, isReverse: false, title: S.current.favorites_title);
+            },
+            icon: const Icon(
+              Icons.featured_play_list_outlined,
+              color: Colors.white,
+            ),
+          ),
+
+          /// 历史记录
+          IconButton(
+            onPressed: () {
+              // showHistory(controller);
+              showDialogList(controller, Get.find<SettingsService>().historyRooms, isReverse: true, title: S.current.history);
+            },
+            icon: const Icon(
+              Icons.history,
+              color: Colors.white,
+            ),
+          ),
+
+          /// 历史记录
+          IconButton(
+            onPressed: () {
+              saveScreenshot(controller.videoPlayer);
+            },
+            icon: const Icon(
+              Icons.photo_camera_outlined,
+              color: Colors.white,
+            ),
+          ),
+
+          /// 时间，电池电量信息等
+          if (controller.videoPlayer.fullscreenUI) ...[
+            const DatetimeInfo(),
+            BatteryInfo(controller: controller),
+          ],
+
+          /// 画中画
+          if (!controller.videoPlayer.fullscreenUI && controller.videoPlayer.supportPip) PIPButton(controller: controller),
+
+          // 播放器其他设置
+          IconButton(
+            onPressed: () {
+              playerOther(controller.videoPlayer);
+            },
+            icon: const Icon(
+              Icons.more_vert_rounded,
+              color: Colors.white,
+            ),
+          ),
+        ]));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => AnimatedPositioned(
-        top: (!controller.videoPlayer.isPipMode.value && !controller.showSettting.value && controller.showController.value && !controller.showLocked.value) ? 0 : -barHeight,
-        left: 0,
-        right: 0,
-        height: barHeight,
+    return AnimatedPositionedRx(
+        top: () => controller.isControllerAnimated.value ? 0 : -barHeight,
+        left: () => 0,
+        right: () => 0,
+        height: () => barHeight,
         duration: const Duration(milliseconds: 300),
-        child: Container(
-          height: barHeight,
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [Colors.transparent, Colors.black45],
-            ),
-          ),
-          child: Row(children: [
-            if (controller.videoPlayer.fullscreenUI) BackButton(controller: controller),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  controller.room.title!,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontSize: 16, decoration: TextDecoration.none),
-                ),
-              ),
-            ),
-
-            /// 直播中的关注列表
-            IconButton(
-              onPressed: () {
-                // showFavorite(controller);
-                showDialogList(controller, Get.find<FavoriteController>().onlineRooms, isReverse: false, title: S.current.favorites_title);
-              },
-              icon: const Icon(
-                Icons.featured_play_list_outlined,
-                color: Colors.white,
-              ),
-            ),
-
-            /// 历史记录
-            IconButton(
-              onPressed: () {
-                // showHistory(controller);
-                showDialogList(controller, Get.find<SettingsService>().historyRooms, isReverse: true, title: S.current.history);
-              },
-              icon: const Icon(
-                Icons.history,
-                color: Colors.white,
-              ),
-            ),
-
-            /// 历史记录
-            IconButton(
-              onPressed: () {
-                saveScreenshot(controller.videoPlayer);
-              },
-              icon: const Icon(
-                Icons.photo_camera_outlined,
-                color: Colors.white,
-              ),
-            ),
-
-            /// 时间，电池电量信息等
-            if (controller.videoPlayer.fullscreenUI) ...[
-              const DatetimeInfo(),
-              BatteryInfo(controller: controller),
-            ],
-
-            /// 画中画
-            if (!controller.videoPlayer.fullscreenUI && controller.videoPlayer.supportPip) PIPButton(controller: controller),
-
-            // 播放器其他设置
-            IconButton(
-              onPressed: () {
-                playerOther(controller.videoPlayer);
-              },
-              icon: const Icon(
-                Icons.more_vert_rounded,
-                color: Colors.white,
-              ),
-            ),
-          ]),
-        ),
-      ),
-    );
+        rxValue: controller.isControllerAnimated,
+        child: child);
   }
 }
 
@@ -555,11 +569,13 @@ class _BatteryInfoState extends State<BatteryInfo> {
         ),
         child: /*Center(
           child:*/
-            Obx(() => Text(
-                  '${widget.controller.batteryLevel.value}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 9, decoration: TextDecoration.none),
-                )),
+            StreamRxBuilder(
+                rxValue: widget.controller.batteryLevel,
+                builder: (s, d) => Text(
+                      '${widget.controller.batteryLevel.value}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white, fontSize: 9, decoration: TextDecoration.none),
+                    )),
         // ),
       ),
     );
@@ -610,36 +626,6 @@ class PIPButton extends StatelessWidget {
 
 // Center widgets
 // Center widgets
-class DanmakuViewer extends StatelessWidget {
-  const DanmakuViewer({
-    super.key,
-    required this.danmakuController,
-  });
-
-  final BarrageWallController danmakuController;
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() => Opacity(
-        opacity: SettingsService.instance.hideDanmaku.value ? 0 : SettingsService.instance.danmakuOpacity.value,
-        child: SettingsService.instance.danmakuArea.value == 0.0
-            ? Container()
-            : LayoutBuilder(builder: (context, constraint) {
-                final width = constraint.maxWidth;
-                final height = constraint.maxHeight;
-                return BarrageWall(
-                  width: width,
-                  height: height * SettingsService.instance.danmakuArea.value,
-                  controller: danmakuController,
-                  speed: SettingsService.instance.danmakuSpeed.value.toInt(),
-                  maxBulletHeight: SettingsService.instance.danmakuFontSize * 1.5,
-                  massiveMode: false,
-                  // disabled by default
-                  child: Container(),
-                );
-              })));
-  }
-}
 
 class BrightnessVolumeDargArea extends StatefulWidget {
   const BrightnessVolumeDargArea({
@@ -793,92 +779,108 @@ class BrightnessVolumeDargAreaState extends State<BrightnessVolumeDargArea> {
 }
 
 class LockButton extends StatelessWidget {
-  const LockButton({super.key, required this.controller});
+  LockButton({super.key, required this.controller}) {
+    child = getChild();
+  }
+
+  late Widget child;
+
+  Widget getChild() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: AbsorbPointer(
+        absorbing: !controller.showController.value,
+        child: Container(
+          margin: const EdgeInsets.only(right: 20.0),
+          child: IconButton(
+            onPressed: () => {
+              controller.showLocked.toggle(),
+              if (Platform.isAndroid)
+                {
+                  if (controller.showLocked.value) {controller.videoPlayer.disableRotation()} else {controller.videoPlayer.enableRotation()}
+                }
+            },
+            icon: StreamRxBuilder(
+                rxValue: controller.showLocked,
+                builder: (s, d) => Icon(
+                      controller.showLocked.value ? Icons.lock_rounded : Icons.lock_open_rounded,
+                      size: 28,
+                    )),
+            color: Colors.white,
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.black38,
+              shape: const StadiumBorder(),
+              minimumSize: const Size(50, 50),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   final VideoController controller;
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => AnimatedOpacity(
-          opacity: (!controller.videoPlayer.isPipMode.value && !controller.showSettting.value && controller.videoPlayer.fullscreenUI && controller.showController.value) ? 0.9 : 0.0,
-          duration: const Duration(milliseconds: 300),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: AbsorbPointer(
-              absorbing: !controller.showController.value,
-              child: Container(
-                margin: const EdgeInsets.only(right: 20.0),
-                child: IconButton(
-                  onPressed: () => {
-                    controller.showLocked.toggle(),
-                    if (Platform.isAndroid)
-                      {
-                        if (controller.showLocked.value) {controller.videoPlayer.disableRotation()} else {controller.videoPlayer.enableRotation()}
-                      }
-                  },
-                  icon: Icon(
-                    controller.showLocked.value ? Icons.lock_rounded : Icons.lock_open_rounded,
-                    size: 28,
-                  ),
-                  color: Colors.white,
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black38,
-                    shape: const StadiumBorder(),
-                    minimumSize: const Size(50, 50),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ));
+    return AnimatedOpacityRx(
+      rxValue: controller.isControllerLockButtonAnimated,
+      child: child,
+    );
   }
 }
 
 // Bottom action bar widgets
 class BottomActionBar extends StatelessWidget {
-  const BottomActionBar({
+  BottomActionBar({
     super.key,
     required this.controller,
     required this.barHeight,
-  });
+  }) {
+    child = getChild();
+  }
 
   final VideoController controller;
   final double barHeight;
+  late final Widget child;
+
+  Widget getChild() {
+    return Container(
+      height: barHeight,
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.transparent, Colors.black45],
+        ),
+      ),
+      child: Row(
+        children: <Widget>[
+          PlayPauseButton(controller: controller),
+          RefreshButton(controller: controller),
+          DanmakuButton(controller: controller),
+          FavoriteButton(controller: controller),
+          // if (controller.videoPlayer.isFullscreen.value)
+          SettingsButton(controller: controller),
+          const Spacer(),
+          if (controller.videoPlayer.supportWindowFull && !controller.videoPlayer.isFullscreen.value) ExpandWindowButton(controller: controller),
+          if (!controller.videoPlayer.isWindowFullscreen.value) ExpandButton(controller: controller),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => AnimatedPositioned(
-          bottom: (!controller.videoPlayer.isPipMode.value && !controller.showSettting.value && controller.showController.value && !controller.showLocked.value) ? 0 : -barHeight,
-          left: 0,
-          right: 0,
-          height: barHeight,
-          duration: const Duration(milliseconds: 300),
-          child: Container(
-            height: barHeight,
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black45],
-              ),
-            ),
-            child: Row(
-              children: <Widget>[
-                PlayPauseButton(controller: controller),
-                RefreshButton(controller: controller),
-                DanmakuButton(controller: controller),
-                FavoriteButton(controller: controller),
-                // if (controller.videoPlayer.isFullscreen.value)
-                SettingsButton(controller: controller),
-                const Spacer(),
-                if (controller.videoPlayer.supportWindowFull && !controller.videoPlayer.isFullscreen.value) ExpandWindowButton(controller: controller),
-                if (!controller.videoPlayer.isWindowFullscreen.value) ExpandButton(controller: controller),
-              ],
-            ),
-          ),
-        ));
+    return AnimatedPositionedRx(
+        bottom: () => controller.isControllerAnimated.value ? 0 : -barHeight,
+        left: () => 0,
+        right: () => 0,
+        height: () => barHeight,
+        duration: const Duration(milliseconds: 300),
+        rxValue: controller.isControllerAnimated,
+        child: child);
   }
 }
 
@@ -894,8 +896,9 @@ class PlayPauseButton extends StatelessWidget {
       child: Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(12),
-          child: Obx(
-            () => Icon(
+          child: StreamRxBuilder(
+            rxValue: controller.videoPlayer.isPlaying,
+            builder: (s, d) => Icon(
               controller.videoPlayer.isPlaying.value ? Icons.pause_rounded : Icons.play_arrow_rounded,
               color: Colors.white,
             ),
@@ -937,8 +940,9 @@ class ScreenToggleButton extends StatelessWidget {
         child: Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(12),
-          child: Obx(
-            () => Icon(
+          child: StreamRxBuilder(
+            rxValue: controller.isVertical,
+            builder: (s, d) => Icon(
               controller.isVertical.value ? Icons.crop_landscape : Icons.crop_portrait,
               color: Colors.white,
             ),
@@ -962,10 +966,12 @@ class DanmakuButton extends StatelessWidget {
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(12),
-        child: Obx(() => Icon(
-              SettingsService.instance.hideDanmaku.value ? CustomIcons.danmaku_close : CustomIcons.danmaku_open,
-              color: Colors.white,
-            )),
+        child: StreamRxBuilder(
+            rxValue: SettingsService.instance.hideDanmaku,
+            builder: (s, d) => Icon(
+                  SettingsService.instance.hideDanmaku.value ? CustomIcons.danmaku_close : CustomIcons.danmaku_open,
+                  color: Colors.white,
+                )),
       ),
     );
   }
@@ -1003,20 +1009,22 @@ class ExpandWindowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => controller.toggleWindowFullScreen(),
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(12),
-        child: RotatedBox(
-          quarterTurns: 1,
-          child: Obx(() => Icon(
+        onTap: () => controller.toggleWindowFullScreen(),
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(12),
+          child: RotatedBox(
+            quarterTurns: 1,
+            child: StreamRxBuilder(
+              rxValue: controller.videoPlayer.isWindowFullscreen,
+              builder: (s, d) => Icon(
                 controller.videoPlayer.isWindowFullscreen.value ? Icons.unfold_less_rounded : Icons.unfold_more_rounded,
                 color: Colors.white,
                 size: 26,
-              )),
-        ),
-      ),
-    );
+              ),
+            ),
+          ),
+        ));
   }
 }
 
@@ -1032,11 +1040,13 @@ class ExpandButton extends StatelessWidget {
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(12),
-        child: Obx(() => Icon(
-              controller.videoPlayer.isFullscreen.value ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
-              color: Colors.white,
-              size: 26,
-            )),
+        child: StreamRxBuilder(
+            rxValue: controller.videoPlayer.isFullscreen,
+            builder: (s, d) => Icon(
+                  controller.videoPlayer.isFullscreen.value ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+                  color: Colors.white,
+                  size: 26,
+                )),
       ),
     );
   }
@@ -1057,24 +1067,25 @@ class FavoriteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () {
-          if (isFavorite.value) {
-            settings.removeRoom(controller.room);
-          } else {
-            settings.addRoom(controller.room);
-          }
-          isFavorite.toggle();
-          // setState(() => isFavorite.toggle);
-        },
-        child: Container(
+      onTap: () {
+        if (isFavorite.value) {
+          settings.removeRoom(controller.room);
+        } else {
+          settings.addRoom(controller.room);
+        }
+        isFavorite.toggle();
+        // setState(() => isFavorite.toggle);
+      },
+      child: Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(12),
-          child: Obx(
-            () => Icon(
+          child: StreamRxBuilder(
+            rxValue: isFavorite,
+            builder: (s, d) => Icon(
               !isFavorite.value ? Icons.favorite_outline_outlined : Icons.favorite_rounded,
               color: Colors.white,
             ),
-          ),
-        ));
+          )),
+    );
   }
 }

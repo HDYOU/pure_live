@@ -951,6 +951,7 @@ class LivePlayController extends StateController {
         qualiteName: qualites[currentQuality.value].quality,
         currentLineIndex: currentLineIndex.value,
         currentQuality: currentQuality.value,
+        roomRx: liveRoomRx,
       );
       subscriptionList.add(videoController?.videoPlayer.isFullscreen.listen((e) {
         isFullscreen.updateValueNotEquate(e);

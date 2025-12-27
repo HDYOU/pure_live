@@ -28,7 +28,7 @@ extension WidgetExtension on Widget {
   }
 
   /// 监听数据
-  Widget  listenValue<T extends Rx>(T data) {
+  Widget listenValue<T extends Rx>(T data) {
     return StreamBuilder(
         initialData: data.value,
         stream: data.stream,

@@ -197,9 +197,7 @@ class MpvVideoPlay extends VideoPlayerInterFace {
             aspectRatio: SettingsService.instance.videofitArray[SettingsService.instance.videoFitIndex.value].aspectRatio,
             controls: "" == Sites.iptvSite
                 ? media_kit_video.MaterialVideoControls
-                : (state) => VideoControllerPanel(
-                      controller: controller,
-                    ),
+                : (state) => controller.videoControllerPanel,
             onEnterFullscreen: enterNativeFullscreen,
           ));
     } catch (e) {

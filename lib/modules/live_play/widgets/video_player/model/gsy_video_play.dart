@@ -50,9 +50,7 @@ class GsyVideoPlay extends VideoPlayerInterFace {
       autoPlay: false,
       looping: false,
       draggableProgressBar: false,
-      overlay: VideoControllerPanel(
-        controller: controller,
-      ),
+      overlay: controller.videoControllerPanel,
       showControls: false,
       useRootNavigator: true,
       showOptions: false,

@@ -59,9 +59,7 @@ class FvpVideoPlay extends VideoPlayerInterFace {
       autoPlay: false,
       looping: false,
       draggableProgressBar: false,
-      overlay: VideoControllerPanel(
-        controller: controller,
-      ),
+      overlay: controller.videoControllerPanel,
       showControls: false,
       useRootNavigator: true,
       showOptions: false,
@@ -178,9 +176,7 @@ class FvpVideoPlay extends VideoPlayerInterFace {
       aspectRatio: aspectRatio,
       //视频宽和高比
       draggableProgressBar: true,
-      overlay: VideoControllerPanel(
-        controller: controller,
-      ),
+      overlay: controller.videoControllerPanel,
       showControls: false,
       useRootNavigator: true,
       showOptions: false,

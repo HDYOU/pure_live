@@ -8,9 +8,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/common/models/live_room_rx.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/modules/live_play/live_play_controller.dart';
 import 'package:pure_live/modules/live_play/load_type.dart';
+import 'package:pure_live/modules/util/listen_list_util.dart';
 import 'package:pure_live/modules/util/rx_util.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -23,6 +25,7 @@ import 'video_controller_panel.dart';
 class VideoController with ChangeNotifier {
   final GlobalKey playerKey;
   final LiveRoom room;
+  final LiveRoomRx roomRx;
   final String datasourceType;
   String datasource;
   final bool allowBackgroundPlay;
@@ -31,6 +34,8 @@ class VideoController with ChangeNotifier {
   final bool fullScreenByDefault;
   final bool autoPlay;
   final Map<String, String> headers;
+
+  late final VideoControllerPanel videoControllerPanel;
 
   /// 是否为竖屏直播间
   final videoFitIndex = 0.obs;
@@ -112,6 +117,9 @@ class VideoController with ChangeNotifier {
   // 其他类型 监听流
   final otherStreamSubscriptionList = <StreamSubscription>[];
 
+  // 其他类型 监听流
+  final defaultVideoWorkerList = <Worker>[];
+
   LivePlayController livePlayController;
 
   VideoController({
@@ -129,8 +137,9 @@ class VideoController with ChangeNotifier {
     BoxFit fitMode = BoxFit.contain,
     required this.qualiteName,
     required this.currentLineIndex,
-    required this.currentQuality,
+    required this.currentQuality, required this.roomRx,
   }) {
+    videoControllerPanel = VideoControllerPanel(controller: this,);
     videoFitIndex.value = SettingsService.instance.videoFitIndex.value;
     videoFit.value = SettingsService.instance.videofitArray[videoFitIndex.value].fit;
     // hideDanmaku.value = SettingsService.instance.hideDanmaku.value;
@@ -165,6 +174,9 @@ class VideoController with ChangeNotifier {
 
   late VideoPlayerInterFace videoPlayer;
 
+  var isControllerAnimated = true.obs;
+  var isControllerLockButtonAnimated = false.obs;
+
   void initVideoController() async {
     try {
       brightnessController = ScreenBrightness();
@@ -198,6 +210,17 @@ class VideoController with ChangeNotifier {
         CoreLog.error(e);
       }
     }, time: const Duration(seconds: 2));*/
+
+    defaultVideoWorkerList.add(everAll([videoPlayer.isPipMode, showSettting, showController, showLocked], (s){
+      var flag = (!videoPlayer.isPipMode.value && !showSettting.value && showController.value && !showLocked.value);
+      isControllerAnimated.updateValueNotEquate(flag);
+      CoreLog.d("isControllerAnimated: $isControllerAnimated");
+    }));
+
+    defaultVideoWorkerList.add(everAll([videoPlayer.isPipMode, showSettting, showController, videoPlayer.isFullscreen, videoPlayer.isWindowFullscreen], (s){
+      var flag = (!videoPlayer.isPipMode.value && !showSettting.value && videoPlayer.fullscreenUI && showController.value);
+      isControllerLockButtonAnimated.updateValueNotEquate(flag);
+    }));
 
     otherStreamSubscriptionList.add(showController.listen((p0) {
       if (showController.value) {
@@ -387,28 +410,12 @@ class VideoController with ChangeNotifier {
     notifyListeners();
   }
 
-  void clearStreamSubscription(List<StreamSubscription> list) {
-    for (var s in list) {
-      s.cancel();
-    }
-    list.clear();
-  }
-
-  /// 释放 默认 播放器 Stream 流监听
-  void disposeDefaultVideoStream() {
-    clearStreamSubscription(defaultVideoStreamSubscriptionList);
-  }
-
-  /// 释放 Gsy Stream 流监听
-  void disposeGsyStream() {
-    clearStreamSubscription(gsyStreamSubscriptionList);
-  }
-
   /// 释放 所有 Stream 流监听
   void disposeAllStream() {
-    disposeGsyStream();
-    disposeDefaultVideoStream();
-    clearStreamSubscription(otherStreamSubscriptionList);
+    ListenListUtil.clearStreamSubscriptionList(gsyStreamSubscriptionList);
+    ListenListUtil.clearStreamSubscriptionList(defaultVideoStreamSubscriptionList);
+    ListenListUtil.clearStreamSubscriptionList(otherStreamSubscriptionList);
+    ListenListUtil.clearWorkerList(defaultVideoWorkerList);
     brightnessKey.currentState?.dispose();
   }
 
@@ -542,7 +549,20 @@ class VideoController with ChangeNotifier {
     });
 
     /// 是否 窗口全屏
-    videoPlayer.toggleWindowFullScreen();
+    // videoPlayer.toggleWindowFullScreen();
+    if (Platform.isWindows || Platform.isLinux) {
+      if (!videoPlayer.isWindowFullscreen.value) {
+        Get.to(() => DesktopFullscreen(
+          key: playerKey,
+          widget: videoPlayer.getVideoPlayerWidget(),
+        ));
+      } else {
+        Navigator.of(Get.context!).pop();
+      }
+      videoPlayer.isWindowFullscreen.toggle();
+    } else {
+      throw UnimplementedError('Unsupported Platform');
+    }
     enableController();
     refreshView();
   }
