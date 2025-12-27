@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fl_pip/fl_pip.dart';
 
 // import 'package:floating/floating.dart';
@@ -479,21 +480,11 @@ class LivePlayController extends StateController {
           return liveRoom;
         }
         getVideoSuccess.updateValueNotEquate(true);
-        if (liveRoomRx.platform.value == Sites.iptvSite) {
-          settings.addRoomToHistory(liveRoomRx.toLiveRoom());
-        } else {
-          settings.addRoomToHistory(liveRoom);
 
-          // 更新录播观看人数信息
-          if ((liveRoom.liveStatus == LiveStatus.live && liveRoom.isRecord == true) || liveRoom.liveStatus == LiveStatus.replay) {
-            liveRoom.liveStatus = LiveStatus.replay;
-            liveRoom.recordWatching = liveRoom.watching;
-          }
-          settings.updateRoom(liveRoom);
-          CoreLog.d(jsonEncode(liveRoom));
-          var favoriteController = Get.find<FavoriteController>();
-          favoriteController.syncRooms();
-        }
+        /// 延迟更新
+        EasyThrottle.throttle('play-update-room-throttler', 1000.milliseconds, () {
+          updateLiveRoomToDb(liveRoom);
+        });
 
         // start danmaku server
         List<String> except = ['iptv'];
@@ -528,6 +519,25 @@ class LivePlayController extends StateController {
       return liveRoom;
     }
   }
+
+  /// 更新信息到数据库
+  void updateLiveRoomToDb(LiveRoom liveRoom){
+    if (liveRoomRx.platform.value == Sites.iptvSite) {
+      settings.addRoomToHistory(liveRoomRx.toLiveRoom());
+    } else {
+      settings.addRoomToHistory(liveRoom);
+
+      // 更新录播观看人数信息
+      if ((liveRoom.liveStatus == LiveStatus.live && liveRoom.isRecord == true) || liveRoom.liveStatus == LiveStatus.replay) {
+        liveRoom.liveStatus = LiveStatus.replay;
+        liveRoom.recordWatching = liveRoom.watching;
+      }
+      settings.updateRoom(liveRoom);
+      CoreLog.d(jsonEncode(liveRoom));
+      var favoriteController = Get.find<FavoriteController>();
+      favoriteController.syncRooms();
+    }
+}
 
   bool calcIsLastLine(int line) {
     var lastLine = line + 1;

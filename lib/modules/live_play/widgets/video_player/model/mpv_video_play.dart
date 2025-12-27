@@ -185,13 +185,9 @@ class MpvVideoPlay extends VideoPlayerInterFace {
 
   @override
   Widget getVideoPlayerWidget() {
-    key = GlobalKey<media_kit_video.VideoState>();
     try {
       return Obx(() => media_kit_video.Video(
-            key: () {
-              key = GlobalKey<media_kit_video.VideoState>();
-              return key;
-            }(),
+            key: controller.playerKey,
             controller: mediaPlayerController,
             pauseUponEnteringBackgroundMode: !SettingsService.instance.enableBackgroundPlay.value,
             // 进入背景模式时暂停
