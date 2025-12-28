@@ -131,8 +131,8 @@ class CCSite extends LiveSite with CCSiteMixin {
       var livePlayQuality = LivePlayQuality(quality: getPlayQuality(key), sort: vbr, bitRate: vbr);
       qualities.add(livePlayQuality);
       cdn.forEach((line, url) {
-        if (priority.contains(line)) {
-          livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: url, info: "($line)"));
+        if (priority.contains(line.toString())) {
+          livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: url.toString(), info: "($line)"));
         }
       });
     });
