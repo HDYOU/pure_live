@@ -83,9 +83,9 @@ class HttpClient {
   static Future<rhttp.RhttpCompatibleClient> getCompatibleClient() async {
     return await rhttp.RhttpCompatibleClient.create(
         settings: rhttp.ClientSettings(
-      // dnsSettings: rhttp.DnsSettings.dynamic(resolver: (String host) async {
-      //   return await DnsHelper.lookupARecords(host);
-      // }),
+      dnsSettings: rhttp.DnsSettings.dynamic(resolver: (String host) async {
+        return await DnsHelper.lookupARecords(host);
+      }),
       redirectSettings: rhttp.RedirectSettings.limited(20),
       tlsSettings: rhttp.TlsSettings(
         verifyCertificates: false,

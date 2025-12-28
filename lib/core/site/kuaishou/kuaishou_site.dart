@@ -156,23 +156,27 @@ class KuaishowSite extends LiveSite with KuaishouSiteMixin {
     CoreLog.d("detail.data: ${jsonEncode(detail.data)}");
     var data = (detail.data as Map);
     for (var codeKey in data.keys) {
-      var obj = data[codeKey];
-      var qualityList = obj["adaptationSet"]["representation"];
-      for (var quality in qualityList) {
-        var key = quality["name"];
-        qualityMap.putIfAbsent(key, () {
-          return LivePlayQuality(
-            quality: quality["name"],
-            sort: quality["level"],
-            data: <String>[],
-            bitRate: quality["bitrate"] ?? 0,
-          );
-        });
+      try {
+        var obj = data[codeKey];
+        var qualityList = obj["adaptationSet"]?["representation"] ?? [];
+        for (var quality in qualityList) {
+          var key = quality["name"];
+          qualityMap.putIfAbsent(key, () {
+            return LivePlayQuality(
+              quality: quality["name"],
+              sort: quality["level"],
+              data: <String>[],
+              bitRate: quality["bitrate"] ?? 0,
+            );
+          });
 
-        var livePlayQuality = qualityMap[key]!;
-        var playUrlList = livePlayQuality.data as List<String>;
-        playUrlList.add(quality["url"]);
-        livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: quality["url"], info: "(${M3u8FileUtil.toCodecCode(codeKey)})"));
+          var livePlayQuality = qualityMap[key]!;
+          var playUrlList = livePlayQuality.data as List<String>;
+          playUrlList.add(quality["url"]);
+          livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: quality["url"], info: "(${M3u8FileUtil.toCodecCode(codeKey)})"));
+        }
+      } catch(e){
+        CoreLog.e(e.toString(), StackTrace.current);
       }
     }
     qualities = qualityMap.values.toList();
