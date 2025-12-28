@@ -228,7 +228,11 @@ class KuaishowSite extends LiveSite with KuaishouSiteMixin {
     return LiveCategoryResult(hasMore: hasMore, items: items);
   }
 
+  Set<String> didRegisterSet = {};
   Future registerDid() async {
+    String did = cookieObj['did'] ?? "";
+    if(didRegisterSet.contains(did)) return;
+    didRegisterSet.add(did);
     var res = await HttpClient.instance.postJson('https://log-sdk.ksapisrv.com/rest/wd/common/log/collect/misc2?v=3.9.49&kpn=KS_GAME_LIVE_PC', header: headers, data: misc2dic(cookieObj['did'] ?? ""));
     return res;
   }
@@ -338,7 +342,12 @@ class KuaishowSite extends LiveSite with KuaishouSiteMixin {
 
   @override
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async{
-    return getRoomDetailByWeb(detail: detail);
+    try {
+      return getRoomDetailByWeb(detail: detail);
+    }catch(e) {
+      CoreLog.error(e);
+      return getLiveRoomWithError(detail);
+    }
   }
   Future<LiveRoom> getRoomDetailByWeb({required LiveRoom detail}) async {
     var roomId = detail.roomId ?? "";

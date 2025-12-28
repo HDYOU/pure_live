@@ -1,9 +1,14 @@
 import 'dart:math';
 
-extension ListExtension<T> on List<T> {
+extension ListExtension<T> on List<T>? {
+
+  bool get isNull => this == null;
+  bool get isNullOrEmpty => this == null || this?.isEmpty == true;
+  bool get isNotNullOrEmpty => !isNullOrEmpty;
+
   /// 实现类型 string join
   List<T> joinItem(T item) {
-    List<T> list = this;
+    List<T> list = this ?? <T>[];
     if (list.length <= 1) {
       return list;
     }
@@ -18,7 +23,7 @@ extension ListExtension<T> on List<T> {
 
   /// 切分list
   List<List<T>> subList(int size) {
-    List<T> list = this;
+    List<T> list = this ?? <T>[];
     if (list.isEmpty) {
       return List.empty();
     }

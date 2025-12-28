@@ -51,7 +51,7 @@ class MpvVideoPlay extends VideoPlayerInterFace {
     player = media_kit.Player(
       configuration: media_kit.PlayerConfiguration(
         title: "Simple Live Player",
-        logLevel: media_kit.MPVLogLevel.error,
+        logLevel: media_kit.MPVLogLevel.warn,
       ),
     );
     if (player.platform is media_kit.NativePlayer) {
@@ -74,6 +74,7 @@ class MpvVideoPlay extends VideoPlayerInterFace {
       isPlaying.updateValueNotEquate(playing);
     }));
     defaultVideoStreamSubscriptionList.add(mediaPlayerController.player.stream.error.listen((event) {
+      CoreLog.d("mpv error: ${event}");
       if (event.toString().contains('Failed to open')) {
         hasError.updateValueNotEquate(true);
         isBuffering.updateValueNotEquate(false);
