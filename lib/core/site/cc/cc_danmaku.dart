@@ -11,6 +11,7 @@ import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/common/web_socket_util.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:uuid/uuid.dart';
+import 'package:msgpack_dart/msgpack_dart.dart';
 
 class CCDanmakuArgs {
   int channelId;
@@ -107,7 +108,8 @@ class CCDanmaku implements LiveDanmaku {
     writer.writeUint32LE(0);
     // writer.writeInt(0, 1, endian: Endian.little);
 
-    writer.writeBytes(encodeMap(data));
+
+    writer.writeBytes(serialize(data));
 
     return writer.toBytes();
   }
@@ -253,7 +255,7 @@ class CCDanmaku implements LiveDanmaku {
     writer.writeUint16LE(sid);
     writer.writeUint16LE(cid);
     writer.writeUint32LE(0);
-    writer.writeBytes(encodeMap(data));
+    writer.writeBytes(serialize(data));
     webScoketUtils?.sendMessage(writer.toBytes());
   }
 
@@ -262,7 +264,7 @@ class CCDanmaku implements LiveDanmaku {
     writer.writeUint16LE(6144); // sid
     writer.writeUint16LE(5); // cid
     writer.writeUint32LE(0); // flag
-    writer.writeBytes(encodeMap({}));
+    writer.writeBytes(serialize({}));
     return writer.toBytes();
   }
 

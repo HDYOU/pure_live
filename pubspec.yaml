@@ -163,6 +163,7 @@ dependencies:
   image_gallery_saver_plus: ^4.0.1 #图片保存到相册
 #  auto_orientation_v2: ^2.3.6 #屏幕方向
 #  volume_controller: ^3.4.0  #音量控制
+  msgpack_dart: ^1.0.1  #音量控制
 
   webdav_client:
     git:
