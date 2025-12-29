@@ -7,9 +7,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:pure_live/common/models/live_message.dart';
 import 'package:pure_live/common/utils/color_util.dart';
+import 'package:pure_live/common/utils/js_engine.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/common/web_socket_util.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
+import 'package:pure_live/plugins/extension/dextension.dart';
 import 'package:uuid/uuid.dart';
 import 'package:msgpack_dart/msgpack_dart.dart';
 
@@ -107,7 +109,6 @@ class CCDanmaku implements LiveDanmaku {
     writer.writeUint16LE(cid);
     writer.writeUint32LE(0);
     // writer.writeInt(0, 1, endian: Endian.little);
-
 
     writer.writeBytes(serialize(data));
 
@@ -237,6 +238,7 @@ class CCDanmaku implements LiveDanmaku {
       'client_source': "",
       // 'room_sessid': "",
     };
+
     /// ccsid: 512,
 //                                         cccid: 1,
 //                                         roomId: parseInt(b.a.roomId, 10),
@@ -250,6 +252,7 @@ class CCDanmaku implements LiveDanmaku {
 //                                         client_source: a,
 //                                         room_sessid: s
 
+    heartbeat();
     CoreLog.d("data: $data");
     var writer = BinaryWriter(128);
     writer.writeUint16LE(sid);
@@ -299,35 +302,94 @@ class CCDanmaku implements LiveDanmaku {
 
       // 解析消息体
       final body = data.sublist(8);
-      final decompressed = _decompressIfNeeded(body);
-      final decoder = MessageDecoder(decompressed as Uint8List);
-      final message = decoder.decode() as Map<String, dynamic>;
-
-      CoreLog.d("message: $message");
-      // 根据消息类型处理不同数据结构
-      if (message.containsKey('data') && message['data'] is Map) {
-        final msgList = message['data']['msg_list'] as List<dynamic>;
-        for (final msg in msgList) {
-          onMessage?.call(LiveMessage(
-            type: LiveMessageType.chat,
-            userName: msg[197] as String,
-            message: msg[4] as String,
-            color: Colors.white,
-          ));
-        }
-      } else if (message.containsKey('msg')) {
-        final msg = message['msg'] as List<dynamic>;
-        final nickname = json.decode(msg[7] as String)['nickname'];
-        onMessage?.call(LiveMessage(
-          type: LiveMessageType.chat,
-          userName: nickname,
-          message: msg[4] as String,
-          color: Colors.white,
-        ));
-      }
+      // final decompressed = _decompressIfNeeded(body);
+      // final decoder = MessageDecoder(decompressed as Uint8List);
+      // final message = decoder.decode() as Map<String, dynamic>;
+      var message = deserialize(body);
+      handleMsg(message);
     } catch (e) {
       // print("stack:\n $stack");
       CoreLog.error(e);
+    }
+  }
+
+  void handleMsg(Map message) {
+    try {
+      CoreLog.d("message before: ${message}");
+      CoreLog.d("message: ${jsonEncode(message)}");
+    } catch(e) {CoreLog.w(e.toString());}
+    // 根据消息类型处理不同数据结构
+    if (message.containsKey('usercount')) {
+      var userCount = message['usercount'] ?? 0;
+      onMessage?.call(LiveMessage(
+        type: LiveMessageType.online,
+        data: userCount,
+        color: Colors.white,
+        userName: "",
+        message: "",
+      ));
+      return;
+    }
+    if (message.containsKey('data') && message['data'] is Map) {
+      final msgList = message['data']['msg_list'];
+      if (msgList is List) {
+        for (final msg in msgList) {
+          var userName = (msg["name"] ?? "").toString();
+          var userLevel = (msg["userlevel"] ?? "").toString();
+          var message = (msg["text"] ?? "").toString();
+          if(userName.isNotNullOrEmpty && message.isNotNullOrEmpty) {
+            onMessage?.call(LiveMessage(
+              type: LiveMessageType.chat,
+              userName: userName,
+              userLevel: userLevel,
+              message: msg[4] as String,
+              color: Colors.white,
+            ));
+          }
+        }
+      }
+      return;
+    }
+    if (message.containsKey('msg')) {
+      final msg = message['msg'];
+
+      if (msg is Map) {
+        for (var key in msg.keys) {
+          var value = msg[key];
+          if (value == "reason") {
+            handleChatMsg(key);
+          }
+        }
+        return;
+      }
+
+      if (msg is List) {
+        for (var key in msg) {
+          handleChatMsg(key);
+        }
+        return;
+      }
+
+    }
+  }
+
+  void handleChatMsg(dynamic txt){
+    var sKey = txt.toString();
+    CoreLog.d("sKey: $sKey");
+    var nickname = RegExp(", 197: (.+?), ").firstMatch(sKey)?.group(1) ?? "";
+    var message = RegExp(", 4: (.+?), 5: ").firstMatch(sKey)?.group(1) ?? "";
+    var userLevel = RegExp("\"level\": (\d+),").firstMatch(sKey)?.group(1) ?? "";
+    var fansLevel = RegExp(", 28: (\d+),").firstMatch(sKey)?.group(1) ?? "";
+    if (nickname.isNotNullOrEmpty && message.isNotNullOrEmpty) {
+      onMessage?.call(LiveMessage(
+        type: LiveMessageType.chat,
+        userName: nickname,
+        message: message,
+        userLevel: userLevel,
+        fansLevel: fansLevel,
+        fansName: "遊俠",
+        color: Colors.white,
+      ));
     }
   }
 }

@@ -234,8 +234,7 @@ class CCSite extends LiveSite with CCSiteMixin {
       var roomInfo = values[0];
       var gameType = roomInfo["gametype"];
       var channelId = roomInfo["channelid"];
-      var cclId = roomInfo["ccid"];
-      CCDanmakuArgs args = CCDanmakuArgs(roomId: cclId, channelId: channelId, gameType: gameType);
+      CCDanmakuArgs args = CCDanmakuArgs(roomId: roomInfo["room_id"], channelId: channelId, gameType: gameType);
       return LiveRoom(
         cover: roomInfo["cover"],
         watching: roomInfo["follower_num"].toString(),
