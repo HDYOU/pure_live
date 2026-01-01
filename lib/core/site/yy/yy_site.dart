@@ -1,10 +1,8 @@
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
-import 'package:pure_live/core/danmaku/empty_danmaku.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/interface/live_site.dart';
 import 'package:pure_live/model/live_category.dart';
@@ -18,6 +16,7 @@ import '../../../modules/areas/areas_list_controller.dart';
 import '../../../modules/util/json_util.dart';
 import '../../common/core_log.dart';
 import '../../common/http_client.dart';
+import 'yy_danmaku.dart';
 import 'yy_site_mixin.dart';
 
 class YYSite extends LiveSite with YYSiteMixin {
@@ -45,7 +44,7 @@ class YYSite extends LiveSite with YYSiteMixin {
   List<String> imageExtensions = ['svgz', 'pjp', 'png', 'ico', 'avif', 'tiff', 'tif', 'jfif', 'svg', 'xbm', 'pjpeg', 'webp', 'jpg', 'jpeg', 'bmp', 'gif'];
 
   @override
-  LiveDanmaku getDanmaku() => EmptyDanmaku();
+  LiveDanmaku getDanmaku() => YyDanmaku();
 
   @override
   Future<List<LiveCategory>> getCategores(int page, int pageSize) async {
@@ -397,6 +396,7 @@ class YYSite extends LiveSite with YYSiteMixin {
         // 离线状态
         return getLiveRoomWithError(detail);
       }
+      //CoreLog.d("resultJson: ${jsonEncode(resultJson)}");
       var item = resultJson["data"];
       var roomItem = LiveRoom(
         roomId: item["sid"]?.toString() ?? '',
@@ -410,6 +410,7 @@ class YYSite extends LiveSite with YYSiteMixin {
         liveStatus: LiveStatus.live,
         status: true,
         platform: id,
+        danmakuData: DanmakuArgs(topSid: item["sid"] ?? 0, subSid: item["ssid"] ?? 0),
       );
       return roomItem;
     } catch (e) {
