@@ -379,6 +379,13 @@ class HuyaSite extends LiveSite with HuyaSiteMixin {
       },
     );
     var result = json.decode(resultText);
+
+    var uidRoomIdMap = <dynamic,dynamic>{};
+    var reList = result["response"]["1"]["docs"] ?? [];
+    for (var item in reList) {
+      uidRoomIdMap[item["uid"]] = item["room_id"];
+    }
+
     var items = <LiveRoom>[];
     var queryList = result["response"]["3"]["docs"] ?? [];
     for (var item in queryList) {
@@ -391,8 +398,13 @@ class HuyaSite extends LiveSite with HuyaSiteMixin {
       if (title.isEmpty) {
         title = item["game_roomName"]?.toString() ?? "";
       }
+
+      var roomId = item["room_id"];
+      if(roomId == null || roomId == 0) {
+        roomId = uidRoomIdMap[item["uid"]] ?? 0;
+      }
       var roomItem = LiveRoom(
-        roomId: item["room_id"].toString(),
+        roomId: roomId.toString(),
         title: title,
         cover: cover,
         nick: item["game_nick"].toString(),
@@ -405,7 +417,7 @@ class HuyaSite extends LiveSite with HuyaSiteMixin {
       );
       items.add(roomItem);
     }
-    return LiveSearchRoomResult(hasMore: queryList.length > 0, items: items);
+    return LiveSearchRoomResult(hasMore: queryList.length >= 20, items: items);
   }
 
   @override
