@@ -31,8 +31,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
   LiveDanmaku getDanmaku() => EmptyDanmaku();
 
   static const defaultUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36";
-  static const baseUrl = "https://www.pandalive.co.kr";
-  static const String apiUrl = "https://api.pandalive.co.kr";
+  static const baseUrl = "https://www.stripchat.com";
 
   Map<String, String> getHeaders() {
     return {
@@ -189,6 +188,9 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
 
   LiveRoom parseToLiveRoom(Map jsonObj) {
     var isLive = jsonObj["isLive"] ?? false;
+    if(isLive && jsonObj["status"] != "public"){
+      isLive = false;
+    }
     // var startTime = jsonObj["startTime"].toString(); // "startTime": "2025-12-23 11:02:51", "endTime": "0000-00-00 00:00:00",
     var roomId = jsonObj["username"].toString();
     var userId = jsonObj["id"].toString();
