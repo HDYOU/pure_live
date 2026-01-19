@@ -188,8 +188,8 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
 
   LiveRoom parseToLiveRoom(Map jsonObj) {
     var isLive = jsonObj["isLive"] ?? false;
-    if(isLive && jsonObj["status"] != "public"){
-      isLive = false;
+    if(isLive){
+      isLive = jsonObj["status"] == "public";
     }
     // var startTime = jsonObj["startTime"].toString(); // "startTime": "2025-12-23 11:02:51", "endTime": "0000-00-00 00:00:00",
     var roomId = jsonObj["username"].toString();
