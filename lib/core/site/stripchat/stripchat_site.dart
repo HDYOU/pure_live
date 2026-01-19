@@ -206,7 +206,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
       nick: jsonObj["username"].toString(),
       title: (getByKeyList(jsonObj, ["offlineStatus", "groupShowTopic", "topic"])).toString(),
       watching: (getByKeyList(jsonObj, ["favoritedCount", "viewersCount"])).toString(),
-      cover: cover.toString().replaceFirst("https://", "https://i2.wp.com/"),,
+      cover: cover.toString().replaceFirst("https://", "https://i2.wp.com/"),
       avatar: (getByKeyList(jsonObj, ["previewUrlThumbSmall"])).toString().replaceFirst("https://", "https://i2.wp.com/"),
       // ivsThumbnail
       area: '',
