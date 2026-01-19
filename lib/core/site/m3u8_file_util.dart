@@ -125,6 +125,7 @@ final class M3u8FileUtil {
       720: 2000,
       480: 1000,
       360: 500,
+      240: 350,
       160: 250,
     };
     var num = resolutionNum;

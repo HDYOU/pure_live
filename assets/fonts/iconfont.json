@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "33909765",
+      "name": "stripchat",
+      "font_class": "stripchat-copy",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    },
+    {
       "icon_id": "11983519",
       "name": "youtube",
       "font_class": "youtube",
