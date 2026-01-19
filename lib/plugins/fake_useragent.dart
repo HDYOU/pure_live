@@ -1,8 +1,8 @@
 import 'dart:math';
 
 class FakeUserAgent {
-  static Map get userAgent => getRandomUserAgent();
-  static Map getRandomUserAgent() {
+  static Map<String, dynamic> get userAgent => getRandomUserAgent();
+  static Map<String, dynamic> getRandomUserAgent() {
     // 获取随机的设备信息
     final macOSDevicesVersion = macOSDevicesVersions[Random().nextInt(macOSDevicesVersions.length)];
     // 获取随机的浏览器版本
@@ -19,7 +19,7 @@ class FakeUserAgent {
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/$chromeVersion Safari/537.36 Edg/$edgeVersion';
     String generateLinuxChromeUa =
         'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/$chromeVersion Safari/537.36';
-    List<Map> userAgents = [];
+    List<Map<String, dynamic>> userAgents = [];
     userAgents.add({
       "userAgent": generateMacChromeUa,
       "device": "macOS",

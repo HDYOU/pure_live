@@ -5,14 +5,13 @@ import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:dio_cache_interceptor_db_store/dio_cache_interceptor_db_store.dart';
 import 'package:dio_compatibility_layer/dio_compatibility_layer.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/core/common/core_error.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/iptv/src/general_utils_object_extension.dart';
+import 'package:pure_live/plugins/extension/dextension.dart';
 import 'package:rhttp/rhttp.dart' as rhttp;
 
-import '../../plugins/dns4flutter/dns_helper.dart';
 import 'custom_dio_cache_interceptor.dart';
 import 'custom_interceptor.dart';
 import 'custom_io_http_client_adapter.dart';
@@ -230,8 +229,17 @@ class HttpClient {
       var string = stackTrace.toString();
       // /twitch_site.dart
       // CoreLog.d("log: ${string}");
-      var siteKeyPattern = RegExp(r"/([^/]+)_site.dart");
-      var siteKey = siteKeyPattern.firstMatch(string)?.group(1) ?? "";
+      var regExpList = [
+        RegExp(r"/([^/]+)_site.dart"),
+        RegExp(r"/([^/]+)_site_mixin.dart"),
+        RegExp(r"/([^/]+)_danmaku.dart"),
+      ];
+      var siteKey = "";
+      for (var regExp in regExpList) {
+        siteKey = regExp.firstMatch(string)?.group(1) ?? "";
+        if(siteKey.isNotNullOrEmpty) break;
+      }
+
       if(siteKey.isNullOrEmpty) {
         CoreLog.w("Not Found Site Key By StackTrace.\n\n$string");
         return "";
@@ -282,6 +290,23 @@ class HttpClient {
     bool formUrlEncoded = false,
     CancelToken? cancel,
   }) async {
+    var result = await post(url,queryParameters: queryParameters,data: data,header: header,formUrlEncoded: formUrlEncoded,cancel: cancel);
+    return result.data;
+  }
+
+  /// Post请求，返回Map
+  /// * [url] 请求链接
+  /// * [queryParameters] 请求参数
+  /// * [data] 内容
+  /// * [cancel] 任务取消Token
+  Future<Response<dynamic>> post(
+      String url, {
+        Map<String, dynamic>? queryParameters,
+        dynamic data,
+        Map<String, dynamic>? header,
+        bool formUrlEncoded = false,
+        CancelToken? cancel,
+      }) async {
     await tryToCancelRequest();
     var cancelToken = cancel ?? CancelToken();
     var cancelTokenKey = getCancelTokenKey();
@@ -301,7 +326,7 @@ class HttpClient {
         ),
         cancelToken: cancelToken,
       );
-      return result.data;
+      return result;
     } catch (e) {
       await handleDioException(e);
       throw CoreError("发送Http请求失败!\n$e");
@@ -391,6 +416,43 @@ class HttpClient {
       if (e.type == DioExceptionType.badResponse) {
         throw CoreError(e.message ?? "", statusCode: e.response?.statusCode ?? 0);
       }
+    }
+  }
+
+  void close() {
+    dio.close();
+  }
+
+  Future<Response<dynamic>> request(
+      String url, {
+        Map<String, dynamic>? queryParameters,
+        dynamic data,
+        Map<String, dynamic>? header,
+        bool formUrlEncoded = false,
+        CancelToken? cancel,
+        Options? options,
+      }) async {
+    await tryToCancelRequest();
+    var cancelToken = cancel ?? CancelToken();
+    var cancelTokenKey = getCancelTokenKey();
+    cancelTokenMap[cancelTokenKey] = cancelToken;
+    try {
+      queryParameters ??= {};
+      header ??= {};
+      data ??= {};
+      var result = await dio.request(
+        proxyUrl(url, queryParameters),
+        queryParameters: queryParameters,
+        data: data,
+        options: options,
+        cancelToken: cancelToken,
+      );
+      return result;
+    } catch (e) {
+      await handleDioException(e);
+      throw CoreError("发送Http请求失败!\n$e");
+    } finally {
+      cancelTokenMap.remove(cancelTokenKey);
     }
   }
 }

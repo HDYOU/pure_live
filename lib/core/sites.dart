@@ -10,6 +10,7 @@ import 'package:pure_live/core/site/juhe/juhe_site.dart';
 import 'package:pure_live/core/site/kuaishou/kuaishou_site.dart';
 import 'package:pure_live/core/site/pandatv/pandatv_site.dart';
 import 'package:pure_live/core/site/soop/soop_site.dart';
+import 'package:pure_live/core/site/youtube/youtube_site.dart';
 import 'package:pure_live/core/site/yy/yy_site.dart';
 
 import '../generated/iconfont.dart';
@@ -33,6 +34,7 @@ class Sites {
   static const String juheSite = "juhe";
   static const String twitchSite = "twitch";
   static const String pandatvSite = "pandatv";
+  static const String youtubeSite = "youtube";
   static List<Site> supportSites = [
     Site(
       id: bilibiliSite,
@@ -128,6 +130,16 @@ class Sites {
       getSiteName: () => "PandaTv",
       // cacheCategory: false,
     ),
+    // Site(
+    //   id: youtubeSite,
+    //   name: "YouTube",
+    //   logo: "assets/images/youtube.png",
+    //   liveSite: YoutubeSite(),
+    //   iconData: IconFont.youtube,
+    //   iconDataColor: Color(0xffff0000),
+    //   getSiteName: () => "YouTube",
+    //   // cacheCategory: false,
+    // ),
     Site(
       id: juheSite,
       name: "聚合",

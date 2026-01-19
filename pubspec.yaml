@@ -165,6 +165,8 @@ dependencies:
 #  volume_controller: ^3.4.0  #音量控制
   msgpack_dart: ^1.0.1  #音量控制
 
+  youtube_explode_dart: ^3.0.5
+
   webdav_client:
     git:
       url: https://ghfast.top/https://github.com/wgh136/webdav_client
