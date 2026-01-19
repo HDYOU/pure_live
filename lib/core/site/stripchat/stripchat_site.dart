@@ -195,7 +195,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
     var snapshotTimestamp = jsonObj["snapshotTimestamp"];
     var cover = "";
     if (snapshotTimestamp != null) {
-      cover = "https:///img.doppiocdn.org/thumbs/$snapshotTimestamp/$userId?r=.jpg";
+      cover = "https://img.doppiocdn.org/thumbs/$snapshotTimestamp/$userId";
     }
 
     // CoreLog.d("cover: ${cover}");
@@ -206,7 +206,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
       nick: jsonObj["username"].toString(),
       title: (getByKeyList(jsonObj, ["offlineStatus", "groupShowTopic", "topic"])).toString(),
       watching: (getByKeyList(jsonObj, ["favoritedCount", "viewersCount"])).toString(),
-      cover: cover.toString(),
+      cover: cover.toString().replaceFirst("https://", "https://i2.wp.com/"),,
       avatar: (getByKeyList(jsonObj, ["previewUrlThumbSmall"])).toString().replaceFirst("https://", "https://i2.wp.com/"),
       // ivsThumbnail
       area: '',
