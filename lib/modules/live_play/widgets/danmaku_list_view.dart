@@ -210,7 +210,7 @@ class MyDanmakuItem extends StatelessWidget {
                     child: Row(children: [
                       Padding(padding: EdgeInsets.all(3)),
                       Text(
-                        danmaku.userLevel,
+                        "Lv." + danmaku.userLevel,
                         textAlign: TextAlign.center, // 居中的子Widget
                         style: TextStyle(
                           color: Colors.white,
