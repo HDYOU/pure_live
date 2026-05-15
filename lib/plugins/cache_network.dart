@@ -100,6 +100,7 @@ class CacheNetWorkUtils {
       // key: ValueKey(imageUrl),
       proxyImageUrl(imageUrl, width: cacheWidth, height: cacheHeight, siteKey: siteKey),
       cache: true,
+      clearMemoryCacheWhenDispose: true,
       fit: fit,
       borderRadius: BorderRadius.all(Radius.circular(radius)),
       shape: shape,
