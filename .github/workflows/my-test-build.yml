@@ -264,7 +264,9 @@ jobs:
 
       # 设置flutter_distributor环境
       - name: Install flutter_distributor
-        run: dart pub global activate flutter_distributor
+        run: |
+          dart pub global activate flutter_distributor
+          flutter pub get
 
       # 打包APK
       - name: Build APK
