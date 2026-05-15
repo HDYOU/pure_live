@@ -89,6 +89,10 @@ class FlutterCatchError {
     PrefUtil.prefs = await SharedPreferences.getInstance();
     MediaKit.ensureInitialized();
 
+    // 全局限制：最多 50 张，总内存 50MB（按设备可微调）
+      PaintingBinding.instance.imageCache.maximumSize = 50;
+      PaintingBinding.instance.imageCache.maximumSizeBytes = 50 << 20; // 50MB
+
     mdk.setGlobalOption("log", LogLevel.warning);
     mdk.setGlobalOption("timeout", 10 * 1000);
 
