@@ -265,7 +265,8 @@ jobs:
       # 设置flutter_distributor环境
       - name: Install flutter_distributor
         run: |
-          dart pub global activate flutter_distributor
+          # dart pub global activate flutter_distributor
+          dart pub global activate fastforge
           flutter pub get
 
       # 打包APK
@@ -275,7 +276,7 @@ jobs:
           cd ${{ env.projcect_path }}
           # flutter build apk --release --split-per-abi
           # flutter_distributor package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform arm,arm64,x64  --skip-clean
-          flutter_distributor package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform android-arm,android-arm64,android-x64  --skip-clean
+          fastforge package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform android-arm,android-arm64,android-x64  --skip-clean
 
       - name: Rename Android TV APK Name
         if: startsWith(matrix.platform,'android-tv')
@@ -290,7 +291,7 @@ jobs:
         run: |
           cd ${{ env.projcect_path }}
           # flutter build ios --release --no-codesign
-          flutter_distributor package --platform ios --skip-clean  --no-codesign
+          fastforge package --platform ios --skip-clean  --no-codesign
 
       #创建未签名ipa
       - name: Create IPA
@@ -308,7 +309,7 @@ jobs:
         if: startsWith(matrix.platform,'macos')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform macos --targets dmg,zip --skip-clean
+          fastforge package --platform macos --targets dmg,zip --skip-clean
 
        # 安装 Linux 依赖
       - name: Install Linux Dependencies
@@ -322,7 +323,7 @@ jobs:
         if: startsWith(matrix.platform,'linux')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform linux --targets deb,zip --skip-clean
+          fastforge package --platform linux --targets deb,zip --skip-clean
 
       # build Windows inno_setup
       # 安装特定版本的 Inno Setup 并添加到环境变量
@@ -351,7 +352,7 @@ jobs:
         if: startsWith(matrix.platform,'windows')
         run: |
           cd ${{ env.projcect_path }}
-          flutter_distributor package --platform windows --targets exe,msix,zip --skip-clean
+          fastforge package --platform windows --targets exe,msix,zip --skip-clean
 
 
       # 打包文件 至 Artifacts
