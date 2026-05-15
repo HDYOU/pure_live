@@ -10,7 +10,7 @@ releases:
           target: apk
           build_args:
             # 只打包常用架构，不打 x86/x86_64
-            target-platform: android-arm,android-arm64,x86_64
+            target-platform: android-arm,android-arm64,android-x64
             # 关键：编译期彻底干掉 web/desktop 代码
             dart-define:
               FLUTTER_WEB: false
