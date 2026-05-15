@@ -1,2 +1,20 @@
 app_name: 'PureLive'
 output: 'dist/'
+
+releases:
+  - name: android-release
+    jobs:
+      - name: build-android-apk
+        package:
+          platform: android
+          target: apk
+          build_args:
+            # 只打包常用架构，不打 x86/x86_64
+            target-platform: android-arm,android-arm64,x86_64
+            # 关键：编译期彻底干掉 web/desktop 代码
+            dart-define:
+              FLUTTER_WEB: false
+              FLUTTER_DESKTOP: false
+            # 混淆+资源压缩
+            release: true
+            obfuscate: true
