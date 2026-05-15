@@ -276,7 +276,8 @@ jobs:
           cd ${{ env.projcect_path }}
           # flutter build apk --release --split-per-abi
           # flutter_distributor package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform arm,arm64,x64  --skip-clean
-          fastforge package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform android-arm,android-arm64,android-x64  --skip-clean
+          # fastforge package --platform android --target apk --flutter-build-args split-per-abi --build-target-platform android-arm,android-arm64,android-x64  --skip-clean
+          fastforge release --name android-release  --skip-clean
 
       - name: Rename Android TV APK Name
         if: startsWith(matrix.platform,'android-tv')
