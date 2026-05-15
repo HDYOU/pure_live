@@ -17,4 +17,4 @@ releases:
               FLUTTER_DESKTOP: false
             # 混淆+资源压缩
             release: true
-            obfuscate: true
+            # obfuscate: true
