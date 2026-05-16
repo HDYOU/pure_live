@@ -80,6 +80,7 @@ class HttpClient {
   }
 
   static Future<rhttp.RhttpCompatibleClient> getCompatibleClient() async {
+    await initHttp();
     return await rhttp.RhttpCompatibleClient.create(
         settings: rhttp.ClientSettings(
       // dnsSettings: rhttp.DnsSettings.dynamic(resolver: (String host) async {
