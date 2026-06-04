@@ -421,7 +421,7 @@ class HttpClient {
   }
 
   void close() {
-    dio.close();
+    // dio.close();
   }
 
   Future<Response<dynamic>> request(
