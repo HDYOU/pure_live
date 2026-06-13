@@ -294,8 +294,8 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     # - assets/
-    - assets/version.json
-    - assets/index.html
+    #- assets/version.json
+    #- assets/index.html
 
     - assets/fonts/
     - assets/icons/
@@ -319,9 +319,9 @@ flutter:
     # - assets/pure_live_web/canvaskit/chromium/
     # - assets/pure_live_web/icons/
     # 👇 只在 Windows 打包这个字体文件
-    - path: assets/PingFangSC.ttf
-      platforms:
-        - windows
+    #- path: assets/PingFangSC.ttf
+    #  platforms:
+    #    - windows
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
@@ -336,9 +336,9 @@ flutter:
     - family: CustomIcons
       fonts:
         - asset: assets/icons/CustomIcons.ttf
-    - family: PingFang
-      fonts:
-        - asset: assets/PingFangSC.ttf
+    #- family: PingFang
+    #  fonts:
+    #    - asset: assets/PingFangSC.ttf
     - family: ComIcon
       fonts:
         - asset: assets/fonts/iconfont.ttf
