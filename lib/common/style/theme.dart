@@ -13,7 +13,7 @@ class MyTheme {
 
   ThemeData get lightThemeData {
     if (Platform.isWindows) {
-      fontFamily = 'PingFang';
+      // fontFamily = 'PingFang';
     }
     return ThemeData(
       useMaterial3: true,
@@ -26,7 +26,7 @@ class MyTheme {
 
   ThemeData get darkThemeData {
     if (Platform.isWindows) {
-      fontFamily = 'PingFang';
+      // fontFamily = 'PingFang';
     }
     return ThemeData(
       useMaterial3: true,
