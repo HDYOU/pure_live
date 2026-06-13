@@ -332,6 +332,8 @@ flutter:
     - family: PingFang
       fonts:
         - asset: assets/PingFangSC.ttf
+          platforms:
+            - windows
     - family: ComIcon
       fonts:
         - asset: assets/fonts/iconfont.ttf
