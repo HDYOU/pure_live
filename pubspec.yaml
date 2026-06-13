@@ -202,8 +202,8 @@ dependencies:
 
 dependency_overrides:
   # 方式：彻底禁用/不使用该依赖（指定不存在版本，或配合约束）
-  flutter_avif_web:
-    version: "none"
+  #flutter_avif_web:
+  #  version: "none"
 
   media_kit:
     git:
