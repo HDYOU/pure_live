@@ -242,6 +242,11 @@ dependency_overrides:
       ref: main
       path: ./libs/macos/media_kit_libs_macos_video
 
+# 不打包
+  flutter_avif_web:
+    version: "0.0.0"
+    enabled: false
+
 
 dev_dependencies:
   flutter_test:
