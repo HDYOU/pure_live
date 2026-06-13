@@ -328,6 +328,8 @@ flutter:
     - family: PingFang
       fonts:
         - asset: assets/PingFangSC.ttf
+          # 只在 Windows 加载
+          windows: true
     - family: ComIcon
       fonts:
         - asset: assets/fonts/iconfont.ttf
