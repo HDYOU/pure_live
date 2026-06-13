@@ -61,6 +61,10 @@ android {
         ndk {
             debugSymbolLevel 'FULL'
         }
+        // 只保留中文 + 默认values（必须保留）
+        resConfigs "zh"
+        // 如需简体/繁体更精准：
+        // resConfigs "zh-rCN", "zh-rTW"
     }
 
     signingConfigs {
