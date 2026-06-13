@@ -1,5 +1,5 @@
 import 'package:pure_live/common/index.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 import 'package:pure_live/plugins/file_recover_utils.dart';
 
 class ScanCodePage extends StatefulWidget {
@@ -10,70 +10,55 @@ class ScanCodePage extends StatefulWidget {
 }
 
 class _ScanCodePageState extends State<ScanCodePage> {
-  MobileScannerController cameraController = MobileScannerController(
-    torchEnabled: true,
-  );
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? controller;
+
   bool hasFound = false;
   bool syncResult = false;
   bool isSuccess = false;
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
+
+  void _onQRViewCreated(QRViewController qrController) {
+    controller = qrController;
+    // 监听扫码数据
+    qrController.scannedDataStream.listen((scanData) async {
+      final code = scanData.code;
+      if (code != null && FileRecoverUtils.isHostUrl(code)) {
+        setState(() {
+          hasFound = true;
+          syncResult = true;
+        });
+        final result = await FileRecoverUtils().recoverSettingsBackup(code);
+        SmartDialog.showToast(result ? '同步成功' : "同步失败");
+        setState(() {
+          isSuccess = result;
+          syncResult = false;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('扫描二维码'),
         actions: [
-          hasFound
-              ? Container()
-              : IconButton(
-                  icon: ValueListenableBuilder(
-                    valueListenable: cameraController,
-                    builder: (context, state, child) {
-                      switch (state.torchState) {
-                        case TorchState.off:
-                          return const Icon(Icons.flash_off, color: Colors.grey);
-                        case TorchState.on:
-                          return const Icon(Icons.flash_on, color: Colors.yellow);
-                        case TorchState.auto:
-                          return IconButton(
-                            color: Colors.white,
-                            iconSize: 32.0,
-                            icon: const Icon(Icons.flash_auto),
-                            onPressed: () async {
-                              await cameraController.toggleTorch();
-                            },
-                          );
-                        case TorchState.unavailable:
-                          return const Icon(
-                            Icons.no_flash,
-                            color: Colors.grey,
-                          );
-                      }
-                    },
-                  ),
-                  iconSize: 20.0,
-                  onPressed: () => cameraController.toggleTorch(),
-                ),
-          hasFound
-              ? Container()
-              : IconButton(
-                  icon: ValueListenableBuilder(
-                    valueListenable: cameraController,
-                    builder: (context, state, child) {
-                      switch (state.cameraDirection) {
-                        case CameraFacing.front:
-                          return const Icon(Icons.camera_front);
-                        case CameraFacing.back:
-                          return const Icon(Icons.camera_rear);
-                        case CameraFacing.external:
-                          return const Icon(Icons.camera_front);
-                        case CameraFacing.unknown:
-                          return const Icon(Icons.camera_rear);
-                      }
-                    },
-                  ),
-                  iconSize: 20.0,
-                  onPressed: () => cameraController.switchCamera(),
-                ),
+          if (!hasFound)
+            IconButton(
+              icon: const Icon(Icons.flash_on),
+              onPressed: () => controller?.toggleFlash(),
+            ),
+          if (!hasFound)
+            IconButton(
+              icon: const Icon(Icons.camera_rear),
+              onPressed: () => controller?.flipCamera(),
+            ),
         ],
       ),
       body: hasFound
@@ -83,9 +68,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircularProgressIndicator(),
-                        SizedBox(
-                          height: 20,
-                        ),
+                        SizedBox(height: 20),
                         Text(
                           "正在同步...",
                           style: TextStyle(
@@ -105,9 +88,7 @@ class _ScanCodePageState extends State<ScanCodePage> {
                             fontSize: 16,
                           ),
                         ),
-                        const SizedBox(
-                          height: 20,
-                        ),
+                        const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
                             setState(() {
@@ -115,30 +96,15 @@ class _ScanCodePageState extends State<ScanCodePage> {
                               syncResult = false;
                               isSuccess = false;
                             });
-                            cameraController = MobileScannerController();
                           },
-                          child: const Text("点击同步"),
+                          child: const Text("重新扫描"),
                         ),
                       ],
-                    ))
-          : MobileScanner(
-              // fit: BoxFit.contain,
-              controller: cameraController,
-              onDetect: (capture) async {
-                final List<Barcode> barcodes = capture.barcodes;
-                if (barcodes.isNotEmpty && FileRecoverUtils.isHostUrl(barcodes[0].rawValue!)) {
-                  setState(() {
-                    hasFound = true;
-                    syncResult = true;
-                  });
-                  final result = await FileRecoverUtils().recoverSettingsBackup(barcodes[0].rawValue!);
-                  SmartDialog.showToast(result ? '同步成功' : "同步失败");
-                  setState(() {
-                    isSuccess = result;
-                    syncResult = false;
-                  });
-                }
-              },
+                    ),
+            )
+          : QRView(
+              key: qrKey,
+              onQRViewCreated: _onQRViewCreated,
             ),
     );
   }
