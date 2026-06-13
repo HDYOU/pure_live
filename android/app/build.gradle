@@ -95,3 +95,10 @@ flutter {
 dependencies {
 
 }
+
+configurations.all {
+    // 排除所有 GMS 相关依赖
+    exclude group: 'com.google.android.gms'
+    exclude group: 'com.google.firebase'
+    exclude group: 'com.google.ads'
+}
