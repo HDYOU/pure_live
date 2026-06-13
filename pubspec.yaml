@@ -311,6 +311,10 @@ flutter:
     # - assets/pure_live_web/canvaskit/
     # - assets/pure_live_web/canvaskit/chromium/
     # - assets/pure_live_web/icons/
+    # 👇 只在 Windows 打包这个字体文件
+    - path: assets/PingFangSC.ttf
+      platforms:
+        - windows
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
@@ -328,8 +332,6 @@ flutter:
     - family: PingFang
       fonts:
         - asset: assets/PingFangSC.ttf
-          # 只在 Windows 加载
-          windows: true
     - family: ComIcon
       fonts:
         - asset: assets/fonts/iconfont.ttf
