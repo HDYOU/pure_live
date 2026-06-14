@@ -182,7 +182,7 @@ class BiliBiliSite extends LiveSite with BilibiliSiteMixin {
 
 
     var txt = jsonEncode(result);
-    var streamReg = RegExp(r"/(live_[_\da-z]+)");
+    var streamReg = RegExp(r"/(live_[_\da-zA-Z]+)");
     var streamSet = streamReg.allMatches(txt).map((e) => e.group(1) ?? "").toSet();
     streamSet.remove("");
     CoreLog.d("streamSet:${jsonEncode(streamSet.toList())}");
