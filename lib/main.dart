@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 import 'package:pure_live/common/services/shaders_service.dart';
+import 'package:pure_live/common/utils/memory_manager.dart';
 import 'package:pure_live/modules/home/home_controller.dart';
 import 'package:pure_live/modules/search/search_controller.dart' as pure_live;
 import 'package:pure_live/modules/site_account/site_account_controller.dart';
@@ -37,6 +38,13 @@ Future<void> initService() async {
   Get.put(SiteAccountController());
   Get.put(HistoryController());
 
+  // 启动内存管理器
+  MemoryManager.instance.startMonitoring();
+  // 设置图片缓存上限
+  MemoryManager.instance.setImageCacheLimits(
+    maxSize: 100, // 最多缓存 100 张图片
+    maxSizeBytes: 100 * 1024 * 1024, // 最多 100MB
+  );
 }
 
 class MyApp extends StatefulWidget {

@@ -102,8 +102,8 @@ class _RefreshMyState extends State<RefreshMy> with AutomaticKeepAliveClientMixi
                 );
               }
               return CustomScrollView(
-                // 增大缓存范围，预渲染更多 item
-                cacheExtent: crossAxisCount * 200,
+                // 合理的缓存范围，避免预渲染过多导致内存增长
+                cacheExtent: 500,
                 controller: scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
