@@ -8,6 +8,22 @@ import 'package:remixicon/remixicon.dart';
 
 import 'app_style.dart';
 
+/// 预定义渐变背景，避免每次构建重新创建
+const _kTopGradient = LinearGradient(
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+  colors: [Colors.black87, Colors.transparent],
+);
+
+const _kBottomGradient = LinearGradient(
+  begin: Alignment.bottomCenter,
+  end: Alignment.topCenter,
+  colors: [Colors.black87, Colors.transparent],
+);
+
+/// 预定义圆角
+const _kCardRadius = BorderRadius.all(Radius.circular(15.0));
+
 // ignore: must_be_immutable
 class RoomCard extends StatelessWidget {
   const RoomCard({
@@ -47,187 +63,138 @@ class RoomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isOffline = room.liveStatus == LiveStatus.offline && room.cover!.isNotEmpty;
+    final showFire = room.liveStatus == LiveStatus.live || room.liveStatus == LiveStatus.replay;
+    final isRecord = room.isRecord == true || room.liveStatus == LiveStatus.replay;
+    
     return Card(
       margin: const EdgeInsets.all(7.5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: _kCardRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(15.0),
-        onTap: () {
-          if (onTap == null) {
-            defaultOnTap(context);
-          } else {
-            onTap!();
-          }
-        },
+        borderRadius: _kCardRadius,
+        onTap: onTap ?? () => defaultOnTap(context),
         onLongPress: () => onLongPress(context),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Card(
-                    margin: const EdgeInsets.all(0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    color: Theme.of(context).focusColor,
-                    elevation: 0,
-                    child: room.liveStatus == LiveStatus.offline && room.cover!.isNotEmpty
-                        ? Center(
-                            child: Icon(
-                              Icons.tv_off_rounded,
-                              size: dense ? 36 : 60,
+            // 使用 RepaintBoundary 隔离图片区域重绘
+            RepaintBoundary(
+              child: Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Card(
+                      margin: const EdgeInsets.all(0),
+                      shape: RoundedRectangleBorder(borderRadius: _kCardRadius),
+                      clipBehavior: Clip.antiAlias,
+                      color: Theme.of(context).focusColor,
+                      elevation: 0,
+                      child: isOffline
+                          ? Center(
+                              child: Icon(Icons.tv_off_rounded, size: dense ? 36 : 60),
+                            )
+                          : CacheNetWorkUtils.getCacheImageV2(
+                              room.cover!,
+                              siteKey: room.platform,
+                              // 增大缓存尺寸，减少解码开销
+                              cacheWidth: dense ? 200 : 300,
+                              cacheHeight: dense ? 112 : 169,
                             ),
-                          )
-                        : CacheNetWorkUtils.getCacheImageV2(room.cover!, siteKey: room.platform),
-                  ),
-                ),
-
-                // 图片顶部
-                Positioned(
-                  right: 0,
-                  left: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8,
                     ),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black87,
-                          Colors.transparent,
+                  ),
+
+                  // 图片顶部渐变
+                  Positioned(
+                    right: 0,
+                    left: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                      decoration: const BoxDecoration(gradient: _kTopGradient),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (room.platform.isNotNullOrEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 3),
+                              child: SiteWidget.getSiteLogeImage(room.platform!, size: 20)!,
+                            ),
+                          if (isRecord)
+                            CountChip(
+                              icon: Icons.videocam_rounded,
+                              count: "",
+                              dense: dense,
+                              color: Theme.of(context).colorScheme.error,
+                              size: 12,
+                            ),
                         ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // 平台图标
-                        if (room.platform.isNotNullOrEmpty)
+                  ),
+
+                  // 图片底部渐变
+                  Positioned(
+                    right: 0,
+                    left: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                      decoration: const BoxDecoration(gradient: _kBottomGradient),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
                           Padding(
                             padding: const EdgeInsets.only(left: 3),
-                            child: SiteWidget.getSiteLogeImage(room.platform!, size: 20)!,
+                            child: Text(
+                              room.area ?? "",
+                              style: const TextStyle(fontSize: 12, color: Colors.white),
+                            ),
                           ),
-                        Row(
-                          children: [
-                            // 录播标志
-                            if (room.isRecord == true || room.liveStatus == LiveStatus.replay)
-                              CountChip(
-                                icon: Icons.videocam_rounded,
-                                count: "",
-                                dense: dense,
-                                color: Theme.of(context).colorScheme.error,
-                                size: 12,
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // 图片底部
-                Positioned(
-                  right: 0,
-                  left: 0,
-                  bottom: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8,
-                    ),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black87,
-                          Colors.transparent,
+                          if (showFire)
+                            Row(
+                              children: [
+                                const Icon(Remix.fire_fill, color: Colors.red, size: 14),
+                                AppStyle.hGap4,
+                                Text(
+                                  readableCount(readableCountStrToNum(room.watching ?? "0").toString()),
+                                  style: const TextStyle(fontSize: 12, color: Colors.white),
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // 分区信息
-                        Padding(
-                          padding: const EdgeInsets.only(left: 3),
-                          child: Text(
-                            room.area ?? "",
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        // 人气值
-                        if (room.liveStatus == LiveStatus.live || room.liveStatus == LiveStatus.replay)
-                          Row(
-                            children: [
-                              const Icon(
-                                Remix.fire_fill,
-                                color: Colors.red,
-                                size: 14,
-                              ),
-                              AppStyle.hGap4,
-                              Text(
-                                readableCount(readableCountStrToNum(room.watching ?? "0").toString()),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            ListTile(
-              dense: dense,
-              minLeadingWidth: dense ? 34 : null,
-              contentPadding: dense ? const EdgeInsets.only(left: 8, right: 10) : null,
-              horizontalTitleGap: dense ? 8 : null,
-              leading: CacheNetWorkUtils.getCircleAvatar(room.avatar, radius: 17, siteKey: room.platform),
-              title: Text(
-                room.title ?? '',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: dense ? 12.5 : 15,
-                  fontWeight: FontWeight.w500,
+            // 底部信息区域也用 RepaintBoundary
+            RepaintBoundary(
+              child: ListTile(
+                dense: dense,
+                minLeadingWidth: dense ? 34 : null,
+                contentPadding: dense ? const EdgeInsets.only(left: 8, right: 10) : null,
+                horizontalTitleGap: dense ? 8 : null,
+                leading: CacheNetWorkUtils.getCircleAvatar(room.avatar, radius: 17, siteKey: room.platform),
+                title: Text(
+                  room.title ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: dense ? 12.5 : 15, fontWeight: FontWeight.w500),
                 ),
-              ),
-              subtitle: Text(
-                room.nick ?? '',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: dense ? 12 : 14,
-                  color: Colors.grey,
+                subtitle: Text(
+                  room.nick ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey),
                 ),
-              ),
-              trailing: dense
-                  ? null
-                  : Text(
-                      room.platform != null ? Sites.of(room.platform!).name : '',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                trailing: dense
+                    ? null
+                    : Text(
+                        room.platform != null ? Sites.of(room.platform!).name : '',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                       ),
-                    ),
+              ),
             )
           ],
         ),

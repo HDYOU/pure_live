@@ -91,47 +91,39 @@ class _RefreshMyState extends State<RefreshMy> with AutomaticKeepAliveClientMixi
             await Future.delayed(const Duration(milliseconds: 300));
           },
           child: Stack(children: [
-            StreamBuilder(
-                initialData: [],
-                stream: widget.pageController.list.stream,
-                builder: (s, d) {
-                  if (widget.pageController.list.isEmpty) {
-                    return EmptyView(
-                      icon: Icons.live_tv_rounded,
-                      title: S.current.empty_live_title,
-                      subtitle: S.current.empty_live_subtitle,
-                      boxConstraints: constraint,
-                    );
-                  }
-                  return CustomScrollView(
-                    cacheExtent: 30,
-                    controller: scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                          sliver: GradUtil.contentGrid(
-                            /// 缓存数目， 减少卡顿
-                            cacheExtent: 30,
-
-                            padding: const EdgeInsets.all(5),
-                            controller: widget.pageController.scrollController,
-                            crossAxisCount: crossAxisCount,
-                            itemCount: widget.pageController.list.length,
-                            itemBuilder: itemBuilder,
-                          )),
-                    ],
-                  );
-                }),
-            StreamBuilder(
-                initialData: false,
-                stream: widget.pageController.loadding.stream,
-                builder: (s, d) {
-                  return Visibility(
-                    visible: (widget.pageController.loadding.value),
-                    child: const AppLoaddingWidget(),
-                  );
-                }),
+            // 使用 Obx 替代 StreamBuilder，减少重建范围
+            Obx(() {
+              if (widget.pageController.list.isEmpty) {
+                return EmptyView(
+                  icon: Icons.live_tv_rounded,
+                  title: S.current.empty_live_title,
+                  subtitle: S.current.empty_live_subtitle,
+                  boxConstraints: constraint,
+                );
+              }
+              return CustomScrollView(
+                // 增大缓存范围，预渲染更多 item
+                cacheExtent: crossAxisCount * 200,
+                controller: scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                      sliver: GradUtil.contentGrid(
+                        padding: const EdgeInsets.all(5),
+                        controller: widget.pageController.scrollController,
+                        crossAxisCount: crossAxisCount,
+                        itemCount: widget.pageController.list.length,
+                        itemBuilder: itemBuilder,
+                      )),
+                ],
+              );
+            }),
+            // 加载指示器也用 Obx
+            Obx(() => Visibility(
+              visible: widget.pageController.loadding.value,
+              child: const AppLoaddingWidget(),
+            )),
           ]));
     });
   }
