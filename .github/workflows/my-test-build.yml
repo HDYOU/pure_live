@@ -6,8 +6,9 @@ on:
     inputs:
       ssh:
         description: 'SSH connection to Actions'
+        type: boolean
         required: false
-        default: 'false'
+        default: false
   watch:
     types: [ started ]
   push:
