@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:extended_image_library/extended_image_library.dart';
 import 'package:pure_live/core/common/core_log.dart';
 
 /// 内存管理工具
@@ -51,22 +50,7 @@ class MemoryManager {
       PaintingBinding.instance.imageCache.clear();
       PaintingBinding.instance.imageCache.clearLiveImages();
       
-      // 清理 extended_image 内存缓存
-      clearExtendedImageCache();
-      
       CoreLog.d("MemoryManager: 图片内存缓存已清理");
-    } catch (e) {
-      CoreLog.error(e);
-    }
-  }
-
-  /// 清理 extended_image 内存缓存
-  void clearExtendedImageCache() {
-    try {
-      // 清理所有缓存的图片数据
-      ExtendedImage.clearMemoryCache();
-      // 清理所有缓存的图片文件
-      ExtendedImage.clearDiskCachedImages();
     } catch (e) {
       CoreLog.error(e);
     }
