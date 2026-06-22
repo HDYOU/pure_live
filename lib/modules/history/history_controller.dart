@@ -13,21 +13,40 @@ class HistoryController extends BasePageController<LiveRoom> {
 
   static HistoryController get instance => Get.find<HistoryController>();
 
+  /// 监听 historyRooms 变化，自动刷新列表
+  StreamSubscription? _historySubscription;
+
+  @override
+  Future<void> onInit() async {
+    super.onInit();
+    // 监听 SettingsService.historyRooms 变化，自动刷新
+    _historySubscription = SettingsService.instance.historyRooms.listen((_) {
+      _syncHistoryList();
+    });
+    await loadData();
+  }
+
+  @override
+  void onClose() {
+    _historySubscription?.cancel();
+    super.onClose();
+  }
+
+  /// 同步历史记录列表
+  void _syncHistoryList() {
+    final rooms = SettingsService.instance.historyRooms.toList().reversed.toList();
+    list.updateValueNotEquate(rooms);
+    canLoadMore.value = false;
+    pageEmpty.value = rooms.isEmpty;
+  }
+
   @override
   Future refreshData() async {
     CoreLog.d("HistoryController refreshData");
     final SettingsService settings = SettingsService.instance;
     await UpdateRoomUtil.updateRoomList(settings.historyRooms, settings);
-    // if (result) {
-    //   easyRefreshController.finishRefresh(IndicatorResult.success);
-    //   easyRefreshController.resetFooter();
-    // } else {
-    //   easyRefreshController.finishRefresh(IndicatorResult.fail);
-    // }
-    // currentPage = 1;
-    // // list.value = [];
-    // await loadData();
-    return await super.refreshData();
+    _syncHistoryList();
+    return;
   }
 
   @override
@@ -41,12 +60,5 @@ class HistoryController extends BasePageController<LiveRoom> {
     final rooms = settings.historyRooms.toList().reversed.toList();
     canLoadMore.updateValueNotEquate(false);
     return rooms;
-  }
-
-  @override
-  Future<void> onInit() async {
-    // TODO: implement onInit
-    super.onInit();
-    await loadData();
   }
 }
