@@ -40,9 +40,9 @@ jobs:
         #   - platform: ios
             # os: macos-latest
 
-          - platform: windows
-            os: windows-latest
-            arch: amd64
+        #    - platform: windows
+        #     os: windows-latest
+        #     arch: amd64
 
           - platform: linux
             os: ubuntu-latest
