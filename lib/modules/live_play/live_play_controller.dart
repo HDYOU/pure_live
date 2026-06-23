@@ -233,6 +233,10 @@ class LivePlayController extends StateController {
     }
     // 通过静态变量访问历史,判断是否真正退出
     List<Route<dynamic>> routes = RouteHistoryObserver.routeHistory;
+    // 如果路由历史为空，直接退出
+    if (routes.isEmpty) {
+      return true;
+    }
     var lastRoute = routes.last;
     var lastRouteName = lastRoute.settings.name;
     CoreLog.d("lastRoute: $lastRouteName");
