@@ -149,15 +149,38 @@ class DouyuDanmaku implements LiveDanmaku {
 
   String? deserializeDouyu(List<int> buffer) {
     try {
+      // 基础数据长度检查：斗鱼协议最小包体为 12 字节
+      if (buffer.length < 12) {
+        return null;
+      }
+      
       var reader = BinaryReader(Uint8List.fromList(buffer));
       int fullMsgLength = reader.readInt32(endian: Endian.little); //fullMsgLength
+      
+      // 验证消息长度合理性：不应超过 buffer 长度，也不应小于最小包体
+      if (fullMsgLength < 12 || fullMsgLength > buffer.length) {
+        CoreLog.w("DouyuDanmaku: invalid fullMsgLength=$fullMsgLength, buffer.length=${buffer.length}");
+        return null;
+      }
+      
       reader.readInt32(endian: Endian.little); //fullMsgLength2
       int bodyLength = fullMsgLength - 9;
+      
+      // 验证 bodyLength 合理性
+      if (bodyLength <= 0 || bodyLength > buffer.length - reader.position) {
+        return null;
+      }
+      
       reader.readShort(endian: Endian.little); //packType
       reader.readByte(endian: Endian.little); //encrypted
       reader.readByte(endian: Endian.little); //reserved
 
       var bytes = reader.readBytes(bodyLength);
+      
+      // 如果 readBytes 返回空数组（边界检查失败），直接返回
+      if (bytes.isEmpty) {
+        return null;
+      }
 
       reader.readByte(endian: Endian.little); //固定为0
       return utf8.decode(bytes);

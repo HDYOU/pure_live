@@ -120,7 +120,12 @@ class BinaryReader {
   /// 从当前流中读取指定长度的字节数组，并使流的当前位置提升指定长度。
   /// [len] 指定长度
   /// 返回字节数组
+  /// 如果长度超出 buffer 范围，返回空数组
   Uint8List readBytes(int len) {
+    // 边界检查：如果请求长度超出剩余数据范围，返回空数组
+    if (len <= 0 || position + len > buffer.length) {
+      return Uint8List(0);
+    }
     var bytes =
         Uint8List.fromList(buffer.getRange(position, position + len).toList());
     position += len;
