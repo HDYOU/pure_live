@@ -194,7 +194,10 @@ class _LogsPageState extends State<LogsPage> {
                                 clipBehavior: Clip.antiAliasWithSaveLayer,
                                 child: Padding(
                                   padding: const EdgeInsets.all(12.0),
-                                  child: RichText(text: TextSpan(text: log['body'], style: TextStyle(color: Colors.black))),
+                                  child: RichText(text: TextSpan(
+                                    text: log['body'],
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  )),
                                 ),
                               ),
                             ),
