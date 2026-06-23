@@ -54,8 +54,6 @@ class BasePageController<T> extends BaseController {
   int count = 0;
   int maxPage = 0;
   int pageSize = 30;
-  /// 最大列表数量，防止内存无限增长
-  int maxListSize = 200;
   var canLoadMore = true.obs;
   var list = <T>[].obs;
 
@@ -114,11 +112,6 @@ class BasePageController<T> extends BaseController {
       } else {
         if(result.isNotEmpty) {
           list.addAll(result);
-          // 限制最大数量，超出时移除旧数据
-          if (list.length > maxListSize) {
-            final removeCount = list.length - maxListSize;
-            list.removeRange(0, removeCount);
-          }
         }
       }
     } catch (e) {
