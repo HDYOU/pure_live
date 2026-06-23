@@ -88,21 +88,40 @@ class FvpVideoPlay extends VideoPlayerInterFace {
 
   @override
   Future<void> dispose() async {
+    // 先停止播放，避免后台继续播放
+    try {
+      await pause();
+    } catch (e) {
+      CoreLog.error(e);
+    }
+    
     ListenListUtil.clearStreamSubscriptionList(defaultVideoStreamSubscriptionList);
     disposeVideoPlayerListener();
     videoPlayerController.value.removeListener(listenerVideo);
-    // chewieController.value.addListener(chewieControllerListener);
-    videoPlayerController.value.dispose();
-    chewieController.value.dispose();
-    for (var i = 0; i < controllerList.length; i++) {
-      var controller = controllerList[i];
+    chewieController.value.removeListener(chewieControllerListener);
+    
+    // 释放当前控制器
+    try {
+      videoPlayerController.value.dispose();
+    } catch (e) {
+      CoreLog.error(e);
+    }
+    try {
+      chewieController.value.dispose();
+    } catch (e) {
+      CoreLog.error(e);
+    }
+    
+    // 释放所有历史控制器（可能在加载中被替换）
+    for (var controller in controllerList) {
       try {
+        await controller.pause();
         await controller.dispose();
       } catch (e) {
-        //
+        // 忽略已释放或未初始化的控制器错误
       }
     }
-    // super.dispose();
+    controllerList.clear();
   }
 
   @override
