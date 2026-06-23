@@ -18,6 +18,9 @@ class FavoriteController extends GetxController
 
   static FavoriteController get instance => Get.find<FavoriteController>();
 
+  /// 定时刷新 Timer
+  Timer? _autoRefreshTimer;
+
   FavoriteController() {
     tabController = TabController(length: 2, vsync: this);
     tabSiteController =
@@ -64,7 +67,7 @@ class FavoriteController extends GetxController
 
     // 定时自动刷新
     if (SettingsService.instance.autoRefreshTime.value != 0) {
-      Timer.periodic(
+      _autoRefreshTimer = Timer.periodic(
         Duration(minutes: SettingsService.instance.autoRefreshTime.value),
         (timer) => onRefresh(),
       );
@@ -215,13 +218,14 @@ class FavoriteController extends GetxController
 
   @override
   void dispose() {
-    workerList.map((w) {
+    _autoRefreshTimer?.cancel();
+    for (var w in workerList) {
       w.dispose();
-    });
+    }
     workerList.clear();
-    listenList.map((w) {
+    for (var w in listenList) {
       w.cancel();
-    });
+    }
     listenList.clear();
     super.dispose();
   }
