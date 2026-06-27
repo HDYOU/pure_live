@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/widgets/keep_alive_wrapper.dart';
@@ -86,32 +87,38 @@ class FavoritePage extends GetView<FavoriteController> {
   }
 }
 
-class _RoomGridView extends GetView<FavoriteController> {
-  _RoomGridView(this.selectIndex) {
-    // sourceRxList.listen((onData) {
-    //   // CoreLog.d("sourceRxList change ... ${sourceRxList.hashCode} \n ${StackTrace.current.toString()}");
-    //   CoreLog.d("sourceRxList change ... ${sourceRxList.hashCode} ");
-    //   initSiteSet(onData);
-    //   filter();
-    // });
-  }
-
+class _RoomGridView extends StatefulWidget {
   final int selectIndex;
 
+  const _RoomGridView(this.selectIndex);
+
+  @override
+  State<_RoomGridView> createState() => _RoomGridViewState();
+}
+
+class _RoomGridViewState extends State<_RoomGridView> {
+  late FavoriteGridController _gridController;
+  final FavoriteController _favoriteController = FavoriteController.instance;
   final dense = Get.find<SettingsService>().enableDenseFavorites.value;
 
+  @override
+  void initState() {
+    super.initState();
+    // 在 initState 中初始化控制器，而不是在 build 中
+    final tag = widget.selectIndex.toString();
+    if (!Get.isRegistered<FavoriteGridController>(tag: tag)) {
+      Get.put(FavoriteGridController(widget.selectIndex), tag: tag);
+    }
+    _gridController = Get.find<FavoriteGridController>(tag: tag);
+    if (_gridController.list.isEmpty) {
+      _gridController.loadData();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-        body: (){
-          var controller = Get.put(FavoriteGridController(selectIndex), tag: selectIndex.toString());
-          if (controller.list.isEmpty) {
-            controller.loadData();
-          }
-          return FavoriteGridView(selectIndex.toString());
-        }(),
+        body: FavoriteGridView(widget.selectIndex.toString()),
         // 浮动按钮
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         floatingActionButton: FloatingActionButton(
@@ -138,7 +145,7 @@ class _RoomGridView extends GetView<FavoriteController> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ...controller.siteSetList[selectIndex].map((siteId) {
+            ..._favoriteController.siteSetList[widget.selectIndex].map((siteId) {
               var site = Sites.allLiveSite;
               if (siteId != Sites.allSite) {
                 site = Sites.of(siteId);
@@ -147,19 +154,25 @@ class _RoomGridView extends GetView<FavoriteController> {
                 leading: SiteWidget.getSiteLogeImage(site.id),
                 title: Text(Sites.getSiteName(site.id)),
                 onTap: () {
-                  var curSiteId = controller.selectedSiteList[selectIndex];
+                  var curSiteId = _favoriteController.selectedSiteList[widget.selectIndex];
                   if (curSiteId != site.id) {
-                    controller.selectedSiteList[selectIndex] = site.id;
-                    controller.filterDate(selectIndex);
+                    _favoriteController.selectedSiteList[widget.selectIndex] = site.id;
+                    _favoriteController.filterDate(widget.selectIndex);
                   }
                   Navigator.pop(curContext);
                 },
-                selected: site.id == controller.selectedSiteList[selectIndex],
+                selected: site.id == _favoriteController.selectedSiteList[widget.selectIndex],
               );
             }),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('selectIndex', widget.selectIndex));
   }
 }

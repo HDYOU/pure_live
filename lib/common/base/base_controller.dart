@@ -136,6 +136,7 @@ class BasePageController<T> extends BaseController {
   }
 
   void scrollToBottom() {
+    if (!scrollController.hasClients) return;
     scrollController.animateTo(
       scrollController.position.maxScrollExtent,
       duration: const Duration(milliseconds: 200),
@@ -144,7 +145,7 @@ class BasePageController<T> extends BaseController {
   }
 
   void scrollToTopOrRefresh() {
-    if (scrollController.offset > 0) {
+    if (scrollController.hasClients && scrollController.offset > 0) {
       scrollController.animateTo(
         0,
         duration: const Duration(milliseconds: 200),
@@ -153,5 +154,21 @@ class BasePageController<T> extends BaseController {
     } else {
       easyRefreshController.callRefresh();
     }
+  }
+
+  @override
+  void onClose() {
+    // 安全释放控制器资源
+    try {
+      scrollController.dispose();
+    } catch (e) {
+      CoreLog.error(e);
+    }
+    try {
+      easyRefreshController.dispose();
+    } catch (e) {
+      CoreLog.error(e);
+    }
+    super.onClose();
   }
 }
