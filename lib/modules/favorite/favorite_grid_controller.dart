@@ -1,14 +1,16 @@
 import 'dart:async';
+
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:pure_live/common/index.dart';
+import 'package:get/get.dart';
 import 'package:pure_live/common/base/base_controller.dart';
+import 'package:pure_live/common/index.dart';
 import 'package:pure_live/core/common/core_log.dart';
 
 class FavoriteGridController extends BasePageController<LiveRoom> {
   final int index;
 
   /// 监听器：同步 FavoriteController 的 filterDataList 变化
-  Worker? _filterDataListener;
+  StreamSubscription? _filterDataListener;
 
   FavoriteGridController(this.index);
 
@@ -21,12 +23,12 @@ class FavoriteGridController extends BasePageController<LiveRoom> {
 
   /// 设置 filterDataList 监听器
   void _setupFilterDataListener() {
-    _filterDataListener?.dispose();
+    _filterDataListener?.cancel();
+    _filterDataListener = null;
     final favoriteController = FavoriteController.instance;
     if (index >= 0 && index < favoriteController.filterDataList.length) {
       final sourceList = favoriteController.filterDataList[index];
-      // 使用 ever Worker 监听源列表变化，同步到本地 list
-      _filterDataListener = ever(sourceList, (List<LiveRoom> data) {
+      _filterDataListener = sourceList.listen((data) {
         if (isClosed) return;
         list.value = List<LiveRoom>.from(data);
       });
@@ -61,7 +63,7 @@ class FavoriteGridController extends BasePageController<LiveRoom> {
 
   @override
   void onClose() {
-    _filterDataListener?.dispose();
+    _filterDataListener?.cancel();
     _filterDataListener = null;
     super.onClose();
   }
