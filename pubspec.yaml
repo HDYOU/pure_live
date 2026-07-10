@@ -155,6 +155,8 @@ dependencies:
   auto_orientation: ^2.3.1 #屏幕方向
   device_info_plus: ^12.3.0 #设备信息
   canvas_danmaku: ^0.3.1    #弹幕
+  flame: ^1.37.0           #Flame游戏引擎
+  flame_barrage: ^0.0.3    #Flame弹幕引擎
   # 防抖节流
   easy_debounce: ^2.0.3
 #  floating: ^5.0.1 #PIP画中画

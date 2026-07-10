@@ -1,5 +1,6 @@
 import 'barrage_danmaku_controller.dart';
 import 'canvas_danmaku_controller.dart';
+import 'flame_barrage_danmaku_controller.dart';
 import 'danmaku_controller_base.dart';
 
 final class DanmakuControllerfactory {
@@ -8,6 +9,7 @@ final class DanmakuControllerfactory {
     return [
       BarrageDanmakuController.type,
       CanvasDanmakuController.type,
+      FlameBarrageDanmakuController.type,
     ];
   }
 
@@ -18,6 +20,8 @@ final class DanmakuControllerfactory {
         return BarrageDanmakuController();
       case CanvasDanmakuController.type:
         return CanvasDanmakuController();
+      case FlameBarrageDanmakuController.type:
+        return FlameBarrageDanmakuController();
       default:
         return BarrageDanmakuController();
     }
