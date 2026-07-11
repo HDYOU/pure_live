@@ -69,11 +69,12 @@ class HomeTabletViewV2 extends GetView<HomeController> {
                 },
               ),
               const VerticalDivider(width: 1),
-              Expanded(child: TabBarView(
-                controller: controller.tabController,
-                children:
-                controller.bodys.map((e) => KeepAliveWrapper(child: e)).toList(),
-              )),
+              Expanded(child: Obx(() => TabBarView(
+                    controller: controller.tabController,
+                    children: controller.bodys
+                        .map((e) => KeepAliveWrapper(child: e))
+                        .toList(),
+                  ))),
             ],
           ),
         );

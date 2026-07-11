@@ -35,11 +35,12 @@ class HomeMobileViewV2 extends GetView<HomeController> {
           ),
         ],
       ),
-      body: TabBarView(
-        controller: controller.tabController,
-        children:
-            controller.bodys.map((e) => KeepAliveWrapper(child: e)).toList(),
-      ),
+      body: Obx(() => TabBarView(
+            controller: controller.tabController,
+            children: controller.bodys
+                .map((e) => KeepAliveWrapper(child: e))
+                .toList(),
+          )),
     );
   }
 }

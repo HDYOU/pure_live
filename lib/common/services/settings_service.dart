@@ -39,6 +39,9 @@ class SettingsService extends GetxController
     enableDenseFavorites.listen((value) {
       PrefUtil.setBool('enableDenseFavorites', value);
     });
+    enableFlameUI.listen((value) {
+      PrefUtil.setBool('enableFlameUI', value);
+    });
     autoRefreshTime.listen((value) {
       PrefUtil.setInt('autoRefreshTime', value);
     });
@@ -265,6 +268,8 @@ class SettingsService extends GetxController
   final autoRefreshTime = (PrefUtil.getInt('autoRefreshTime') ?? 3).obs;
 
   final enableDenseFavorites = (PrefUtil.getBool('enableDenseFavorites') ?? false).obs;
+
+  final enableFlameUI = (PrefUtil.getBool('enableFlameUI') ?? false).obs;
 
   final enableBackgroundPlay = (PrefUtil.getBool('enableBackgroundPlay') ?? false).obs;
 
@@ -630,6 +635,7 @@ class SettingsService extends GetxController
     themeModeName.value = json['themeMode'] ?? "System";
     enableDynamicTheme.value = json['enableDynamicTheme'] ?? false;
     enableDenseFavorites.value = json['enableDenseFavorites'] ?? false;
+    enableFlameUI.value = json['enableFlameUI'] ?? false;
     enableBackgroundPlay.value = json['enableBackgroundPlay'] ?? false;
     enableRotateScreenWithSystem.value = json['enableRotateScreenWithSystem'] ?? false;
     enableScreenKeepOn.value = json['enableScreenKeepOn'] ?? true;
@@ -687,6 +693,7 @@ class SettingsService extends GetxController
 
     json['enableDynamicTheme'] = enableDynamicTheme.value;
     json['enableDenseFavorites'] = enableDenseFavorites.value;
+    json['enableFlameUI'] = enableFlameUI.value;
     json['enableBackgroundPlay'] = enableBackgroundPlay.value;
     json['enableRotateScreenWithSystem'] = enableRotateScreenWithSystem.value;
     json['enableScreenKeepOn'] = enableScreenKeepOn.value;
@@ -744,6 +751,7 @@ class SettingsService extends GetxController
       "languageName": languageName.value,
       "enableAutoShutDownTime": false,
       "enableDenseFavorites": false,
+      "enableFlameUI": false,
       "enableBackgroundPlay": false,
       "enableRotateScreenWithSystem": false,
       "enableScreenKeepOn": true,

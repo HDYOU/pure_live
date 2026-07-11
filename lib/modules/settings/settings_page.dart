@@ -117,6 +117,13 @@ class SettingsPage extends GetView<SettingsService> {
                 onChanged: (bool value) => controller.enableDenseFavorites.value = value,
               )),
           Obx(() => SwitchListTile(
+                title: const Text('Flame UI 模式'),
+                subtitle: const Text('使用 Flame 游戏引擎渲染列表（实验性功能）'),
+                value: controller.enableFlameUI.value,
+                activeThumbColor: Theme.of(context).colorScheme.primary,
+                onChanged: (bool value) => controller.enableFlameUI.value = value,
+              )),
+          Obx(() => SwitchListTile(
                 title: Text(S.current.enable_auto_check_update),
                 subtitle: Text(S.current.enable_auto_check_update_subtitle),
                 value: controller.enableAutoCheckUpdate.value,

@@ -243,6 +243,15 @@ class SettingsPageV2 extends GetView<SettingsService> {
                     onChanged: (bool value) => controller.enableDenseFavorites.value = value,
                   )),
 
+              /// Flame UI 模式
+              Obx(() => SettingsSwitch(
+                    leading: const Icon(Icons.flare_sharp),
+                    title: const Text('Flame UI 模式'),
+                    subtitle: const Text('使用 Flame 游戏引擎渲染列表（实验性功能）'),
+                    value: controller.enableFlameUI.value,
+                    onChanged: (bool value) => controller.enableFlameUI.value = value,
+                  )),
+
               /// 首选平台
               SettingsListItem(
                 leading: const Icon(Icons.favorite),
