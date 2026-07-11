@@ -268,17 +268,17 @@ class LivePlayController extends StateController {
   void initDanmakuController() {
     var danmakuControllerType = settings.danmakuControllerType.value;
     danmakuController = DanmakuControllerfactory.getDanmakuController(danmakuControllerType);
-    var danmakuArea = settings.danmakuArea.value;
     danmakuSettingOption = DanmakuSettingOption(
       opacity: settings.danmakuOpacity.value,
       fontSize: settings.danmakuFontSize.value,
       fontWeight: 4,
       duration: settings.danmakuSpeed.value.toInt(),
       showStroke: settings.danmakuFontBorder.value > 0,
+      area: settings.danmakuArea.value,
       massiveMode: false,
       hideScroll: false,
       hideTop: false,
-      hideBottom: danmakuArea < 0.70,
+      hideBottom: settings.danmakuArea.value < 0.70,
       safeArea: true,
     );
     danmakuController.updateOption(danmakuSettingOption);

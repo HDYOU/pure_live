@@ -55,6 +55,7 @@ class CanvasDanmakuController extends DanmakuControllerBase {
       showStroke: options.showStroke,
       massiveMode: options.massiveMode,
       safeArea: options.safeArea,
+      area: options.area,
     ));
   }
 
@@ -82,6 +83,7 @@ class CanvasDanmakuController extends DanmakuControllerBase {
         hideTop: options.hideTop,
         hideBottom: options.hideBottom,
         safeArea: options.safeArea,
+        area: options.area,
       ),
     );
   }
