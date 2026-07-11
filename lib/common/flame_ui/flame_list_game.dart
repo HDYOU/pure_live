@@ -238,9 +238,9 @@ abstract class FlameListGame extends FlameGame
     super.onPanEnd(info);
     _isDragging = false;
 
-    // velocity 是 EventVector2 类型，使用 global 获取世界坐标
-    // info.velocity.global.y 单位是像素/秒
-    _velocity = -info.velocity.global.y;
+    // velocity 是 Vector2 类型，直接使用 y 分量
+    // info.velocity.y 单位是像素/秒
+    _velocity = -info.velocity.y;
 
     // 限制最大速度
     if (_velocity.abs() > 3000) {
