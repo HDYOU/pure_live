@@ -201,41 +201,39 @@ jobs:
         with:
           flutter-version: 3.44.x
           channel: 'stable'
-          cache: "false"
-#          cache: "{{ startsWith(matrix.platform,'android') ? 'false' : true}}"
+          cache: true
+          cache-key: flutter-pub-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('**/pubspec.yaml') }}
 
       - name: Cache Flutter pub-cache dependencies
         uses: actions/cache@v4
         with:
-           path: |
-              ~/.pub-cache
-           key: flutter-pub-cache-${{ hashFiles('**/pubspec.yaml') }}
-           restore-keys: |
-             flutter-pub-cache-
+            path: |
+               ~/.pub-cache
+            key: ${{ runner.os }}-${{ matrix.platform }}-pub-cache-${{ hashFiles('**/pubspec.yaml') }}
+            restore-keys: |
+              ${{ runner.os }}-${{ matrix.platform }}-pub-cache-
 
       - name: Cache Flutter dependencies
         uses: actions/cache@v4
         with:
           path: |
-            **/.dart_tool
-            **/build
-          key: ${{ runner.os }}-flutter-${{ matrix.platform }}-${{ hashFiles('**/pubspec.yaml') }}
+            .dart_tool
+            build
+          key: ${{ runner.os }}-${{ matrix.platform }}-flutter-deps-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-flutter-${{ matrix.platform }}-
+            ${{ runner.os }}-${{ matrix.platform }}-flutter-deps-
 
       - name: Setup Rust
         continue-on-error: true
         uses: Swatinem/rust-cache@v2
         with:
           # 缓存目录：cargo仓库 + 编译产物
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ./rust/target  # Rust模块的编译产物目录
+          workspaces: |
+            . -> ~/.cargo
           # 缓存key：基于Cargo.toml和Rust代码的hash
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.toml', '**/*.rs') }}
+          key: ${{ runner.os }}-${{ matrix.platform }}-rust-${{ hashFiles('**/Cargo.toml', '**/*.rs') }}
           restore-keys: |
-            ${{ runner.os }}-rust-
+            ${{ runner.os }}-${{ matrix.platform }}-rust-
 
       # 打开MAC Desktop支持
       - name: Enable Flutter MAC Desktop
