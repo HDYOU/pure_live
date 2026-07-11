@@ -208,6 +208,9 @@ dependency_overrides:
   flutter_avif_web:
     path: ./fake_packages/flutter_avif_web
 
+  flutter_avif_android:
+    path: ./fake_packages/flutter_avif_android
+
   # 依赖覆盖
   media_kit:
     git:

@@ -1,0 +1,16 @@
+name: flutter_avif_android
+description: Android implementation for flutter_avif (fixed - removed duplicate Kotlin class)
+version: 3.1.0
+
+flutter:
+  plugin:
+    implements: flutter_avif
+    platforms:
+      android:
+        package: com.teknorota.flutter_avif
+        pluginClass: FlutterAvifPlugin
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_avif_platform_interface: ^3.1.0
