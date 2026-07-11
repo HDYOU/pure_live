@@ -214,7 +214,8 @@ abstract class FlameListGame extends FlameGame
     super.onPanUpdate(info);
     if (isRefreshing) return;
 
-    final deltaY = info.delta.y;
+    // EventDelta 有 global 和 local 两个 Vector2
+    final deltaY = info.delta.global.y;
     if (deltaY.abs() > 2) {
       hasMovedDuringDrag = true;
     }
@@ -237,9 +238,9 @@ abstract class FlameListGame extends FlameGame
     super.onPanEnd(info);
     _isDragging = false;
 
-    // velocity 是 Vector2，直接使用 y 分量
-    // info.velocity 单位是像素/秒
-    _velocity = -info.velocity.y;
+    // velocity 是 EventVector2 类型，使用 global 获取世界坐标
+    // info.velocity.global.y 单位是像素/秒
+    _velocity = -info.velocity.global.y;
 
     // 限制最大速度
     if (_velocity.abs() > 3000) {
