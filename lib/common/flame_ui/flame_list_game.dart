@@ -10,7 +10,11 @@ import 'package:pure_live/core/common/core_log.dart';
 /// Flame 列表游戏基类
 /// 提供通用的滚动、下拉刷新、列表渲染能力
 abstract class FlameListGame extends FlameGame
-    with HasKeyboardHandlerComponents, ScrollDetector, DragCallbacks {
+    with
+        HasKeyboardHandlerComponents,
+        HasTappableComponents,
+        ScrollDetector,
+        PanDetector {
   /// 滚动偏移量
   double scrollOffset = 0;
 
@@ -29,14 +33,20 @@ abstract class FlameListGame extends FlameGame
   /// 当前下拉距离
   double _pullDistance = 0;
 
-  /// 是否在下拉中
-  bool _isPulling = false;
-
-  /// 拖拽开始位置
+  /// 拖拽开始 Y 位置
   double _dragStartY = 0;
 
   /// 拖拽开始时的滚动偏移
   double _dragStartScroll = 0;
+
+  /// 是否正在拖拽
+  bool _isDragging = false;
+
+  /// 是否发生了滚动（用于区分点击和滚动）
+  bool _hasMoved = false;
+
+  /// 惯性滚动速度
+  double _velocity = 0;
 
   /// 刷新回调
   final Future<void> Function()? onRefresh;
@@ -151,7 +161,25 @@ abstract class FlameListGame extends FlameGame
   @override
   void update(double dt) {
     super.update(dt);
-    // 更新所有列表项的位置（基于滚动偏移）
+
+    // 惯性滚动
+    if (!_isDragging && _velocity.abs() > 0.1) {
+      scrollOffset += _velocity * dt;
+      _velocity *= 0.92; // 阻尼
+
+      // 边界检查
+      if (scrollOffset < 0) {
+        scrollOffset = 0;
+        _velocity = 0;
+      }
+      if (scrollOffset > maxScrollExtent) {
+        scrollOffset = maxScrollExtent;
+        _velocity = 0;
+        _triggerLoadMore();
+      }
+    }
+
+    // 更新所有列表项的位置
     var i = 0;
     for (final child in children.whereType<FlameListItem>()) {
       final row = i ~/ crossAxisCount;
@@ -163,52 +191,89 @@ abstract class FlameListGame extends FlameGame
     }
   }
 
+  // === 鼠标滚轮滚动 ===
+
   @override
   void onScroll(PointerScrollInfo info) {
     if (isRefreshing) return;
+    super.onScroll(info);
 
     final delta = info.scrollDelta.global.y;
-    _updateScrollOffset(scrollOffset + delta);
-    super.onScroll(info);
+    _updateScrollOffset(scrollOffset + delta, false);
+    _velocity = 0; // 滚轮滚动时停止惯性
   }
 
+  // === 触摸/拖拽滚动 ===
+
   @override
-  void onDragStart(DragStartEvent event) {
-    super.onDragStart(event);
-    _dragStartY = event.canvasPosition.y;
+  void onPanStart(DragStartInfo info) {
+    super.onPanStart(info);
+    _dragStartY = info.eventPosition.global.y;
     _dragStartScroll = scrollOffset;
+    _isDragging = true;
+    _hasMoved = false;
+    _velocity = 0;
   }
 
   @override
-  void onDragUpdate(DragUpdateEvent event) {
-    super.onDragUpdate(event);
+  void onPanUpdate(DragUpdateInfo info) {
+    super.onPanUpdate(info);
     if (isRefreshing) return;
 
-    final deltaY = event.canvasEndPosition.y - event.canvasStartPosition.y;
-    _updateScrollOffset(_dragStartScroll - deltaY);
+    final deltaY = info.delta.global.y;
+    if (deltaY.abs() > 2) {
+      _hasMoved = true;
+    }
+
+    if (_hasMoved) {
+      _updateScrollOffset(scrollOffset - deltaY, true);
+    }
   }
 
   @override
-  void onDragEnd(DragEndEvent event) {
-    super.onDragEnd(event);
+  void onPanEnd(DragEndInfo info) {
+    super.onPanEnd(info);
+    _isDragging = false;
+
+    // 计算惯性速度
+    _velocity = -info.velocity.global.y;
+
     // 下拉刷新检测
     if (_pullDistance >= _refreshThreshold && !isRefreshing) {
       _triggerRefresh();
     } else if (_pullDistance > 0) {
-      // 回弹
       _animateScrollTo(0);
     }
   }
 
+  @override
+  void onPanCancel() {
+    super.onPanCancel();
+    _isDragging = false;
+    _velocity = 0;
+    if (_pullDistance > 0 && !isRefreshing) {
+      _animateScrollTo(0);
+    }
+  }
+
+  /// 是否发生了拖拽移动（用于子组件判断是否响应点击）
+  bool get hasMovedDuringDrag => _hasMoved;
+
   /// 更新滚动偏移量
-  void _updateScrollOffset(double newOffset) {
+  void _updateScrollOffset(double newOffset, bool isDrag) {
     scrollOffset = newOffset;
 
     // 边界检查 - 顶部
     if (scrollOffset < 0) {
-      // 下拉超出顶部，增加阻尼
-      _pullDistance = -scrollOffset;
-      scrollOffset = -_pullDistance * 0.5;
+      if (isDrag) {
+        // 拖拽下拉，增加阻尼效果
+        _pullDistance = -scrollOffset;
+        scrollOffset = -_pullDistance * 0.5;
+      } else {
+        // 滚轮直接回弹
+        scrollOffset = 0;
+        _pullDistance = 0;
+      }
     } else {
       _pullDistance = 0;
     }
@@ -222,12 +287,12 @@ abstract class FlameListGame extends FlameGame
 
   /// 动画滚动到目标位置
   Future<void> _animateScrollTo(double target) async {
-    // 简单的弹性回退动画
     final start = scrollOffset;
     final duration = 300; // ms
     final startTime = DateTime.now().millisecondsSinceEpoch;
 
-    while (true) {
+    while (_isDragging) {
+      await Future.delayed(const Duration(milliseconds: 16));
       final elapsed = DateTime.now().millisecondsSinceEpoch - startTime;
       if (elapsed >= duration) {
         scrollOffset = target;
@@ -237,8 +302,9 @@ abstract class FlameListGame extends FlameGame
       // easeOutCubic
       final eased = 1 - (1 - t) * (1 - t) * (1 - t);
       scrollOffset = start + (target - start) * eased;
-      await Future.delayed(const Duration(milliseconds: 16));
+      await Future.delayed(const Duration(milliseconds: 0));
     }
+    scrollOffset = target;
   }
 
   /// 触发刷新
@@ -253,7 +319,6 @@ abstract class FlameListGame extends FlameGame
       CoreLog.error(e);
     } finally {
       isRefreshing = false;
-      _isPulling = false;
       _pullDistance = 0;
       _animateScrollTo(0);
     }

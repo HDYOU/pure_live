@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
+import 'package:flame/collisions.dart';
 import 'package:flame/events.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,8 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    // 添加碰撞检测区域，使 TapCallbacks 能正确工作
+    add(RectangleHitbox());
     _loadCoverImage();
   }
 
@@ -317,6 +320,12 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
   @override
   void onTapUp(TapUpEvent event) {
     scale = Vector2.all(1.0);
+    // 如果发生了拖拽滚动，不触发点击
+    final game = this.game;
+    if (game is FlameListGame && game.hasMovedDuringDrag) {
+      super.onTapUp(event);
+      return;
+    }
     onTap?.call();
     super.onTapUp(event);
   }
