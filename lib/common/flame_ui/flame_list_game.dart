@@ -10,11 +10,7 @@ import 'package:pure_live/core/common/core_log.dart';
 /// Flame 列表游戏基类
 /// 提供通用的滚动、下拉刷新、列表渲染能力
 abstract class FlameListGame extends FlameGame
-    with
-        HasKeyboardHandlerComponents,
-        HasTappableComponents,
-        ScrollDetector,
-        PanDetector {
+    with HasKeyboardHandlerComponents, ScrollDetector, PanDetector {
   /// 滚动偏移量
   double scrollOffset = 0;
 
@@ -33,20 +29,18 @@ abstract class FlameListGame extends FlameGame
   /// 当前下拉距离
   double _pullDistance = 0;
 
-  /// 拖拽开始 Y 位置
-  double _dragStartY = 0;
-
-  /// 拖拽开始时的滚动偏移
-  double _dragStartScroll = 0;
-
   /// 是否正在拖拽
   bool _isDragging = false;
 
   /// 是否发生了滚动（用于区分点击和滚动）
-  bool _hasMoved = false;
+  bool hasMovedDuringDrag = false;
 
-  /// 惯性滚动速度
+  /// 惯性滚动速度（像素/秒）
   double _velocity = 0;
+
+  /// 上一帧时间
+  double _lastDeltaY = 0;
+  double _lastUpdateTime = 0;
 
   /// 刷新回调
   final Future<void> Function()? onRefresh;
@@ -163,7 +157,7 @@ abstract class FlameListGame extends FlameGame
     super.update(dt);
 
     // 惯性滚动
-    if (!_isDragging && _velocity.abs() > 0.1) {
+    if (!_isDragging && _velocity.abs() > 1) {
       scrollOffset += _velocity * dt;
       _velocity *= 0.92; // 阻尼
 
@@ -208,11 +202,11 @@ abstract class FlameListGame extends FlameGame
   @override
   void onPanStart(DragStartInfo info) {
     super.onPanStart(info);
-    _dragStartY = info.eventPosition.global.y;
-    _dragStartScroll = scrollOffset;
     _isDragging = true;
-    _hasMoved = false;
+    hasMovedDuringDrag = false;
     _velocity = 0;
+    _lastDeltaY = 0;
+    _lastUpdateTime = DateTime.now().millisecondsSinceEpoch.toDouble();
   }
 
   @override
@@ -220,13 +214,21 @@ abstract class FlameListGame extends FlameGame
     super.onPanUpdate(info);
     if (isRefreshing) return;
 
-    final deltaY = info.delta.global.y;
+    final deltaY = info.delta.y;
     if (deltaY.abs() > 2) {
-      _hasMoved = true;
+      hasMovedDuringDrag = true;
     }
 
-    if (_hasMoved) {
+    if (hasMovedDuringDrag) {
       _updateScrollOffset(scrollOffset - deltaY, true);
+
+      // 计算速度
+      final now = DateTime.now().millisecondsSinceEpoch.toDouble();
+      final dt = (now - _lastUpdateTime) / 1000;
+      if (dt > 0) {
+        _velocity = -deltaY / dt;
+      }
+      _lastUpdateTime = now;
     }
   }
 
@@ -235,8 +237,14 @@ abstract class FlameListGame extends FlameGame
     super.onPanEnd(info);
     _isDragging = false;
 
-    // 计算惯性速度
-    _velocity = -info.velocity.global.y;
+    // velocity 是 Vector2，直接使用 y 分量
+    // info.velocity 单位是像素/秒
+    _velocity = -info.velocity.y;
+
+    // 限制最大速度
+    if (_velocity.abs() > 3000) {
+      _velocity = _velocity > 0 ? 3000 : -3000;
+    }
 
     // 下拉刷新检测
     if (_pullDistance >= _refreshThreshold && !isRefreshing) {
@@ -255,9 +263,6 @@ abstract class FlameListGame extends FlameGame
       _animateScrollTo(0);
     }
   }
-
-  /// 是否发生了拖拽移动（用于子组件判断是否响应点击）
-  bool get hasMovedDuringDrag => _hasMoved;
 
   /// 更新滚动偏移量
   void _updateScrollOffset(double newOffset, bool isDrag) {
@@ -293,8 +298,11 @@ abstract class FlameListGame extends FlameGame
 
     while (_isDragging) {
       await Future.delayed(const Duration(milliseconds: 16));
+    }
+
+    while (true) {
       final elapsed = DateTime.now().millisecondsSinceEpoch - startTime;
-      if (elapsed >= duration) {
+      if (elapsed >= duration || _isDragging) {
         scrollOffset = target;
         break;
       }
@@ -302,7 +310,7 @@ abstract class FlameListGame extends FlameGame
       // easeOutCubic
       final eased = 1 - (1 - t) * (1 - t) * (1 - t);
       scrollOffset = start + (target - start) * eased;
-      await Future.delayed(const Duration(milliseconds: 0));
+      await Future.delayed(const Duration(milliseconds: 16));
     }
     scrollOffset = target;
   }
