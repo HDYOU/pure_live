@@ -8,6 +8,7 @@
 
 #include <app_links/app_links_plugin_c_api.h>
 #include <battery_plus/battery_plus_windows_plugin.h>
+#include <charset_converter/charset_converter_plugin.h>
 #include <connectivity_plus/connectivity_plus_windows_plugin.h>
 #include <dynamic_color/dynamic_color_plugin_c_api.h>
 #include <flutter_avif_windows/flutter_avif_windows_plugin.h>
@@ -28,6 +29,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("AppLinksPluginCApi"));
   BatteryPlusWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("BatteryPlusWindowsPlugin"));
+  CharsetConverterPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("CharsetConverterPlugin"));
   ConnectivityPlusWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("ConnectivityPlusWindowsPlugin"));
   DynamicColorPluginCApiRegisterWithRegistrar(

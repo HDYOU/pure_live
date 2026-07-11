@@ -77,9 +77,9 @@ class MediaKitAdapter implements UnifiedPlayer {
 
         // 代理设置
         final proxySettings = Get.find<ProxySettingsController>();
-        if (proxySettings.enableProxy.v && proxySettings.proxyHost.v.isNotEmpty) {
+        if (proxySettings.enableProxy.value && proxySettings.proxyHost.value.isNotEmpty) {
           final proxyUrl =
-              "http://${proxySettings.proxyHost.v}:${proxySettings.proxyPort.v}";
+              "http://${proxySettings.proxyHost.value}:${proxySettings.proxyPort.value}";
           await native.setProperty('http-proxy', proxyUrl);
         }
       }

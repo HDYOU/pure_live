@@ -17,7 +17,7 @@ import 'package:pure_live/core/iptv/local/database.dart' as database;
 class EpgImportManager {
   /// 1. 本地文件浏览器选择导入
   Future<bool> importFromLocalPicker() async {
-    FilePickerResult? result = await FilePicker.pickFiles(
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: i18n("select_recover_file"),
       type: FileType.custom,
       allowedExtensions: ['xml', 'gz', 'json'],

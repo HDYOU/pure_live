@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
+export 'package:pure_live/common/services/utils/hive_rx.dart';
 
 class PageSettingsController extends GetxController {
   static PageSettingsController get to => Get.find<PageSettingsController>();

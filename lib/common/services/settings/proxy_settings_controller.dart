@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
+export 'package:pure_live/common/services/utils/hive_rx.dart';
 
 class ProxySettingsController extends GetxController {
   final RxBool enableProxy = hiveBool('enableProxy', false);

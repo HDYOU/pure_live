@@ -15,7 +15,7 @@ class LiveRoomRx {
   Rx<String?> watching = ''.obs;
   Rx<String?> followers = ''.obs;
   Rx<String?> platform = 'UNKNOWN'.obs;
-  Rx<List<String>> tagIds = <String>[].obs;
+  RxList<String> tagIds = <String>[].obs;
 
   LiveRoomRx();
 

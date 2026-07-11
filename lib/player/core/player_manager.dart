@@ -3,7 +3,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:rxdart/rxdart.dart' hide Rx;
 
 import 'player_pool.dart';
 import 'line_fallback_manager.dart';
@@ -16,7 +16,6 @@ import '../models/player_error_type.dart';
 import '../interface/unified_player_interface.dart';
 import '../utils/window_helper.dart';
 import '../utils/pip_window_widget.dart';
-import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/common/widgets/app_status_view.dart';
 import 'package:pure_live/common/models/live_room.dart';
 
@@ -70,7 +69,6 @@ class PlayerManager {
   bool _disposed = false;
   bool _isSwitchingDueToFallback = false;
   bool _isHandlingError = false;
-  static const String _floatTag = "global_video_player";
   Timer? _hideTimer;
 
   UnifiedPlayer? get currentPlayer => _currentPlayer;

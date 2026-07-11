@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
+export 'package:pure_live/common/services/utils/hive_rx.dart';
 
 class WindowSizeController extends GetxController {
   static WindowSizeController get to => Get.find<WindowSizeController>();

@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  charset_converter
   dynamic_color
   flutter_avif_linux
   flutter_volume_controller

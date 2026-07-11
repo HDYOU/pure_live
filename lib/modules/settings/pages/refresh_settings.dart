@@ -41,7 +41,7 @@ class RefreshSettingsPage extends StatelessWidget {
                     ListTile(
                       leading: const Icon(Remix.stack_line),
                       title: Text(i18n("max_concurrent_refresh")),
-                      subtitle: "${_refresh.maxConcurrentRefresh.v}",
+                      subtitle: Text("${_refresh.maxConcurrentRefresh.v}"),
                       onTap: () => _showMaxConcurrentDialog(context),
                     ),
                   ],

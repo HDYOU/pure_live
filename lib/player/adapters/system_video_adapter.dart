@@ -20,7 +20,6 @@ class SystemVideoAdapter implements UnifiedPlayer {
   bool _disposed = false;
   bool _isAudioOnly = false;
   String? _currentUrl;
-  double? _aspectRatio;
 
   // =========================
   // subjects
@@ -113,7 +112,6 @@ class SystemVideoAdapter implements UnifiedPlayer {
       _completeSubject.add(false);
       _widthSubject.add(null);
       _heightSubject.add(null);
-      _aspectRatio = null;
 
       // 销毁旧的 controller
       _removeVideoListener();
@@ -203,7 +201,6 @@ class SystemVideoAdapter implements UnifiedPlayer {
         if (_widthSubject.value != w) {
           _widthSubject.add(w);
           _heightSubject.add(h);
-          _aspectRatio = value.size.width / value.size.height;
         }
       }
 

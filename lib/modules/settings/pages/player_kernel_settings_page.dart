@@ -75,11 +75,11 @@ class PlayerKernelSettingsPage extends StatelessWidget {
               title: i18n("custom_output"),
               subtitle: "",
               value: _player.customPlayerOutput,
-              icon: Remix.output_line,
+              icon: Remix.video_upload_line,
             ),
             Obx(
               () => context.buildTile(
-                icon: Remix.monitor_line,
+                icon: Remix.computer_line,
                 title: i18n("video_output_driver"),
                 subtitle: _player.videoOutputDriver.v,
                 onTap: _player.customPlayerOutput.v ? () => _showVideoOutputDialog(context) : null,
@@ -95,7 +95,7 @@ class PlayerKernelSettingsPage extends StatelessWidget {
             ),
             Obx(
               () => context.buildTile(
-                icon: Remix.chip_line,
+                icon: Remix.cpu_line,
                 title: i18n("hardware_decoder"),
                 subtitle: _player.videoHardwareDecoder.v,
                 onTap: _player.customPlayerOutput.v ? () => _showHardwareDecoderDialog(context) : null,

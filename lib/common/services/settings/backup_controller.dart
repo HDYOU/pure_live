@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
+export 'package:pure_live/common/services/utils/hive_rx.dart';
 import 'package:pure_live/common/services/settings/web_dav_controller.dart';
 import 'package:pure_live/common/services/settings/history_controller.dart';
 import 'package:pure_live/common/services/settings/startup_controller.dart';

@@ -5,6 +5,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter_color/flutter_color.dart';
 import 'package:pure_live/common/l10n/generated/l10n.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
+export 'package:pure_live/common/services/utils/hive_rx.dart';
 import 'package:pure_live/common/style/theme.dart';
 import 'package:pure_live/common/services/settings/font_settings_controller.dart';
 

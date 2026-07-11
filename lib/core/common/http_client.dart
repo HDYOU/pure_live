@@ -406,6 +406,39 @@ class HttpClient {
     }
   }
 
+  /// 下载文件到指定路径
+  /// * [url] 下载链接
+  /// * [savePath] 保存路径
+  /// * [header] 请求头
+  /// * [cancel] 任务取消Token
+  Future<void> download(
+    String url,
+    String savePath, {
+    Map<String, dynamic>? header,
+    CancelToken? cancel,
+  }) async {
+    await tryToCancelRequest();
+    var cancelToken = cancel ?? CancelToken();
+    var cancelTokenKey = getCancelTokenKey();
+    cancelTokenMap[cancelTokenKey] = cancelToken;
+    try {
+      header ??= {};
+      await dio.download(
+        proxyUrl(url, {}),
+        savePath,
+        options: Options(
+          headers: header,
+        ),
+        cancelToken: cancelToken,
+      );
+    } catch (e) {
+      await handleDioException(e);
+      throw CoreError("下载文件失败!\n$e");
+    } finally {
+      cancelTokenMap.remove(cancelTokenKey);
+    }
+  }
+
   Future<void> handleDioException(dynamic e) async {
     CoreLog.error(e);
     if (e is DioException) {

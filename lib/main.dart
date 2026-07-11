@@ -15,6 +15,7 @@ import 'package:pure_live/plugins/file_recover_utils.dart';
 import 'package:pure_live/plugins/flutter_catch_error.dart';
 import 'package:pure_live/plugins/route_history_observer.dart';
 import 'package:pure_live/plugins/db_service.dart';
+import 'package:pure_live/player/global_player_service.dart';
 
 // 新设置控制器导入
 import 'package:pure_live/common/services/settings/app_settings_controller.dart';
@@ -97,6 +98,9 @@ Future<void> initService() async {
   Get.put(CacheController());
   Get.put(LogController());
   Get.put(BackupController());
+
+  // 全局播放器服务
+  Get.put(GlobalPlayerService.instance);
 }
 
 class MyApp extends StatefulWidget {

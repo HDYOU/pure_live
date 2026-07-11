@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
+export 'package:pure_live/common/services/utils/hive_rx.dart';
 import 'package:pure_live/common/services/utils/backup_migration_util.dart';
 import 'package:pure_live/common/models/live_room.dart';
 

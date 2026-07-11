@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:flutter_exit_app/flutter_exit_app.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
+export 'package:pure_live/common/services/utils/hive_rx.dart';
 
 class ExitSettingsController extends GetxController {
   final RxBool dontAskExit = hiveBool('dontAskExit', false);

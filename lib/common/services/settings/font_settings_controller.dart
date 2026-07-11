@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
+export 'package:pure_live/common/services/utils/hive_rx.dart';
 import 'package:pure_live/common/style/theme.dart';
 import 'package:pure_live/common/services/settings/danmaku_settings_controller.dart';
 

@@ -64,7 +64,7 @@ dependencies:
   supabase_flutter: ^2.8.3
   email_validator: ^3.0.0
   # Local database (SQLite) for IPTV
-  drift: ^2.33.0
+  drift: ^2.31.0
   sqlite3_flutter_libs: ^0.6.0+eol
   charset_converter: ^2.3.0
   synchronized: ^3.1.0
@@ -176,7 +176,7 @@ dependencies:
   flame: ^1.37.0           #Flame游戏引擎
   flame_ui: ^0.2.0         #Flame UI组件库
   flame_barrage: ^0.0.3    #Flame弹幕引擎
-  syncfusion_flutter_sliders: ^27.1.50 #滑块组件
+  syncfusion_flutter_sliders: ^34.1.30 #滑块组件
   rxdart: ^0.28.0 #响应式编程
   # 防抖节流
   easy_debounce: ^2.0.3
@@ -229,6 +229,7 @@ dependencies:
 
 
 dependency_overrides:
+  archive: ^4.0.4
   # 方式：彻底禁用/不使用该依赖（指定不存在版本，或配合约束）
   flutter_avif_web:
     path: ./fake_packages/flutter_avif_web
@@ -290,10 +291,10 @@ dev_dependencies:
   change_app_package_name: any
   json_serializable: ^6.9.0
   build_runner: ^2.4.13
-  protoc_builder: ^0.4.1
+#  protoc_builder: ^0.4.1  # protobuf代码已生成，暂不需要
   flutter_launcher_icons: ^0.14.2
   msix: ^3.16.7
-  drift_dev: ^2.33.0
+#  drift_dev: ^2.33.0  # database.g.dart已生成，暂不需要重新生成
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

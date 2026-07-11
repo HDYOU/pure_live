@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   battery_plus
+  charset_converter
   connectivity_plus
   dynamic_color
   flutter_avif_windows

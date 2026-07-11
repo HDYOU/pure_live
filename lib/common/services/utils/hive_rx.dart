@@ -47,6 +47,12 @@ Rx<T> hiveObject<T>(
   return Rx<T>(initialValue)..hiveObject(key, toJson: toJson);
 }
 
+/// Provides [v] getter/setter and [hive] method for all [Rx<T>] types.
+///
+/// Note: [RxBool], [RxString], [RxInt], [RxDouble] all extend [Rx<T>],
+/// so this extension applies to them as well. Separate extensions are
+/// also defined below for explicitness and to avoid any potential
+/// extension resolution issues.
 extension HiveRxExtension<T> on Rx<T> {
   T get v => value;
   set v(T newValue) => value = newValue;
@@ -72,8 +78,32 @@ extension HiveRxExtension<T> on Rx<T> {
       try {
         HivePrefUtil.setString(key, jsonEncode(toJson(v)));
       } catch (_) {}
-    }, condition: () => true);
+    });
   }
+}
+
+/// Explicit [v] getter/setter for [RxBool] for reliable extension resolution.
+extension HiveRxBoolExtension on RxBool {
+  bool get v => value;
+  set v(bool newValue) => value = newValue;
+}
+
+/// Explicit [v] getter/setter for [RxString] for reliable extension resolution.
+extension HiveRxStringExtension on RxString {
+  String get v => value;
+  set v(String newValue) => value = newValue;
+}
+
+/// Explicit [v] getter/setter for [RxInt] for reliable extension resolution.
+extension HiveRxIntExtension on RxInt {
+  int get v => value;
+  set v(int newValue) => value = newValue;
+}
+
+/// Explicit [v] getter/setter for [RxDouble] for reliable extension resolution.
+extension HiveRxDoubleExtension on RxDouble {
+  double get v => value;
+  set v(double newValue) => value = newValue;
 }
 
 extension HiveRxListExtension on RxList<String> {

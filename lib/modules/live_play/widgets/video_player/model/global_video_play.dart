@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../common/services/settings_service.dart';
-import '../../../../common/services/setting_mixin/setting_video_fit.dart';
+import 'package:pure_live/common/index.dart';
+import 'package:pure_live/common/services/setting_mixin/setting_video_fit.dart';
 import '../video_controller.dart' as video_player;
 import '../video_controller_panel.dart';
 import 'video_play_impl.dart';
@@ -52,8 +52,8 @@ class GlobalVideoPlay extends VideoPlayerInterFace {
 
   @override
   Future<void> openVideo(String datasource, Map<String, String> headers) async {
-    isBuffering.updateValueNotEquate(true);
-    isPlaying.updateValueNotEquate(false);
+    isBuffering.value = true;
+    isPlaying.value = false;
 
     if (datasource.isEmpty) {
       hasError.value = true;
@@ -74,7 +74,7 @@ class GlobalVideoPlay extends VideoPlayerInterFace {
       _listenToPlayerState();
     } catch (e) {
       hasError.value = true;
-      isBuffering.updateValueNotEquate(false);
+      isBuffering.value = false;
     }
   }
 
@@ -94,11 +94,11 @@ class GlobalVideoPlay extends VideoPlayerInterFace {
     final manager = GlobalPlayerService.instance.playerManager;
 
     _playingSub = manager.onPlaying.listen((playing) {
-      isPlaying.updateValueNotEquate(playing);
+      isPlaying.value = playing;
     });
 
     _bufferingSub = manager.onLoading.listen((loading) {
-      isBuffering.updateValueNotEquate(loading);
+      isBuffering.value = loading;
     });
 
     _errorSub = manager.onError.listen((error) {
@@ -108,14 +108,14 @@ class GlobalVideoPlay extends VideoPlayerInterFace {
     _widthSub = manager.width.listen((w) {
       if (w != null && w > 0) {
         final h = manager.currentHeight;
-        isVertical.updateValueNotEquate((h ?? 9) > w);
+        isVertical.value = (h ?? 9) > w;
       }
     });
 
     _heightSub = manager.height.listen((h) {
       if (h != null && h > 0) {
         final w = manager.currentWidth;
-        isVertical.updateValueNotEquate(h > (w ?? 16));
+        isVertical.value = h > (w ?? 16);
       }
     });
   }

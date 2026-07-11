@@ -1,6 +1,7 @@
 import 'package:rxdart/rxdart.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/services/utils/hive_rx.dart';
+export 'package:pure_live/common/services/utils/hive_rx.dart';
 
 class RefreshConfig {
   final bool autoRefreshFavorite;

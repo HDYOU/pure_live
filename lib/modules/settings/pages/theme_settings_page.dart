@@ -65,7 +65,7 @@ class ThemeSettingsPage extends StatelessWidget {
               title: i18n("cross_axis_spacing"),
               subtitle: i18n("cross_axis_spacing_subtitle"),
               onTap: () => _showSpacingDialog(
-                context,
+                context: context,
                 title: i18n("cross_axis_spacing"),
                 currentValue: _theme.crossAxisSpacing.v,
                 onSelected: (value) => _theme.crossAxisSpacing.v = value,
@@ -76,7 +76,7 @@ class ThemeSettingsPage extends StatelessWidget {
               title: i18n("main_axis_spacing"),
               subtitle: i18n("main_axis_spacing_subtitle"),
               onTap: () => _showSpacingDialog(
-                context,
+                context: context,
                 title: i18n("main_axis_spacing"),
                 currentValue: _theme.mainAxisSpacing.v,
                 onSelected: (value) => _theme.mainAxisSpacing.v = value,

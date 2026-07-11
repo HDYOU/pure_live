@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
 import 'package:gsy_video_player/gsy_video_player.dart';
-import 'package:chewie/chewie.dart';
 
 import '../models/player_state.dart';
 import '../models/player_exception.dart';
@@ -129,10 +128,10 @@ class GsyVideoAdapter implements UnifiedPlayer {
         mapHeadData: headers,
         cacheWithPlay: false,
         useDefaultIjkOptions: true,
+        autoPlay: false,
       );
 
-      await _controller.prepare();
-      await _controller.resume();
+      await _controller.startPlayLogic();
 
       _stateSubject.add(PlayerState.ready);
       await setVolume(1.0);
@@ -204,9 +203,17 @@ class GsyVideoAdapter implements UnifiedPlayer {
           _playingSubject.add(true);
           _stateSubject.add(PlayerState.playing);
           break;
-        case VideoEventType.onPause:
+        case VideoEventType.onVideoPause:
           _playingSubject.add(false);
           _stateSubject.add(PlayerState.paused);
+          break;
+        case VideoEventType.onVideoResume:
+          _playingSubject.add(true);
+          if (_loadingSubject.value) {
+            _stateSubject.add(PlayerState.buffering);
+          } else {
+            _stateSubject.add(PlayerState.playing);
+          }
           break;
         case VideoEventType.onCompletion:
           _completeSubject.add(true);
