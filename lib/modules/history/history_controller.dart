@@ -18,6 +18,7 @@ class HistoryController extends BasePageController<LiveRoom> {
     CoreLog.d("HistoryController refreshData");
     final SettingsService settings = SettingsService.instance;
     await UpdateRoomUtil.updateRoomList(settings.historyRooms, settings);
+    settings.historyRooms.value = settings.historyRooms.value;
     // if (result) {
     //   easyRefreshController.finishRefresh(IndicatorResult.success);
     //   easyRefreshController.resetFooter();
