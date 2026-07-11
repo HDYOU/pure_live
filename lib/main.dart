@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
 import 'package:pure_live/common/services/shaders_service.dart';
 import 'package:pure_live/modules/home/home_controller.dart';
@@ -54,6 +55,8 @@ void main(List<String> args) async {
       ],
       path: 'assets/translations',
       fallbackLocale: const Locale('zh', 'CN'),
+      useOnlyLangCode: true,
+      useFallbackTranslations: true,
       child: const MyApp(),
     ),
     args,
@@ -78,29 +81,38 @@ Future<void> initService() async {
   await Get.find<DbService>().init();
 
   // 新设置控制器（基于 Hive）
-  Get.put(AppSettingsController());
-  Get.put(ThemeSettingsController());
-  Get.put(FontSettingsController());
-  Get.put(PlayerSettingsController());
-  Get.put(DanmakuSettingsController());
-  Get.put(VolumeSettingsController());
-  Get.put(FavoriteRoomController());
-  Get.put(settings_history.HistoryController());
-  Get.put(WebDavController());
-  Get.put(settings_iptv.IptvSettingsController());
-  Get.put(CookieSettingsController());
-  Get.put(ProxySettingsController());
-  Get.put(WindowSizeController());
-  Get.put(ExitSettingsController());
-  Get.put(StartupController());
-  Get.put(RefreshConfigController());
-  Get.put(PageSettingsController());
-  Get.put(CacheController());
-  Get.put(LogController());
-  Get.put(BackupController());
+  // 注意：注册顺序很重要，被依赖的控制器要先注册
+  _safePut(() => FontSettingsController());
+  _safePut(() => AppSettingsController());
+  _safePut(() => ThemeSettingsController());
+  _safePut(() => PlayerSettingsController());
+  _safePut(() => DanmakuSettingsController());
+  _safePut(() => VolumeSettingsController());
+  _safePut(() => FavoriteRoomController());
+  _safePut(() => settings_history.HistoryController());
+  _safePut(() => WebDavController());
+  _safePut(() => settings_iptv.IptvSettingsController());
+  _safePut(() => CookieSettingsController());
+  _safePut(() => ProxySettingsController());
+  _safePut(() => WindowSizeController());
+  _safePut(() => ExitSettingsController());
+  _safePut(() => StartupController());
+  _safePut(() => RefreshConfigController());
+  _safePut(() => PageSettingsController());
+  _safePut(() => CacheController());
+  _safePut(() => LogController());
+  _safePut(() => BackupController());
 
   // 全局播放器服务
-  Get.put(GlobalPlayerService.instance);
+  _safePut(() => GlobalPlayerService.instance);
+}
+
+void _safePut<T>(T Function() builder) {
+  try {
+    Get.put<T>(builder());
+  } catch (e, s) {
+    CoreLog.e("Failed to init $T: $e", s);
+  }
 }
 
 class MyApp extends StatefulWidget {

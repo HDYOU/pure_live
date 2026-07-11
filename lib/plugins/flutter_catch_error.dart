@@ -36,7 +36,11 @@ class FlutterCatchError {
 
     setCustomErrorPage();
 
-    await appInit(app, args);
+    try {
+      await appInit(app, args);
+    } catch (e, s) {
+      CoreLog.e("appInit failed: $e", s);
+    }
 
     catcher2 = Catcher2(
       runAppFunction: () {
@@ -45,10 +49,6 @@ class FlutterCatchError {
     );
     // compute(updateCatcherConf,"");
     Future.delayed(Duration(seconds: 1), () => updateCatcherConf(""));
-
-    // runZonedGuarded(() async {
-    //   appInit(app, args);
-    // }, (error, stack) => catchError(error, stack));
   }
 
   /// 更新 Catcher 配置
@@ -106,8 +106,17 @@ class FlutterCatchError {
       await windowManager.ensureInitialized();
       await WindowUtil.init(width: 1280, height: 720);
     }
-    // 先初始化supdatabase
-    await SupaBaseManager.getInstance().initial();
+    // 先初始化supdatabase（加超时保护，避免网络问题导致白屏）
+    try {
+      await SupaBaseManager.getInstance().initial().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () async {
+          CoreLog.w("SupaBaseManager init timeout, skipping");
+        },
+      );
+    } catch (e) {
+      CoreLog.w("SupaBaseManager init failed: $e");
+    }
     // 初始化服务
     await initService();
     initRefresh();
