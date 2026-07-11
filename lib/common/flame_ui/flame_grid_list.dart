@@ -116,8 +116,8 @@ class _RoomGridGame extends FlameListGame {
     return FlameRoomCard(
       room: room,
       dense: dense,
-      size: Vector2(width, cardHeight),
-      position: position,
+      cardSize: Vector2(width, cardHeight),
+      cardPosition: position,
       onTap: () {
         // 跳转到直播间
         AppNavigator.toLiveRoomDetail(liveRoom: room);

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
@@ -25,9 +26,16 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
     required this.room,
     this.dense = false,
     this.onTap,
-    Vector2? size,
-    Vector2? position,
-  }) : super(size: size, position: position);
+    Vector2? cardSize,
+    Vector2? cardPosition,
+  }) {
+    if (cardSize != null) {
+      size = cardSize;
+    }
+    if (cardPosition != null) {
+      position = cardPosition;
+    }
+  }
 
   @override
   Future<void> onLoad() async {
@@ -41,14 +49,10 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
     _coverLoading = true;
 
     try {
-      // 从网络加载图片
-      final uri = Uri.parse(room.cover!);
-      // 优先使用缓存
       final cacheManager = _CacheManager.instance;
-      final image = await cacheManager.loadImage(uri.toString());
+      final image = await cacheManager.loadImage(room.cover!);
       _coverSprite = Sprite(image);
     } catch (e) {
-      // 网络图片加载失败是正常的，忽略
       CoreLog.d('FlameRoomCard 封面加载失败: ${room.cover}');
     } finally {
       _coverLoading = false;
@@ -84,7 +88,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
       // 绘制占位背景
       final placeholderPaint = Paint()..color = Colors.grey[800]!;
       canvas.drawRect(coverRect, placeholderPaint);
-      // 绘制占位图标
       _drawPlaceholderIcon(canvas, coverRect);
     }
 
@@ -109,7 +112,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
         ..color = Colors.black.withValues(alpha: 0.6);
       canvas.drawRect(coverRect, offlinePaint);
 
-      // 绘制离线图标
       final iconPainter = TextPainter(
         text: TextSpan(
           text: '📺',
@@ -129,7 +131,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
     canvas.restore();
   }
 
-  /// 绘制封面图
   void _drawCoverImage(Canvas canvas, Rect coverRect) {
     if (_coverSprite == null) return;
     _coverSprite!.render(
@@ -139,7 +140,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
     );
   }
 
-  /// 绘制占位图标
   void _drawPlaceholderIcon(Canvas canvas, Rect coverRect) {
     final iconPainter = TextPainter(
       text: TextSpan(
@@ -157,7 +157,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
     );
   }
 
-  /// 绘制顶部渐变
   void _drawTopGradient(Canvas canvas, Rect coverRect) {
     final gradient = LinearGradient(
       begin: Alignment.topCenter,
@@ -178,7 +177,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
     );
   }
 
-  /// 绘制底部渐变
   void _drawBottomGradient(Canvas canvas, Rect coverRect) {
     final gradient = LinearGradient(
       begin: Alignment.bottomCenter,
@@ -199,7 +197,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
     );
   }
 
-  /// 绘制平台标签
   void _drawPlatformBadge(Canvas canvas, Rect coverRect) {
     if (room.platform == null) return;
 
@@ -216,7 +213,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    // 背景圆角矩形
     final bgPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.5);
     final padding = dense ? 4.0 : 6.0;
@@ -230,12 +226,9 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
       Radius.circular(dense ? 8 : 10),
     );
     canvas.drawRRect(bgRect, bgPaint);
-
-    // 文字
     textPainter.paint(canvas, Offset(6 + padding, 7));
   }
 
-  /// 绘制人气/观看人数
   void _drawViewCount(Canvas canvas, Rect coverRect) {
     final isLive = room.liveStatus == LiveStatus.live || room.liveStatus == LiveStatus.replay;
     if (!isLive) return;
@@ -257,7 +250,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
     textPainter.paint(canvas, Offset(x, y));
   }
 
-  /// 绘制底部信息（标题、主播名）
   void _drawBottomInfo(Canvas canvas, double coverHeight) {
     final infoTop = coverHeight + 8;
 
@@ -318,7 +310,6 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
 
   @override
   void onTapDown(TapDownEvent event) {
-    // 按下效果（轻微缩放）
     scale = Vector2.all(0.98);
     super.onTapDown(event);
   }
@@ -331,9 +322,9 @@ class FlameRoomCard extends FlameListItem with TapCallbacks {
   }
 
   @override
-  void onTapCancel() {
+  void onTapCancel(TapCancelEvent event) {
     scale = Vector2.all(1.0);
-    super.onTapCancel();
+    super.onTapCancel(event);
   }
 }
 
@@ -370,7 +361,9 @@ class _CacheManager {
     final stream = networkImage.resolve(const ImageConfiguration());
     final listener = ImageStreamListener(
       (ImageInfo info, bool synchronousCall) {
-        completer.complete(info.image);
+        if (!completer.isCompleted) {
+          completer.complete(info.image);
+        }
       },
       onError: (Object error, StackTrace? stackTrace) {
         if (!completer.isCompleted) {
@@ -379,9 +372,7 @@ class _CacheManager {
       },
     );
     stream.addListener(listener);
-    completer.future.then((_) {
-      stream.removeListener(listener);
-    }).catchError((_) {
+    completer.future.whenComplete(() {
       stream.removeListener(listener);
     });
     return completer.future;
