@@ -77,7 +77,7 @@ class PopularFlamePage extends GetView<PopularController> {
           controller: controller.tabController,
           children: Sites()
               .availableSites()
-              .map((e) => KeepAliveWrapper(child: _PopularFlameGridView(e.id)))
+              .map((e) => KeepAliveWrapper(child: _PopularFlameGridView(e)))
               .toList(),
         ),
       );
@@ -87,9 +87,9 @@ class PopularFlamePage extends GetView<PopularController> {
 
 /// Flame UI 版本的热门网格视图
 class _PopularFlameGridView extends StatefulWidget {
-  final String siteId;
+  final Site site;
 
-  const _PopularFlameGridView(this.siteId);
+  const _PopularFlameGridView(this.site);
 
   @override
   State<_PopularFlameGridView> createState() => _PopularFlameGridViewState();
@@ -102,10 +102,11 @@ class _PopularFlameGridViewState extends State<_PopularFlameGridView> {
   @override
   void initState() {
     super.initState();
-    if (!Get.isRegistered<PopularGridController>(tag: widget.siteId)) {
-      Get.put(PopularGridController(widget.siteId), tag: widget.siteId);
+    final tag = widget.site.id;
+    if (!Get.isRegistered<PopularGridController>(tag: tag)) {
+      Get.put(PopularGridController(widget.site), tag: tag);
     }
-    _gridController = Get.find<PopularGridController>(tag: widget.siteId);
+    _gridController = Get.find<PopularGridController>(tag: tag);
     if (_gridController.list.isEmpty) {
       _gridController.loadData();
     }

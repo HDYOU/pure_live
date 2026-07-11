@@ -1,3 +1,4 @@
+import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -5,6 +6,7 @@ import 'package:pure_live/common/base/base_controller.dart';
 import 'package:pure_live/common/flame_ui/flame_list_game.dart';
 import 'package:pure_live/common/flame_ui/flame_room_card.dart';
 import 'package:pure_live/common/index.dart';
+import 'package:pure_live/routes/app_navigation.dart';
 
 /// Flame 网格列表 Widget
 /// 封装 Flame Game 为标准 Flutter Widget，可直接替代原网格列表

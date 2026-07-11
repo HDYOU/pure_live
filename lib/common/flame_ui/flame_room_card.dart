@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
-import 'package:flame/extensions.dart';
+import 'package:flame/events.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
 import 'package:pure_live/common/flame_ui/flame_list_game.dart';
@@ -9,7 +9,7 @@ import 'package:pure_live/common/index.dart';
 import 'package:pure_live/core/common/core_log.dart';
 
 /// Flame 版本的直播间卡片组件
-class FlameRoomCard extends FlameListItem with Tappable {
+class FlameRoomCard extends FlameListItem with TapCallbacks {
   final LiveRoom room;
   final bool dense;
   final VoidCallback? onTap;
@@ -25,9 +25,9 @@ class FlameRoomCard extends FlameListItem with Tappable {
     required this.room,
     this.dense = false,
     this.onTap,
-    required super.size,
-    required super.position,
-  });
+    Vector2? size,
+    Vector2? position,
+  }) : super(size: size, position: position);
 
   @override
   Future<void> onLoad() async {
@@ -41,8 +41,11 @@ class FlameRoomCard extends FlameListItem with Tappable {
     _coverLoading = true;
 
     try {
-      // 使用 Flame 的图片加载
-      final image = await Flame.images.load(room.cover!);
+      // 从网络加载图片
+      final uri = Uri.parse(room.cover!);
+      // 优先使用缓存
+      final cacheManager = _CacheManager.instance;
+      final image = await cacheManager.loadImage(uri.toString());
       _coverSprite = Sprite(image);
     } catch (e) {
       // 网络图片加载失败是正常的，忽略
@@ -257,7 +260,6 @@ class FlameRoomCard extends FlameListItem with Tappable {
   /// 绘制底部信息（标题、主播名）
   void _drawBottomInfo(Canvas canvas, double coverHeight) {
     final infoTop = coverHeight + 8;
-    final infoHeight = height - coverHeight - 16;
 
     // 标题
     final title = room.title ?? '';
@@ -315,22 +317,73 @@ class FlameRoomCard extends FlameListItem with Tappable {
   }
 
   @override
-  bool onTapDown(TapDownInfo info) {
+  void onTapDown(TapDownEvent event) {
     // 按下效果（轻微缩放）
     scale = Vector2.all(0.98);
-    return true;
+    super.onTapDown(event);
   }
 
   @override
-  bool onTapUp(TapUpInfo info) {
+  void onTapUp(TapUpEvent event) {
     scale = Vector2.all(1.0);
     onTap?.call();
-    return true;
+    super.onTapUp(event);
   }
 
   @override
-  bool onTapCancel() {
+  void onTapCancel() {
     scale = Vector2.all(1.0);
-    return true;
+    super.onTapCancel();
+  }
+}
+
+/// 简单的图片缓存管理器
+class _CacheManager {
+  static final _CacheManager instance = _CacheManager._internal();
+  factory _CacheManager() => instance;
+  _CacheManager._internal();
+
+  final Map<String, ui.Image> _cache = {};
+  final Map<String, Future<ui.Image>> _loading = {};
+
+  Future<ui.Image> loadImage(String url) async {
+    if (_cache.containsKey(url)) {
+      return _cache[url]!;
+    }
+    if (_loading.containsKey(url)) {
+      return _loading[url]!;
+    }
+    final future = _loadNetworkImage(url);
+    _loading[url] = future;
+    try {
+      final image = await future;
+      _cache[url] = image;
+      return image;
+    } finally {
+      _loading.remove(url);
+    }
+  }
+
+  Future<ui.Image> _loadNetworkImage(String url) async {
+    final completer = Completer<ui.Image>();
+    final networkImage = NetworkImage(url);
+    final stream = networkImage.resolve(const ImageConfiguration());
+    final listener = ImageStreamListener(
+      (ImageInfo info, bool synchronousCall) {
+        completer.complete(info.image);
+      },
+      onError: (Object error, StackTrace? stackTrace) {
+        if (!completer.isCompleted) {
+          completer.completeError(error, stackTrace);
+        }
+      },
+    );
+    stream.addListener(listener);
+    completer.future.then((_) {
+      stream.removeListener(listener);
+    }).catchError((_) {
+      stream.removeListener(listener);
+    });
+    return completer.future;
   }
 }
