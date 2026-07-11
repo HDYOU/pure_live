@@ -284,18 +284,23 @@ class LivePlayController extends StateController {
     danmakuController.updateOption(danmakuSettingOption);
     subscriptionList.add(settings.danmakuArea.listen((data) {
       danmakuSettingOption.hideBottom = data < 0.70;
+      danmakuController.updateOption(danmakuSettingOption);
     }));
     subscriptionList.add(settings.danmakuOpacity.listen((data) {
       danmakuSettingOption.opacity = data;
+      danmakuController.updateOption(danmakuSettingOption);
     }));
     subscriptionList.add(settings.danmakuFontSize.listen((data) {
       danmakuSettingOption.fontSize = data;
+      danmakuController.updateOption(danmakuSettingOption);
     }));
     subscriptionList.add(settings.danmakuSpeed.listen((data) {
       danmakuSettingOption.duration = data.toInt();
+      danmakuController.updateOption(danmakuSettingOption);
     }));
     subscriptionList.add(settings.danmakuFontBorder.listen((data) {
       danmakuSettingOption.showStroke = data > 0;
+      danmakuController.updateOption(danmakuSettingOption);
     }));
     if (settings.hideDanmaku.value) {
       danmakuController.clear();
