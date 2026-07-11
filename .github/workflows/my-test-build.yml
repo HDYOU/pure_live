@@ -13,8 +13,7 @@ on:
     types: [ started ]
   push:
     branches:
-      - master
-      - main
+      - '*'
     paths-ignore:
       - '**.md'
       - '.github/**'
