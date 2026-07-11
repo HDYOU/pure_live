@@ -1,0 +1,558 @@
+import 'dart:io';
+import 'dart:async';
+import 'dart:developer';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rxdart/rxdart.dart';
+
+import 'player_pool.dart';
+import 'line_fallback_manager.dart';
+import '../models/player_state.dart';
+import 'preload_player_manager.dart';
+import '../models/player_engine.dart';
+import 'engine_fallback_manager.dart';
+import '../models/player_exception.dart';
+import '../models/player_error_type.dart';
+import '../interface/unified_player_interface.dart';
+import '../utils/window_helper.dart';
+import '../utils/pip_window_widget.dart';
+import 'package:pure_live/common/services/settings_service.dart';
+import 'package:pure_live/common/widgets/app_status_view.dart';
+import 'package:pure_live/common/models/live_room.dart';
+
+/// 播放器管理器
+/// 统一管理播放器池、预加载、引擎降级、线路降级、PIP 画中画等功能
+class PlayerManager {
+  final PlayerPool playerPool;
+  final EngineFallbackManager fallbackManager;
+  final PreloadPlayerManager preloadManager;
+  final LineFallbackManager lineManager;
+
+  int _sessionId = 0;
+  bool _isClosing = false;
+
+  PlayerManager({
+    required this.playerPool,
+    required this.fallbackManager,
+    required this.preloadManager,
+    required this.lineManager,
+  });
+
+  bool _isSessionValid(int id) => !_disposed && !_isClosing && _sessionId == id;
+
+  UnifiedPlayer? _currentPlayer;
+  PlayerEngine? _runtimeEngine;
+  PlayerEngine? _defaultEngine;
+
+  String? _currentUrl;
+  List<String> _currentPlayUrls = [];
+  Map<String, String> _currentHeaders = {};
+
+  final RxBool isInitialized = false.obs;
+  final RxBool hasError = false.obs;
+  final RxBool isVerticalVideo = false.obs;
+  final RxBool isInPip = false.obs;
+  final RxBool isFloating = false.obs;
+  final RxBool isHovered = false.obs;
+  final RxInt videoFitIndex = 0.obs;
+  Rx<ValueKey> videoKey = Rx<ValueKey>(const ValueKey("video_0"));
+
+  final _stateSubject = BehaviorSubject<PlayerState>.seeded(PlayerState.idle);
+  final _playingSubject = BehaviorSubject<bool>.seeded(false);
+  final _loadingSubject = BehaviorSubject<bool>.seeded(false);
+  final _completeSubject = BehaviorSubject<bool>.seeded(false);
+  final _errorSubject = PublishSubject<PlayerException>();
+  final _widthSubject = BehaviorSubject<int?>.seeded(null);
+  final _heightSubject = BehaviorSubject<int?>.seeded(null);
+
+  final List<StreamSubscription> _subscriptions = [];
+
+  bool _disposed = false;
+  bool _isSwitchingDueToFallback = false;
+  bool _isHandlingError = false;
+  static const String _floatTag = "global_video_player";
+  Timer? _hideTimer;
+
+  UnifiedPlayer? get currentPlayer => _currentPlayer;
+  PlayerEngine get currentEngine => _runtimeEngine ?? _defaultEngine ?? PlayerEngine.mediaKit;
+  Stream<PlayerState> get onStateChanged => _stateSubject.stream;
+  Stream<bool> get onPlaying => _playingSubject.stream;
+  Stream<bool> get onLoading => _loadingSubject.stream;
+  Stream<bool> get onComplete => _completeSubject.stream;
+  Stream<PlayerException> get onError => _errorSubject.stream;
+  Stream<int?> get width => _widthSubject.stream;
+  Stream<int?> get height => _heightSubject.stream;
+
+  /// 同步获取当前视频宽度
+  int? get currentWidth => _widthSubject.value;
+
+  /// 同步获取当前视频高度
+  int? get currentHeight => _heightSubject.value;
+
+  bool get isPlayingNow => _playingSubject.value;
+
+  double get currentVideoRatio {
+    final w = _widthSubject.value?.toDouble() ?? 1920;
+    final h = _heightSubject.value?.toDouble() ?? 1080;
+    if (w <= 0 || h <= 0) return 16 / 9;
+    return w / h;
+  }
+
+  /// 初始化播放器
+  Future<void> initialize({PlayerEngine engine = PlayerEngine.mediaKit, bool audioOnly = false}) async {
+    if (_disposed) return;
+    _stateSubject.add(PlayerState.initializing);
+    try {
+      _defaultEngine = engine;
+      _runtimeEngine = engine;
+      _currentPlayer = await playerPool.getPlayer(engine, audioOnly: audioOnly);
+      await _bindPlayerStreams(_currentPlayer!);
+      isInitialized.value = true;
+      _stateSubject.add(PlayerState.initialized);
+    } catch (e, s) {
+      hasError.value = true;
+      final exception = PlayerException(
+        message: 'Initialize player failed',
+        type: PlayerErrorType.initialization,
+        error: e,
+        stackTrace: s,
+      );
+      _errorSubject.add(exception);
+      _stateSubject.add(PlayerState.error);
+      throw exception;
+    }
+  }
+
+  /// 播放视频
+  Future<void> play(
+    String url,
+    List<String> playUrls,
+    Map<String, String> headers, {
+    LiveRoom? room,
+    bool audioOnly = false,
+  }) async {
+    if (_disposed || _isClosing) return;
+    final mySessionId = ++_sessionId;
+
+    // 如果换了直播间，重置线路管理器
+    if (room?.roomId != _currentFloatRoom?.roomId) {
+      lineManager.reset();
+    }
+
+    // 没有当前播放器时，使用默认引擎初始化
+    if (_currentPlayer == null || _runtimeEngine == null) {
+      _defaultEngine = _defaultEngine ?? PlayerEngine.mediaKit;
+      _runtimeEngine = _defaultEngine;
+      log('No current player, initializing with default engine: $_defaultEngine', name: 'PlayerManager');
+      await initialize(engine: _defaultEngine!, audioOnly: audioOnly);
+    } else if (_runtimeEngine != _defaultEngine && !_isSwitchingDueToFallback) {
+      await switchEngine(_defaultEngine!, isManual: false);
+    }
+
+    if (!_isSessionValid(mySessionId)) return;
+
+    final player = _currentPlayer;
+    if (player == null) {
+      throw PlayerException(message: 'Current player is null', type: PlayerErrorType.lifecycle);
+    }
+
+    _currentUrl = url;
+    _currentPlayUrls = List.from(playUrls);
+    _currentHeaders = headers;
+    _currentFloatRoom = room;
+    hasError.value = false;
+
+    try {
+      _stateSubject.add(PlayerState.preparing);
+      await player.setDataSource(url, playUrls, headers, room: room, audioOnly: audioOnly);
+      if (!_isSessionValid(mySessionId)) return;
+
+      videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
+      _stateSubject.add(PlayerState.ready);
+    } on PlayerException catch (e) {
+      if (!_isHandlingError && _isSessionValid(mySessionId)) {
+        await _handleError(e, sessionId: mySessionId);
+      }
+    } catch (e, s) {
+      log(e.toString());
+      if (!_isHandlingError && _isSessionValid(mySessionId)) {
+        final exception = PlayerException(
+          message: 'Play failed',
+          type: PlayerErrorType.unknown,
+          error: e,
+          stackTrace: s,
+        );
+        await _handleError(exception, sessionId: mySessionId);
+      }
+    } finally {
+      _isSwitchingDueToFallback = false;
+    }
+  }
+
+  LiveRoom? _currentFloatRoom;
+
+  /// 重新播放当前视频
+  Future<void> replay() async {
+    if (_currentUrl == null) return;
+    await play(_currentUrl!, _currentPlayUrls, _currentHeaders, room: _currentFloatRoom);
+  }
+
+  /// 切换播放器引擎
+  Future<void> switchEngine(PlayerEngine engine, {bool isManual = false}) async {
+    if (_disposed || _isClosing) return;
+    if (_runtimeEngine == engine && _currentPlayer != null) return;
+    try {
+      final oldPlayer = _currentPlayer;
+      final oldEngine = _runtimeEngine;
+      await _clearSubscriptions();
+      final newPlayer = await playerPool.getPlayer(engine);
+      _currentPlayer = newPlayer;
+      _runtimeEngine = engine;
+      if (isManual) _defaultEngine = engine;
+      log('Switch engine to $engine', name: 'PlayerManager');
+      await _bindPlayerStreams(newPlayer);
+      if (oldPlayer != null && oldEngine != null) {
+        await _safeDestroyPlayer(oldPlayer, oldEngine);
+      }
+      videoKey.value = ValueKey("video_${DateTime.now().millisecondsSinceEpoch}");
+    } catch (e, s) {
+      final exception = PlayerException(
+        message: 'Switch engine failed',
+        type: PlayerErrorType.lifecycle,
+        error: e,
+        stackTrace: s,
+      );
+      _errorSubject.add(exception);
+      rethrow;
+    }
+  }
+
+  Future<void> _safeDestroyPlayer(UnifiedPlayer player, PlayerEngine engine) async {
+    try {
+      await player.hardDispose();
+      await playerPool.removeFromCache(engine);
+    } catch (e, s) {
+      log("destroy player error: $e", stackTrace: s);
+    }
+  }
+
+  /// 预加载视频
+  Future<void> preload(String url, List<String> playUrls, Map<String, String> headers) async {
+    if (_disposed || _isClosing) return;
+    final standby = await playerPool.getPlayer(_runtimeEngine!);
+    await preloadManager.preload(standby, url, playUrls, headers);
+  }
+
+  /// 无缝切换到预加载的视频
+  Future<void> seamlessSwitch() async {
+    if (_disposed || _isClosing) return;
+    await preloadManager.switchToStandby();
+    final player = preloadManager.current;
+    if (player == null) return;
+    await _clearSubscriptions();
+    _currentPlayer = player;
+    await _bindPlayerStreams(player);
+  }
+
+  /// 切换播放/暂停
+  Future<void> togglePlayPause() async {
+    if (_currentPlayer == null) return;
+    if (isPlayingNow) {
+      await pause();
+    } else {
+      await resume();
+    }
+  }
+
+  Future<void> pause() async => await _currentPlayer?.pause();
+  Future<void> resume() async => await _currentPlayer?.play();
+
+  /// 停止播放
+  Future<void> stop() async {
+    await close();
+  }
+
+  /// 设置音量
+  Future<void> setVolume(double volume) async {
+    await _currentPlayer?.setVolume(volume.clamp(0.0, 1.0));
+  }
+
+  /// 更改视频填充模式
+  void changeVideoFit(int index) => videoFitIndex.value = index;
+
+  /// 进入 PIP 画中画模式（桌面端通过窗口实现）
+  Future<void> enablePip() async {
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      await WindowHelper.instance.enterPiP(currentVideoRatio);
+      isInPip.value = true;
+    }
+  }
+
+  /// 退出 PIP 画中画模式
+  Future<void> exitPip() async {
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      await WindowHelper.instance.exitPiP();
+      isInPip.value = false;
+    }
+  }
+
+  /// 获取视频渲染组件
+  Widget getVideoWidget(int fitIndex, {Widget? controls, required List<BoxFit> fitList}) {
+    return PureLivePipWidget(
+      child: Container(
+        color: Colors.black,
+        padding: const EdgeInsets.all(0),
+        child: StreamBuilder<bool>(
+          stream: onPlaying,
+          initialData: isPlayingNow,
+          builder: (context, snapshot) {
+            if (_currentPlayer == null) {
+              return _buildPlaceholder();
+            }
+            final boxFit = fitList[fitIndex];
+            final content = KeyedSubtree(
+              key: videoKey.value,
+              child: Container(
+                color: Colors.black,
+                width: double.infinity,
+                height: double.infinity,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black,
+                        child: FittedBox(
+                          fit: boxFit,
+                          clipBehavior: Clip.hardEdge,
+                          child: StreamBuilder<List<int?>>(
+                            stream: CombineLatestStream.list([width, height]),
+                            builder: (context, snapshot) {
+                              final vW = snapshot.data?[0]?.toDouble() ?? 1920.0;
+                              final vH = snapshot.data?[1]?.toDouble() ?? 1080.0;
+                              return SizedBox(
+                                width: vW,
+                                height: vH,
+                                child: _currentPlayer!.getVideoWidget(),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (controls != null) Positioned.fill(child: controls),
+                  ],
+                ),
+              ),
+            );
+            return content;
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      color: Colors.black,
+      child: AppStatusView(type: AppStatusType.loading, title: "", subtitle: ""),
+    );
+  }
+
+  /// 关闭播放器
+  Future<void> close() async {
+    _sessionId++;
+    _isClosing = true;
+    await softStop();
+    _isClosing = false;
+  }
+
+  /// 软停止（保留播放器实例）
+  Future<void> softStop() async {
+    lineManager.reset();
+    try {
+      if (_stateSubject.value == PlayerState.error) {
+        await hardDispose();
+        return;
+      }
+      await _currentPlayer?.softStop();
+      _stateSubject.add(PlayerState.idle);
+      _playingSubject.add(false);
+    } catch (e) {
+      await hardDispose();
+    }
+  }
+
+  /// 硬销毁（释放所有资源）
+  Future<void> hardDispose() async {
+    lineManager.reset();
+    await _clearSubscriptions();
+    if (_runtimeEngine != null) {
+      await playerPool.removeFromCache(_runtimeEngine!);
+    }
+    _currentPlayer = null;
+    _runtimeEngine = null;
+    isInitialized.value = false;
+  }
+
+  /// 重试播放
+  Future<void> retry() async {
+    await replay();
+  }
+
+  /// 处理播放错误
+  Future<void> _handleError(PlayerException error, {int? sessionId}) async {
+    if (_disposed || _isClosing) return;
+    if (_isHandlingError) {
+      log("skip duplicated error handling: ${error.message}", name: "PlayerManager");
+      return;
+    }
+    final mySessionId = sessionId ?? _sessionId;
+    if (!_isSessionValid(mySessionId)) return;
+
+    _isHandlingError = true;
+    try {
+      hasError.value = true;
+      _errorSubject.add(error);
+      _stateSubject.add(PlayerState.error);
+
+      // 1. 尝试线路降级
+      bool lineSwitched = false;
+      if ((error.type == PlayerErrorType.network || error.type == PlayerErrorType.source) &&
+          _currentPlayUrls.length > 1) {
+        lineManager.markFailed(_currentUrl!);
+        if (!lineManager.hasAvailable(_currentPlayUrls)) {
+          log("no available lines, fallback engine", name: "PlayerManager");
+        } else {
+          final nextLine = lineManager.next(_currentPlayUrls);
+          if (nextLine != _currentUrl) {
+            lineSwitched = true;
+            log("switch line => $nextLine", name: "PlayerManager");
+            await Future.delayed(const Duration(seconds: 2));
+            if (!_isSessionValid(mySessionId)) return;
+            await play(nextLine, _currentPlayUrls, _currentHeaders, room: _currentFloatRoom);
+            return;
+          }
+        }
+      }
+
+      // 2. 尝试引擎降级
+      log("error type: ${error.type}", name: "PlayerManager");
+      if (!lineSwitched && fallbackManager.shouldFallback(error)) {
+        final nextEngine = await fallbackManager.fallback(_runtimeEngine!, error);
+        if (nextEngine == _runtimeEngine) {
+          log("skip fallback: nextEngine(${nextEngine.name}) == currentEngine(${_runtimeEngine?.name})",
+              name: "PlayerManager");
+          return;
+        }
+        log(
+          "fallback engine: ${_runtimeEngine?.name} -> ${nextEngine.name}",
+          name: "PlayerManager",
+        );
+        _isSwitchingDueToFallback = true;
+        await Future.delayed(const Duration(milliseconds: 1200));
+        if (!_isSessionValid(mySessionId)) return;
+        await switchEngine(nextEngine, isManual: false);
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (!_isSessionValid(mySessionId)) return;
+        await replay();
+        return;
+      }
+    } catch (e, s) {
+      log("_handleError failed: $e", stackTrace: s, name: "PlayerManager");
+    } finally {
+      _isHandlingError = false;
+    }
+  }
+
+  /// 绑定播放器状态流
+  Future<void> _bindPlayerStreams(UnifiedPlayer player) async {
+    await _clearSubscriptions();
+    _subscriptions.add(
+      player.onPlaying.listen((event) async {
+        _playingSubject.add(event);
+        if (event) {
+          hasError.value = false;
+          _stateSubject.add(PlayerState.playing);
+          if (_isSwitchingDueToFallback) {
+            _isSwitchingDueToFallback = false;
+          }
+        } else {
+          _stateSubject.add(PlayerState.paused);
+        }
+      }),
+    );
+    _subscriptions.add(
+      player.onLoading.listen((event) {
+        _loadingSubject.add(event);
+        if (event && _stateSubject.value != PlayerState.buffering) {
+          _stateSubject.add(PlayerState.buffering);
+        }
+      }),
+    );
+    _subscriptions.add(
+      player.onComplete.listen((event) {
+        _completeSubject.add(event);
+      }),
+    );
+    _subscriptions.add(
+      player.onStateChanged.listen((event) {
+        _stateSubject.add(event);
+      }),
+    );
+    _subscriptions.add(
+      player.onError.listen((error) {
+        if (!_isHandlingError) {
+          _handleError(error);
+        }
+      }),
+    );
+    _subscriptions.add(
+      player.width.listen((event) {
+        _widthSubject.add(event);
+      }),
+    );
+    _subscriptions.add(
+      player.height.listen((event) {
+        _heightSubject.add(event);
+      }),
+    );
+    _subscriptions.add(
+      CombineLatestStream.combine2<int?, int?, bool>(
+        width.where((w) => w != null && w > 0),
+        height.where((h) => h != null && h > 0),
+        (w, h) => h! >= w!,
+      ).distinct().listen((event) {
+        isVerticalVideo.value = event;
+      }),
+    );
+  }
+
+  /// 清除所有流订阅
+  Future<void> _clearSubscriptions() async {
+    if (_subscriptions.isEmpty) return;
+    for (final item in _subscriptions.toList()) {
+      await item.cancel();
+    }
+    _subscriptions.clear();
+  }
+
+  /// 销毁播放器管理器
+  Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+    _sessionId++;
+    _isClosing = true;
+    _hideTimer?.cancel();
+    await _clearSubscriptions();
+    await playerPool.disposeAll();
+    await Future.wait([
+      _stateSubject.close(),
+      _playingSubject.close(),
+      _loadingSubject.close(),
+      _completeSubject.close(),
+      _errorSubject.close(),
+      _widthSubject.close(),
+      _heightSubject.close(),
+    ]);
+  }
+}

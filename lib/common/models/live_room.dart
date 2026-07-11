@@ -14,6 +14,7 @@ class LiveRoom {
   String? watching = '';
   String? followers = '';
   String? platform = 'UNKNOWN';
+  List<String> tagIds = [];
 
   /// 介绍
   String? introduction;
@@ -57,7 +58,9 @@ class LiveRoom {
       this.status = false,
       this.notice,
       this.introduction,
-      this.recordWatching});
+      this.recordWatching,
+      List<String>? tagIds})
+      : tagIds = tagIds ?? [];
 
   LiveRoom.fromJson(Map<String, dynamic> json)
       : roomId = json['roomId'] ?? '',
@@ -71,6 +74,7 @@ class LiveRoom {
         watching = json['watching'] ?? '',
         followers = json['followers'] ?? '',
         platform = json['platform'] ?? '',
+        tagIds = List<String>.from(json['tagIds'] ?? []),
         liveStatus = LiveStatus.values[json['liveStatus'] ?? 1],
         status = json['status'] ?? false,
         notice = json['notice'] ?? '',
@@ -89,6 +93,7 @@ class LiveRoom {
         'watching': watching,
         'followers': followers,
         'platform': platform,
+        'tagIds': tagIds,
         'liveStatus': liveStatus?.index ?? 1,
         'isRecord': isRecord,
         'status': status,

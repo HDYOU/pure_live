@@ -87,6 +87,8 @@ class FlutterCatchError {
     await my_http_client.HttpClient.initHttp();
     WidgetsFlutterBinding.ensureInitialized();
     PrefUtil.prefs = await SharedPreferences.getInstance();
+    // 初始化 Hive 偏好设置
+    await HivePrefUtil.init();
     MediaKit.ensureInitialized();
 
     // 全局限制：最多 50 张，总内存 50MB（按设备可微调）

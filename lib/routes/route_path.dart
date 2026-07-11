@@ -82,4 +82,10 @@ class RoutePath {
   /// 站点web登录
   static const kSiteWebLogin = "/site_web_login";
   static const kLog = "/log";
+
+  /// 标签管理
+  static const kTagManagement = "/tag_management";
+
+  /// WebDAV
+  static const kWebDav = "/web_dav";
 }

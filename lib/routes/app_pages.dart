@@ -38,6 +38,10 @@ import 'package:pure_live/modules/site_account/site_account_bing.dart';
 import 'package:pure_live/modules/site_account/site_account_page.dart';
 import 'package:pure_live/modules/toolbox/boolbox_binding.dart';
 import 'package:pure_live/modules/toolbox/toolbox_page.dart';
+import 'package:pure_live/modules/tags/tag_management_binding.dart';
+import 'package:pure_live/modules/tags/tag_management_page.dart';
+import 'package:pure_live/modules/web_dav/web_dav_binding.dart';
+import 'package:pure_live/modules/web_dav/web_dav_page.dart';
 
 import '../modules/history/history_binding.dart';
 import 'route_path.dart';
@@ -192,5 +196,19 @@ class AppPages {
     ),
     // 日志
     GetPage(name: RoutePath.kLog, page: () => const LogsPage()),
+
+    // 标签管理
+    GetPage(
+      name: RoutePath.kTagManagement,
+      page: () => const TagManagementPage(),
+      bindings: [TagManagementBinding()],
+    ),
+
+    // WebDAV
+    GetPage(
+      name: RoutePath.kWebDav,
+      page: () => WebDavPage(),
+      bindings: [WebDavBinding()],
+    ),
   ];
 }

@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pure_live/common/index.dart';
 import 'package:pure_live/common/services/bilibili_account_service.dart';
@@ -18,12 +20,17 @@ import 'setting_mixin/setting_bit_rate.dart';
 import 'setting_mixin/setting_network_proxy.dart' show SettingNetworkProxy;
 import 'setting_mixin/setting_video_play.dart';
 import 'setting_mixin/setting_webdav.dart';
+import 'settings/iptv_settings_controller.dart';
 
 class SettingsService extends GetxController
     with AutoShutDownMixin, SettingBitRateMixin, SettingWebdavMixin, SettingVideoPlayMixin
     , SettingNetworkProxy
 {
   static SettingsService get instance => Get.find<SettingsService>();
+  static SettingsService get to => Get.find<SettingsService>();
+
+  /// IPTV 设置控制器
+  final IptvSettingsController iptv = IptvSettingsController();
 
   var playerShowSuperChat = true.obs;
 
@@ -253,8 +260,14 @@ class SettingsService extends GetxController
   Future<void> changeLanguage(String value) async {
     languageName.value = value;
     PrefUtil.setString('language', value);
-    Get.updateLocale(language);
-    await S.load(SettingsService.languages[SettingsService.instance.languageName.value]!);
+    final newLocale = language;
+    Get.updateLocale(newLocale);
+    await S.load(newLocale);
+    // 同步更新 EasyLocalization 的 locale
+    final context = Get.context;
+    if (context != null) {
+      await EasyLocalization.of(context)?.setLocale(newLocale);
+    }
   }
 
   void changePlayer(int value) {

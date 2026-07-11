@@ -63,6 +63,16 @@ dependencies:
   # database
   supabase_flutter: ^2.8.3
   email_validator: ^3.0.0
+  # Local database (SQLite) for IPTV
+  drift: ^2.33.0
+  sqlite3_flutter_libs: ^0.6.0+eol
+  charset_converter: ^2.3.0
+  synchronized: ^3.1.0
+  equatable: ^2.0.7
+  collection: ^1.18.0
+  xml: ^6.5.0
+  archive: ^4.0.4
+  string_similarity: ^2.0.0
   font_awesome_flutter: ^10.8.0
   # video player mobile
 #  media_kit: ^1.1.11                          # Primary package.
@@ -83,6 +93,11 @@ dependencies:
   flutter_color: ^2.1.0
   crypto_simple: ^3.0.0
   window_manager: ^0.5.1
+  screen_retriever:
+    git:
+      url: https://ghfast.top/https://github.com/liuchuancong/screen_retriever.git
+      path: ./packages/screen_retriever
+      ref: main
 #  url_protocol:
 #    git:
 #      url: https://github.com/LucasXu0/flutter_url_protocol
@@ -113,6 +128,8 @@ dependencies:
   permission_handler: ^12.0.1
   shared_preferences: ^2.3.5
   flutter_cache_manager: ^3.3.1
+  hive_ce: ^2.15.1 # Hive本地数据库
+  hive_ce_flutter: ^2.3.3 # Hive Flutter集成
   # utils
   get: ^5.0.0-release-candidate-9.3.2
   intl: ^0.20.2
@@ -154,14 +171,20 @@ dependencies:
   uuid: ^4.4.2   # 用于生成 UUID
   auto_orientation: ^2.3.1 #屏幕方向
   device_info_plus: ^12.3.0 #设备信息
+  package_info_plus: ^8.0.2 #包信息
   canvas_danmaku: ^0.3.1    #弹幕
   flame: ^1.37.0           #Flame游戏引擎
   flame_ui: ^0.2.0         #Flame UI组件库
   flame_barrage: ^0.0.3    #Flame弹幕引擎
+  syncfusion_flutter_sliders: ^27.1.50 #滑块组件
+  rxdart: ^0.28.0 #响应式编程
   # 防抖节流
   easy_debounce: ^2.0.3
 #  floating: ^5.0.1 #PIP画中画
-#  lottie: ^3.3.2 #lottie动画
+  lottie: ^3.3.2 #lottie动画
+  flutter_spinkit: ^5.2.1 #加载动画
+  flutter_reorderable_grid_view: ^5.6.0 #可拖拽排序网格
+  mime: ^2.0.0 #MIME类型处理
 #  archive: ^4.0.7 #文件压缩
 #  flutter_svg: ^2.0.13
   image_gallery_saver_plus: ^4.0.1 #图片保存到相册
@@ -183,6 +206,7 @@ dependencies:
 
   catcher_2: ^2.1.0 #异常日志捕获
   loading_indicator: ^3.1.1 #加载中样式
+  easy_localization: ^3.0.8 #多语言
  #  MPV 播放器
   media_kit:
     git:
@@ -253,6 +277,11 @@ dependency_overrides:
       url: https://ghfast.top/https://github.com/Predidit/media-kit.git
       ref: main
       path: ./libs/macos/media_kit_libs_macos_video
+  screen_retriever:
+    git:
+      url: https://ghfast.top/https://github.com/liuchuancong/screen_retriever.git
+      path: ./packages/screen_retriever
+      ref: main
 
 
 dev_dependencies:
@@ -264,6 +293,7 @@ dev_dependencies:
   protoc_builder: ^0.4.1
   flutter_launcher_icons: ^0.14.2
   msix: ^3.16.7
+  drift_dev: ^2.33.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -311,10 +341,18 @@ flutter:
     - assets/js/
     - assets/keystore/
     - assets/keystore/supabase.json
+    - assets/emo/images/huya/
+    - assets/emo/images/douyu/
+    - assets/emo/images/bilibili/
+    - assets/emo/json/
     # - assets/pure_live_web/
     - assets/js/webmssdk.js
     - assets/js/
     - assets/shaders/
+    - assets/translations/
+    - assets/animations/loading.json
+    - assets/animations/empty.json
+    - assets/animations/error.json
     # - assets/pure_live_web/assets/
     # - assets/pure_live_web/assets/assets/icons/
     # - assets/pure_live_web/assets/assets/images/

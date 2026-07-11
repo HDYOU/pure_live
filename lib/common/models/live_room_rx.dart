@@ -15,6 +15,7 @@ class LiveRoomRx {
   Rx<String?> watching = ''.obs;
   Rx<String?> followers = ''.obs;
   Rx<String?> platform = 'UNKNOWN'.obs;
+  Rx<List<String>> tagIds = <String>[].obs;
 
   LiveRoomRx();
 
@@ -57,6 +58,7 @@ class LiveRoomRx {
     liveRoomRx.watching.value = liveRoom.watching.appendTxt("");
     liveRoomRx.followers.value = liveRoom.followers.appendTxt("");
     liveRoomRx.platform.value = liveRoom.platform.appendTxt("");
+    liveRoomRx.tagIds.value = List<String>.from(liveRoom.tagIds);
     liveRoomRx.introduction.value = liveRoom.introduction.appendTxt("");
     liveRoomRx.notice.value = liveRoom.notice.appendTxt("");
     liveRoomRx.status.value = liveRoom.status ?? false;
@@ -82,6 +84,7 @@ class LiveRoomRx {
       ..watching = watching.value
       ..followers = followers.value
       ..platform = platform.value
+      ..tagIds = List<String>.from(tagIds.value)
       ..introduction = introduction.value
       ..notice = notice.value
       ..status = status.value
