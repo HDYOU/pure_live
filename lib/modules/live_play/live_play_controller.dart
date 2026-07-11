@@ -283,6 +283,7 @@ class LivePlayController extends StateController {
     );
     danmakuController.updateOption(danmakuSettingOption);
     subscriptionList.add(settings.danmakuArea.listen((data) {
+      danmakuSettingOption.area = data;
       danmakuSettingOption.hideBottom = data < 0.70;
       danmakuController.updateOption(danmakuSettingOption);
     }));
