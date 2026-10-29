@@ -31,7 +31,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace "com.mystyle.purelive"
+    namespace "com.mystyle.purelive.hdyou"
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
