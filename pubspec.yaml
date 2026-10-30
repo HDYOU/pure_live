@@ -43,7 +43,7 @@ dependencies:
   # network
 #  flutter_js: 0.8.5
   dart_quickjs:
-    git: https://ghfast.top/https://github.com/xiaoyaocz/dart_quickjs.git
+    git: https://github.com/xiaoyaocz/dart_quickjs.git
   html: ^0.15.5
   http: ^1.1.0
   url_launcher: ^6.3.1
@@ -99,7 +99,7 @@ dependencies:
   dio_compatibility_layer: ^0.1.0 # 允许 dio 使用 http 包
   rhttp: ^0.18.0  # 使用 rust 请求http
 #    git:
-#      url: https://ghfast.top/https://github.com/Tienisto/rhttp.git
+#      url: https://github.com/Tienisto/rhttp.git
 #      commit: 8ed4752 # 0.9.2 support text body compressed in gzip and brotli
 #      path: rhttp
   flutter_cache_manager_dio: ^4.0.0
@@ -125,14 +125,14 @@ dependencies:
   crypto: ^3.0.3
   brotli: ^0.6.0
 #  flutter_restart:
-#    git: https://ghfast.top/https://github.com/liuchuancong/flutterRestartPluginWip
+#    git: https://github.com/liuchuancong/flutterRestartPluginWip
   move_to_desktop: ^0.0.2
   dlna_dart: ^0.1.0
 #  dart_tars_protocol:
-#    git: https://ghfast.top/https://github.com/xiaoyaocz/dart_tars_protocol
+#    git: https://github.com/xiaoyaocz/dart_tars_protocol
   tars_dart:
     git:
-      url: https://ghfast.top/https://github.com/xiaoyaocz/dart_simple_live
+      url: https://github.com/xiaoyaocz/dart_simple_live
       path: ./simple_live_core/packages/tars_dart
   html_unescape: ^2.0.0
   flutter_inappwebview: ^6.1.5
@@ -172,12 +172,12 @@ dependencies:
 
   webdav_client:
     git:
-      url: https://ghfast.top/https://github.com/wgh136/webdav_client
+      url: https://github.com/wgh136/webdav_client
       ref: main
   # PIP画中画
   fl_pip:
     git:
-      url: https://ghfast.top/https://github.com/orz12/fl_pip.git
+      url: https://github.com/orz12/fl_pip.git
       ref: main
 
   catcher_2: ^2.1.0 #异常日志捕获
@@ -185,17 +185,17 @@ dependencies:
  #  MPV 播放器
   media_kit:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./media_kit
   media_kit_video:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./media_kit_video
   media_kit_libs_video:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./libs/universal/media_kit_libs_video
 
@@ -214,42 +214,42 @@ dependency_overrides:
   # 依赖覆盖
   media_kit:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./media_kit
   media_kit_video:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./media_kit_video
   media_kit_libs_video:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./libs/universal/media_kit_libs_video
   media_kit_libs_linux:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./libs/linux/media_kit_libs_linux
   media_kit_libs_ios_video:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./libs/ios/media_kit_libs_ios_video
   media_kit_libs_android_video:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./libs/android/media_kit_libs_android_video
   media_kit_libs_windows_video:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./libs/windows/media_kit_libs_windows_video
   media_kit_libs_macos_video:
     git:
-      url: https://ghfast.top/https://github.com/Predidit/media-kit.git
+      url: https://github.com/Predidit/media-kit.git
       ref: main
       path: ./libs/macos/media_kit_libs_macos_video
 
