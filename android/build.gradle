@@ -1,10 +1,10 @@
 buildscript {
     ext.kotlin_version = '2.2.20'
     repositories {
-        maven { url "https://maven.aliyun.com/repository/public" }
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
+        maven { url "https://maven.aliyun.com/repository/public" }
         gradlePluginPortal()
     }
     dependencies {
@@ -15,11 +15,10 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url "https://maven.aliyun.com/repository/public" }
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        gradlePluginPortal()
+        maven { url "https://maven.aliyun.com/repository/public" }
     }
 }
 
