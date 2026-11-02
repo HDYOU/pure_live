@@ -210,12 +210,12 @@ dependency_overrides:
   media_kit:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: upstream
       path: ./media_kit
   media_kit_video:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: upstream
       path: ./media_kit_video
 
 dev_dependencies:
@@ -224,7 +224,7 @@ dev_dependencies:
   change_app_package_name: any
   json_serializable: ^6.9.0
   build_runner: ^2.4.13
-  protoc_builder: ^0.4.1
+  protoc_builder: ^0.6.1
   flutter_launcher_icons: ^0.14.2
   msix: ^3.16.7
 
