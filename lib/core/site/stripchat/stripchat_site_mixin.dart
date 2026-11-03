@@ -24,7 +24,7 @@ mixin StripChatSiteMixin on SiteMixin {
   @override
   String getJumpToWebUrl(LiveRoom liveRoom) {
     try {
-      var webUrl = "https://zh.stripchat.com/${liveRoom.roomId}";
+      var webUrl = "https://zh.stripchat.webcam/${liveRoom.roomId}";
       return webUrl;
     } catch (e) {
       return "";
@@ -102,7 +102,7 @@ mixin StripChatSiteMixin on SiteMixin {
     }
 
     List<RegExp> regExpBeanList = [
-      RegExp(r"stripchat\.com/([^/]+)"),
+      RegExp(r"stripchat\.webcam/([^/]+)"),
       RegExp(r"live\.uaa\.com/([^/]+)"),
     ];
     siteParseBean = await parseUrl(regExpBeanList, realUrl, id);
