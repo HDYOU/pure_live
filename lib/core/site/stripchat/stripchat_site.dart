@@ -5,7 +5,6 @@ import 'package:pure_live/common/models/live_room.dart';
 import 'package:pure_live/common/services/settings_service.dart';
 import 'package:pure_live/core/common/core_log.dart';
 import 'package:pure_live/core/common/http_client.dart';
-import 'package:pure_live/core/danmaku/empty_danmaku.dart';
 import 'package:pure_live/core/interface/live_danmaku.dart';
 import 'package:pure_live/core/interface/live_site.dart';
 import 'package:pure_live/core/site/m3u8_file_util.dart';
@@ -28,16 +27,17 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
   String get name => 'StripChat';
 
   @override
-  LiveDanmaku getDanmaku() => EmptyDanmaku();
+  LiveDanmaku getDanmaku() => StripChatDanmaku();
 
   static const defaultUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36";
   static const baseUrl = "https://www.stripchat.com";
+  static const apiHost = "https://zh.virtualtaboo.live";
 
   Map<String, String> getHeaders() {
     return {
       'Accept': '*/*',
-      'Origin': baseUrl,
-      'Referer': '$baseUrl/',
+      'Origin': apiHost,
+      'Referer': '$apiHost/',
       'Sec-Fetch-Dest': 'empty',
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-site',
@@ -56,52 +56,49 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
     List<LivePlayQuality> qualities = <LivePlayQuality>[];
     CoreLog.d("detail.data: ${jsonEncode(detail.data)}");
     var data = (detail.data as Map);
-    var playList = data["PlayList"] ?? {};
+    var camData = data['cam'] ?? {};
+    var streamName = camData['streamName'] ?? detail.userId;
+    var userId = detail.userId ?? "";
 
-    var url = "https://edge-hls.growcdnssedge.com/hls/${detail.userId}/master/${detail.userId}_auto.m3u8";
-    var parseHlsPlaylist = await _parseHlsPlaylist(url, "");
-    qualities.addAll(parseHlsPlaylist);
-    if (parseHlsPlaylist.isNotEmpty) {
-      var livePlyer = parseHlsPlaylist[0];
-      var playUrlInfo = livePlyer.playUrlList[0];
-      // https://media-hls.growcdnssedge.com/b-hls-29/200729634/200729634_480p.m3u8
-      var playUrl = playUrlInfo.playUrl;
-      var info = playUrlInfo.info;
-      var replacePlayUrl = playUrl.replaceFirst(RegExp(r"_\d+p\.m3u8"), ".m3u8");
-      if (playUrl != replacePlayUrl) {
+    var hlsBaseUrl = "$apiHost/hls/$userId/master/$streamName.m3u8";
+    CoreLog.d("hlsBaseUrl: $hlsBaseUrl");
+
+    try {
+      var response = await HttpClient.instance.getText(hlsBaseUrl, header: getHeaders());
+      var list = M3u8FileUtil.parseM3u8File(response, info: "");
+      qualities.addAll(list);
+    } catch (e) {
+      CoreLog.error("解析HLS失败: $hlsBaseUrl $e");
+    }
+
+    if (qualities.isEmpty) {
+      var autoUrl = "$apiHost/hls/$userId/master/$streamName_auto.m3u8";
+      try {
+        var response = await HttpClient.instance.getText(autoUrl, header: getHeaders());
+        var list = M3u8FileUtil.parseM3u8File(response, info: "");
+        qualities.addAll(list);
+      } catch (e) {
+        CoreLog.error("解析auto HLS失败: $autoUrl $e");
+      }
+    }
+
+    if (qualities.isNotEmpty) {
+      var firstQuality = qualities.first;
+      var firstUrl = firstQuality.playUrlList.isNotEmpty ? firstQuality.playUrlList[0].playUrl : "";
+      var fallbackUrl = firstUrl.replaceFirst(RegExp(r'_\d+p\.m3u8$'), '.m3u8');
+      if (firstUrl != fallbackUrl && fallbackUrl.isNotEmpty) {
         var resolutionNum = 720;
         var bitRate = M3u8FileUtil.resolutionToBitRate(resolutionNum);
         var qualityName = M3u8FileUtil.resolutionToQualityName(resolutionNum);
-        var livePlayQuality = LivePlayQuality(quality: qualityName, sort: bitRate, bitRate: bitRate);
-
-        livePlayQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: replacePlayUrl, info: "($qualityName avc)"));
-
-        qualities.add(livePlayQuality);
+        var fallbackQuality = LivePlayQuality(quality: qualityName, sort: bitRate, bitRate: bitRate);
+        fallbackQuality.playUrlList.add(LivePlayQualityPlayUrlInfo(playUrl: fallbackUrl, info: "($qualityName avc)"));
+        qualities.add(fallbackQuality);
       }
     }
+
     qualities = LiveUtil.combineLivePlayQuality(qualities);
     qualities.sort((a, b) => b.bitRate.compareTo(a.bitRate));
     return Future.value(qualities);
-  }
-
-  /// 解析HLS播放列表
-  Future<List<LivePlayQuality>> _parseHlsPlaylist(String hlsUrl, String info) async {
-    try {
-      final response = await HttpClient.instance.getText(
-        hlsUrl,
-        header: getHeaders(),
-      );
-      CoreLog.d("response: ${response}");
-      var list = M3u8FileUtil.parseM3u8File(
-        response,
-        info: info,
-        otherInfoPattern: RegExp("NAME=\"([a-zA-Z0-9]+)\""),
-      );
-      return list;
-    } catch (e) {
-      CoreLog.error("解析HLS播放列表失败: key:${info} url: ${hlsUrl} ${e.toString()}");
-    }
-    return [];
   }
 
   @override
@@ -113,7 +110,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
   Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
     var pageSize = 60;
     var offset = (page - 1) * pageSize;
-    var url = "https://zh.virtualtaboo.live/api/front/models";
+    var url = "$apiHost/api/front/models";
     var result = await HttpClient.instance.getJson(
       url,
       queryParameters: {
@@ -133,15 +130,14 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
         "mvPrm": "false",
         "decMb": "false",
         "ctryTop": "false",
-        //"guestHash": "4a00b9494986dce513af898b5d752ac88598038de7d540b00a8b038b57e088c6",
-        //"uniq": "j2c15d4kb79ny83p"
       },
       header: getHeaders(),
     );
     var items = <LiveRoom>[];
-    CoreLog.d("$result");
+    CoreLog.d("getRecommendRooms result length: ${result.toString().length}");
     result = JsonUtil.decode(result);
-    for (var item in result["models"]) {
+    var models = result["models"] as List? ?? result["blocks"]?[0]?["models"] as List? ?? [];
+    for (var item in models) {
       var liveRoom = parseToLiveRoom(item);
       items.add(liveRoom);
     }
@@ -153,66 +149,81 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
     try {
       var roomId = detail.roomId ?? "";
-      var url = "https://zh.virtualtaboo.live/api/front/v2/models/username/${roomId}/cam";
+      var url = "$apiHost/api/front/v2/models/username/${roomId}/cam";
       var resultText = await HttpClient.instance.getJson(
         url,
-        queryParameters: {},
+        queryParameters: {"timezoneOffset": "-480", "triggerRequest": "loadCam", "withRecentShow": "1"},
         header: getHeaders(),
       );
 
-      CoreLog.d("resultText: ${jsonEncode(resultText)}");
+      CoreLog.d("resultText keys: ${resultText?.keys}");
       resultText = JsonUtil.decode(resultText);
-      var jsonObj = resultText['user']['user'];
-      roomId = jsonObj["username"].toString();
-      var userId = jsonObj["id"].toString();
-      var danmakuArgs = StripChatDanmakuArgs(roomId: roomId, token: "", userId: userId);
-      var liveRoom = parseToLiveRoom(jsonObj);
+
+      var userObj = resultText['user']?['user'] ?? {};
+      var camObj = resultText['cam'] ?? {};
+      var configObj = resultText['config'] ?? {};
+
+      roomId = userObj["username"].toString();
+      var userId = userObj["id"].toString();
+      var streamName = (camObj["streamName"] ?? userId).toString();
+      var status = userObj["status"]?.toString() ?? "offline";
+      var isLive = status == "public";
+
+      var websocketUrl = configObj["websocketUrl"]?.toString() ?? "";
+      var websocketToken = configObj["websocketToken"]?.toString() ?? "";
+      CoreLog.d("websocketUrl: $websocketUrl, websocketToken: $websocketToken, streamName: $streamName");
+
+      var danmakuArgs = StripChatDanmakuArgs(
+        roomId: roomId,
+        token: websocketToken,
+        userId: userId,
+        websocketUrl: websocketUrl,
+      );
+      var liveRoom = parseToLiveRoom(userObj, camObj: camObj);
       liveRoom.danmakuData = danmakuArgs;
       liveRoom.data = resultText;
+      liveRoom.userId = userId;
+      liveRoom.status = isLive;
+      liveRoom.liveStatus = isLive ? LiveStatus.live : LiveStatus.offline;
 
       return liveRoom;
     } catch (e) {
-      CoreLog.error(e);
+      CoreLog.error("getRoomDetail error: $e");
       return getLiveRoomWithError(detail);
     }
   }
 
   dynamic getByKeyList(Map jsonObj, List<String> keys) {
     for (var key in keys) {
-      if(jsonObj.containsKey(key)){
+      if (jsonObj.containsKey(key)) {
         return jsonObj[key];
       }
     }
     return null;
   }
 
-  LiveRoom parseToLiveRoom(Map jsonObj) {
-    var isLive = jsonObj["isLive"] ?? false;
-    if(isLive){
-      isLive = jsonObj["status"] == "public";
-    }
-    // var startTime = jsonObj["startTime"].toString(); // "startTime": "2025-12-23 11:02:51", "endTime": "0000-00-00 00:00:00",
-    var roomId = jsonObj["username"].toString();
-    var userId = jsonObj["id"].toString();
+  LiveRoom parseToLiveRoom(Map jsonObj, {Map<dynamic, dynamic>? camObj}) {
+    var status = jsonObj["status"]?.toString() ?? "offline";
+    var isLive = status == "public";
+    var topic = camObj?["topic"]?.toString() ?? jsonObj["topic"]?.toString() ?? "";
+    var viewers = jsonObj["viewersCount"]?.toString() ?? jsonObj["favoritedCount"]?.toString() ?? "0";
     var snapshotTimestamp = jsonObj["snapshotTimestamp"];
+    var userId = jsonObj["id"].toString();
     var cover = "";
     if (snapshotTimestamp != null) {
-      cover = "https://img.doppiocdn.org/thumbs/$snapshotTimestamp/$userId";
+      cover = "$apiHost/thumbs/$snapshotTimestamp/$userId";
     }
 
-    // CoreLog.d("cover: ${cover}");
-
     return LiveRoom(
-      roomId: roomId,
+      roomId: jsonObj["username"].toString(),
       userId: userId,
       nick: jsonObj["username"].toString(),
-      title: (getByKeyList(jsonObj, ["offlineStatus", "groupShowTopic", "topic"])).toString(),
-      watching: (getByKeyList(jsonObj, ["favoritedCount", "viewersCount"])).toString(),
+      title: topic,
+      watching: viewers,
       cover: cover.toString().replaceFirst("https://", "https://i2.wp.com/"),
-      avatar: (getByKeyList(jsonObj, ["previewUrlThumbSmall"])).toString().replaceFirst("https://", "https://i2.wp.com/"),
-      // ivsThumbnail
+      avatar: (getByKeyList(jsonObj, ["previewUrlThumbSmall", "avatarUrl"]) ?? "").toString().replaceFirst("https://", "https://i2.wp.com/"),
       area: '',
-      introduction: '',
+      introduction: jsonObj["description"]?.toString() ?? '',
       notice: '',
       status: isLive,
       liveStatus: isLive ? LiveStatus.live : LiveStatus.offline,
@@ -224,25 +235,21 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
   Future<LiveSearchRoomResult> searchRooms(String keyword, {int page = 1}) async {
     var pageSize = 60;
     var offset = (page - 1) * pageSize;
-    var url = "https://zh.virtualtaboo.live/api/front/v5/models/search/group/all";
+    var url = "$apiHost/api/front/v4/models/search/suggestion";
     var result = await HttpClient.instance.getJson(
       url,
       queryParameters: {
         "query": keyword,
         "limit": pageSize,
-        "offset": offset,
         "primaryTag": "girls",
-        "includeCvSearchResults": "false",
-        "rcmGrp": "A",
-        "oRcmGrp": "A",
-      //  "uniq": "av5tfx71r2036wse"
       },
       header: getHeaders(),
     );
     var items = <LiveRoom>[];
-    CoreLog.d("$result");
+    CoreLog.d("searchRooms result: ${result.toString().length}");
     result = JsonUtil.decode(result);
-    for (var item in result["groups"]?["username"]?["models"]) {
+    var models = result["models"] as List? ?? [];
+    for (var item in models) {
       var liveRoom = parseToLiveRoom(item);
       items.add(liveRoom);
     }

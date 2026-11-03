@@ -11,17 +11,12 @@ class StripChatDanmaku implements LiveDanmaku {
   WebScoketUtils? webScoketUtils;
 
   @override
-  int heartbeatTime = 60 * 1000; //默认是60s
-
-  var serverUrl = "wss://chat-ws.neolive.kr/connection/websocket";
+  int heartbeatTime = 60 * 1000;
 
   static final _msgRegex = RegExp(r'"message":"(.+?)"');
   static final _senderRegex = RegExp(r'"nk":"(.+?)"');
   static final _createTimeRegex = RegExp(r'"created_at":(\d+)');
   static final _idxRegex = RegExp(r'"idx":"(\d+)"');
-
-  // 正则匹配直播间URL
-  static final _urlRegex = RegExp(r'https?://[^/]+/([^/?]+)');
 
   @override
   Function(String msg)? onClose;
@@ -34,7 +29,6 @@ class StripChatDanmaku implements LiveDanmaku {
 
   @override
   void heartbeat() {
-    // 发送心跳包
     final heartbeatPacket = jsonEncode({
       'method': '7',
       'id': '${_sendId++}',
@@ -44,8 +38,16 @@ class StripChatDanmaku implements LiveDanmaku {
 
   @override
   Future start(args) async {
+    var danmakuArgs = args as StripChatDanmakuArgs;
+    var serverUrl = danmakuArgs.websocketUrl;
+    if (serverUrl.isEmpty) {
+      CoreLog.w("websocketUrl is empty, skip danmaku");
+      onReady?.call();
+      return;
+    }
+    CoreLog.d("connect danmaku websocket: $serverUrl");
     var headers = {
-      'Origin': 'https://www.pandalive.co.kr',
+      'Origin': 'https://zh.virtualtaboo.live',
     };
     webScoketUtils = WebScoketUtils(
       url: serverUrl,
@@ -56,7 +58,7 @@ class StripChatDanmaku implements LiveDanmaku {
       },
       onReady: () {
         onReady?.call();
-        joinRoom(args);
+        joinRoom(danmakuArgs);
       },
       onHeartBeat: () {
         heartbeat();
@@ -73,28 +75,24 @@ class StripChatDanmaku implements LiveDanmaku {
 
   int _sendId = 1;
 
-  Future<void> joinRoom(args) async {
-    args = args as StripChatDanmakuArgs;
-
-    // 认证数据包
-    final authPacket = jsonEncode({
-      'id': _sendId++,
-      'params': {
-        'token': args.token,
-        'name': 'js',
-      }
-    });
-
-    // 加入频道数据包
+  Future<void> joinRoom(StripChatDanmakuArgs args) async {
+    if (args.token.isNotEmpty) {
+      final authPacket = jsonEncode({
+        'id': _sendId++,
+        'params': {
+          'token': args.token,
+          'name': 'js',
+        }
+      });
+      webScoketUtils?.sendMessage(authPacket);
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
     final joinChannelPacket = jsonEncode({
       'method': 1,
       'params': {'channel': args.userId},
       'id': _sendId++,
     });
-
-    webScoketUtils?.sendMessage(authPacket);
-    await Future.delayed(const Duration(milliseconds: 100)); // 避免消息发送过快
-    webScoketUtils?..sendMessage(joinChannelPacket);
+    webScoketUtils?.sendMessage(joinChannelPacket);
   }
 
   @override
@@ -116,7 +114,6 @@ class StripChatDanmaku implements LiveDanmaku {
         return;
       }
 
-      // 解析弹幕
       final danmuList = _decodeDanmu(msg);
       if (danmuList.isNotEmpty) {
         for (var item in danmuList) {
@@ -128,32 +125,18 @@ class StripChatDanmaku implements LiveDanmaku {
     }
   }
 
-  /// 解析弹幕消息
   List<LiveMessage> _decodeDanmu(String msg) {
     final supportedTypes = ['chatter', 'manager'];
-
-    CoreLog.d("pandatv msg: ${msg}");
-    // 检查是否是支持的弹幕类型
     if (!supportedTypes.any((type) => msg.contains('"type":"$type"'))) {
       return [];
     }
 
-    // 提取弹幕内容
     final msgMatch = _msgRegex.firstMatch(msg);
     if (msgMatch == null) return [];
     var message = msgMatch.group(1)!;
 
-    // 提取发送者
     final senderMatch = _senderRegex.firstMatch(msg);
     final sender = senderMatch?.group(1) ?? '';
-
-    // 提取创建时间
-    final timeMatch = _createTimeRegex.firstMatch(msg);
-    final createTime = timeMatch != null ? int.tryParse(timeMatch.group(1)!) ?? 0 : 0;
-
-    // 提取用户ID
-    final idxMatch = _idxRegex.firstMatch(msg);
-    final idx = idxMatch != null ? int.tryParse(idxMatch.group(1)!) ?? 0 : 0;
 
     message = message.replaceAll("\\n", "\n");
     return [
@@ -161,9 +144,6 @@ class StripChatDanmaku implements LiveDanmaku {
         type: LiveMessageType.chat,
         userName: sender,
         message: message,
-        // userLevel: ,
-        // fansName: ,
-        // fansLevel: ,
         color: Colors.white,
       )
     ];
@@ -174,6 +154,12 @@ class StripChatDanmakuArgs {
   final String roomId;
   final String userId;
   final String token;
+  final String websocketUrl;
 
-  StripChatDanmakuArgs({required this.roomId, required this.token, required this.userId});
+  StripChatDanmakuArgs({
+    required this.roomId,
+    required this.token,
+    required this.userId,
+    this.websocketUrl = "",
+  });
 }
