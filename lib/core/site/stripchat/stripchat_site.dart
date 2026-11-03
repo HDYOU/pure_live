@@ -62,19 +62,20 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
     var isLive = detail.status ?? false;
     var suffix = isLive ? '_auto' : '_160p_blurred';
 
-    if (hlsHosts.isNotEmpty) {
-      var cdnHost = hlsHosts[0].toString();
-      var hlsUrl = "https://edge-hls.$cdnHost/hls/$streamName/master/$streamName$suffix.m3u8?pkey=bXorqTB5ZhP5FcpX";
-      CoreLog.d("hlsUrl: $hlsUrl");
-      var parseHlsPlaylist = await _parseHlsPlaylist(hlsUrl, "");
-      qualities.addAll(parseHlsPlaylist);
-    }
+    var allUrls = <String>[];
 
-    if (qualities.isEmpty) {
-      var fallbackUrl = "$apiHost/hls/$streamName/master/$streamName$suffix.m3u8?pkey=bXorqTB5ZhP5FcpX";
-      CoreLog.d("fallback hlsUrl: $fallbackUrl");
-      var parseHlsPlaylist = await _parseHlsPlaylist(fallbackUrl, "");
-      qualities.addAll(parseHlsPlaylist);
+    if (hlsHosts.isNotEmpty) {
+      for (var host in hlsHosts) {
+        var cdnHost = host.toString();
+        allUrls.add("https://edge-hls.$cdnHost/hls/$streamName/master/$streamName$suffix.m3u8?pkey=bXorqTB5ZhP5FcpX");
+      }
+    }
+    allUrls.add("$apiHost/hls/$streamName/master/$streamName$suffix.m3u8?pkey=bXorqTB5ZhP5FcpX");
+
+    CoreLog.d("allUrls: $allUrls");
+    var results = await Future.wait(allUrls.map((url) => _parseHlsPlaylist(url, "")));
+    for (var list in results) {
+      qualities.addAll(list);
     }
 
     if (qualities.isNotEmpty) {
