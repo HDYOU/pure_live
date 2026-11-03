@@ -113,7 +113,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
   Future<LiveCategoryResult> getRecommendRooms({int page = 1, required String nick}) async {
     var pageSize = 60;
     var offset = (page - 1) * pageSize;
-    var url = "https://zh.stripchat.webcam/api/front/models";
+    var url = "https://zh.virtualtaboo.live/api/front/models";
     var result = await HttpClient.instance.getJson(
       url,
       queryParameters: {
@@ -153,7 +153,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
     try {
       var roomId = detail.roomId ?? "";
-      var url = "https://zh.stripchat.webcam/api/front/v2/models/username/${roomId}/cam";
+      var url = "https://zh.virtualtaboo.live/api/front/v2/models/username/${roomId}/cam";
       var resultText = await HttpClient.instance.getJson(
         url,
         queryParameters: {},
@@ -224,7 +224,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
   Future<LiveSearchRoomResult> searchRooms(String keyword, {int page = 1}) async {
     var pageSize = 60;
     var offset = (page - 1) * pageSize;
-    var url = "https://zh.stripchat.webcam/api/front/v5/models/search/group/all";
+    var url = "https://zh.virtualtaboo.live/api/front/v5/models/search/group/all";
     var result = await HttpClient.instance.getJson(
       url,
       queryParameters: {

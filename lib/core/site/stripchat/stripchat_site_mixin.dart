@@ -24,7 +24,7 @@ mixin StripChatSiteMixin on SiteMixin {
   @override
   String getJumpToWebUrl(LiveRoom liveRoom) {
     try {
-      var webUrl = "https://zh.stripchat.webcam/${liveRoom.roomId}";
+      var webUrl = "https://zh.virtualtaboo.live/${liveRoom.roomId}";
       return webUrl;
     } catch (e) {
       return "";
@@ -102,7 +102,7 @@ mixin StripChatSiteMixin on SiteMixin {
     }
 
     List<RegExp> regExpBeanList = [
-      RegExp(r"stripchat\.webcam/([^/]+)"),
+      RegExp(r"virtualtaboo\.live/([^/]+)"),
       RegExp(r"live\.uaa\.com/([^/]+)"),
     ];
     siteParseBean = await parseUrl(regExpBeanList, realUrl, id);
@@ -119,7 +119,7 @@ mixin StripChatSiteMixin on SiteMixin {
   @override
   Map<String, String> getVideoHeaders() {
     return {
-      'Origin': 'https://www.stripchat.com',
+      'Origin': 'https://zh.virtualtaboo.live',
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
     };
   }
