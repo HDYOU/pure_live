@@ -148,30 +148,56 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
   @override
   Future<LiveRoom> getRoomDetail({required LiveRoom detail}) async {
     try {
-      var roomId = detail.roomId ?? "";
-      var url = "$apiHost/api/front/v2/models/username/${roomId}/cam";
-      var resultText = await HttpClient.instance.getJson(
-        url,
+      var username = detail.roomId ?? "";
+      CoreLog.d("getRoomDetail username: $username");
+
+      // 第一步：通过 username 获取 uid
+      var uidUrl = "$apiHost/api/front/users/user-ids/$username";
+      var uidResult = await HttpClient.instance.getJson(uidUrl, header: getHeaders());
+      CoreLog.d("uidResult: ${uidResult?.toString().substring(0, 200)}");
+      var uidData = JsonUtil.decode(uidResult);
+      var uid = uidData["id"].toString();
+      if (uid.isEmpty) {
+        CoreLog.error("无法获取 uid for $username");
+        return getLiveRoomWithError(detail);
+      }
+      CoreLog.d("uid: $uid");
+
+      // 第二步：获取 cam 数据（streamName、status 等）
+      var camUrl = "$apiHost/api/front/v2/models/$uid/cam";
+      var camResult = await HttpClient.instance.getJson(
+        camUrl,
         queryParameters: {"timezoneOffset": "-480", "triggerRequest": "loadCam", "withRecentShow": "1"},
         header: getHeaders(),
       );
+      CoreLog.d("camResult keys: ${camResult?.keys}");
+      var camData = JsonUtil.decode(camResult);
+      var userObj = camData['user']?['user'] ?? {};
+      var camObj = camData['cam'] ?? {};
 
-      CoreLog.d("resultText keys: ${resultText?.keys}");
-      resultText = JsonUtil.decode(resultText);
+      // 第三步：获取 config 数据（websocketUrl、websocketToken）
+      var configUrl = "$apiHost/api/front/v3/config/initial";
+      var configResult = await HttpClient.instance.getJson(configUrl, header: getHeaders());
+      var configData = JsonUtil.decode(configResult) as Map? ?? {};
+      CoreLog.d("configData keys: ${configData.keys}");
 
-      var userObj = resultText['user']?['user'] ?? {};
-      var camObj = resultText['cam'] ?? {};
-      var configObj = resultText['config'] ?? {};
+      // 从 config 中提取 websocket 信息
+      String websocketUrl = "";
+      String websocketToken = "";
+      websocketUrl = (configData["websocketUrl"] ?? "").toString();
+      websocketToken = (configData["websocketToken"] ?? "").toString();
+      if (websocketUrl.isEmpty && configData["config"] is Map) {
+        var innerConfig = configData["config"] as Map;
+        websocketUrl = (innerConfig["websocketUrl"] ?? "").toString();
+        websocketToken = (innerConfig["websocketToken"] ?? "").toString();
+      }
+      CoreLog.d("websocketUrl: $websocketUrl, websocketToken length: ${websocketToken.length}, streamName: ${camObj["streamName"]}");
 
-      roomId = userObj["username"].toString();
+      var roomId = userObj["username"].toString();
       var userId = userObj["id"].toString();
       var streamName = (camObj["streamName"] ?? userId).toString();
       var status = userObj["status"]?.toString() ?? "offline";
       var isLive = status == "public";
-
-      var websocketUrl = configObj["websocketUrl"]?.toString() ?? "";
-      var websocketToken = configObj["websocketToken"]?.toString() ?? "";
-      CoreLog.d("websocketUrl: $websocketUrl, websocketToken: $websocketToken, streamName: $streamName");
 
       var danmakuArgs = StripChatDanmakuArgs(
         roomId: roomId,
@@ -181,7 +207,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
       );
       var liveRoom = parseToLiveRoom(userObj, camObj: camObj);
       liveRoom.danmakuData = danmakuArgs;
-      liveRoom.data = resultText;
+      liveRoom.data = camData;
       liveRoom.userId = userId;
       liveRoom.status = isLive;
       liveRoom.liveStatus = isLive ? LiveStatus.live : LiveStatus.offline;
