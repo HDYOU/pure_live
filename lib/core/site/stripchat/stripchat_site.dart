@@ -97,6 +97,17 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
     return Future.value(qualities);
   }
 
+  Future<List<LivePlayQuality>> _parseHlsPlaylist(String hlsUrl, String info) async {
+    try {
+      final response = await HttpClient.instance.getText(hlsUrl, header: getHeaders());
+      CoreLog.d("hlsResponse length: ${response.length}, url: $hlsUrl");
+      return M3u8FileUtil.parseM3u8File(response, info: info, otherInfoPattern: RegExp(r'NAME="([a-zA-Z0-9]+)"'));
+    } catch (e) {
+      CoreLog.error("解析HLS失败: $hlsUrl $e");
+    }
+    return [];
+  }
+
   @override
   Future<List<LivePlayQualityPlayUrlInfo>> getPlayUrls({required LiveRoom detail, required LivePlayQuality quality}) async {
     return quality.playUrlList;
