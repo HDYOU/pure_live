@@ -57,29 +57,24 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
     CoreLog.d("detail.data: ${jsonEncode(detail.data)}");
     var data = (detail.data as Map);
     var camData = data['cam'] ?? {};
-    var streamName = camData['streamName'] ?? detail.userId;
-    var userId = detail.userId ?? "";
+    var streamName = (data['streamName'] ?? camData['streamName'] ?? detail.userId).toString();
+    var hlsHosts = (data['hlsHosts'] ?? []) as List<dynamic>;
+    var isLive = detail.status ?? false;
+    var suffix = isLive ? '_auto' : '_160p_blurred';
 
-    var hlsBaseUrl = "$apiHost/hls/$userId/master/$streamName.m3u8";
-    CoreLog.d("hlsBaseUrl: $hlsBaseUrl");
-
-    try {
-      var response = await HttpClient.instance.getText(hlsBaseUrl, header: getHeaders());
-      var list = M3u8FileUtil.parseM3u8File(response, info: "");
-      qualities.addAll(list);
-    } catch (e) {
-      CoreLog.error("解析HLS失败: $hlsBaseUrl $e");
+    if (hlsHosts.isNotEmpty) {
+      var cdnHost = hlsHosts[0].toString();
+      var hlsUrl = "https://edge-hls.$cdnHost/hls/$streamName/master/$streamName$suffix.m3u8?pkey=bXorqTB5ZhP5FcpX";
+      CoreLog.d("hlsUrl: $hlsUrl");
+      var parseHlsPlaylist = await _parseHlsPlaylist(hlsUrl, "");
+      qualities.addAll(parseHlsPlaylist);
     }
 
     if (qualities.isEmpty) {
-      var autoUrl = "$apiHost/hls/$userId/master/$streamName_auto.m3u8";
-      try {
-        var response = await HttpClient.instance.getText(autoUrl, header: getHeaders());
-        var list = M3u8FileUtil.parseM3u8File(response, info: "");
-        qualities.addAll(list);
-      } catch (e) {
-        CoreLog.error("解析auto HLS失败: $autoUrl $e");
-      }
+      var fallbackUrl = "$apiHost/hls/$streamName/master/$streamName$suffix.m3u8?pkey=bXorqTB5ZhP5FcpX";
+      CoreLog.d("fallback hlsUrl: $fallbackUrl");
+      var parseHlsPlaylist = await _parseHlsPlaylist(fallbackUrl, "");
+      qualities.addAll(parseHlsPlaylist);
     }
 
     if (qualities.isNotEmpty) {
@@ -175,7 +170,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
       var userObj = camData['user']?['user'] ?? {};
       var camObj = camData['cam'] ?? {};
 
-      // 第三步：获取 config 数据（websocketUrl、websocketToken）
+      // 第三步：获取 config 数据（websocketUrl、websocketToken、hlsStreamHosts）
       var configUrl = "$apiHost/api/front/v3/config/initial";
       var configResult = await HttpClient.instance.getJson(configUrl, header: getHeaders());
       var configData = JsonUtil.decode(configResult) as Map? ?? {};
@@ -191,7 +186,19 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
         websocketUrl = (innerConfig["websocketUrl"] ?? "").toString();
         websocketToken = (innerConfig["websocketToken"] ?? "").toString();
       }
-      CoreLog.d("websocketUrl: $websocketUrl, websocketToken length: ${websocketToken.length}, streamName: ${camObj["streamName"]}");
+
+      // 提取 HLS CDN hosts
+      List<String> hlsHosts = [];
+      var initial = configData["initial"] as Map? ?? {};
+      var common = initial["common"] as Map? ?? {};
+      var hlsStreamHosts = common["hlsStreamHosts"] as Map? ?? {};
+      for (var key in ["A", "B", "C", "D", "E", "F"]) {
+        var host = hlsStreamHosts[key]?.toString();
+        if (host != null && host.isNotEmpty) {
+          hlsHosts.add(host);
+        }
+      }
+      CoreLog.d("hlsHosts: $hlsHosts, websocketUrl: $websocketUrl, streamName: ${camObj["streamName"]}");
 
       var roomId = userObj["username"].toString();
       var userId = userObj["id"].toString();
@@ -207,7 +214,11 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
       );
       var liveRoom = parseToLiveRoom(userObj, camObj: camObj);
       liveRoom.danmakuData = danmakuArgs;
-      liveRoom.data = camData;
+      liveRoom.data = {
+        ...?camData,
+        "hlsHosts": hlsHosts,
+        "streamName": streamName,
+      };
       liveRoom.userId = userId;
       liveRoom.status = isLive;
       liveRoom.liveStatus = isLive ? LiveStatus.live : LiveStatus.offline;
