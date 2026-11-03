@@ -35,12 +35,13 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
 
   Map<String, String> getHeaders() {
     return {
-      'Accept': '*/*',
+      'Accept': 'application/json, text/javascript, */*; q=0.01',
       'Origin': apiHost,
       'Referer': '$apiHost/',
       'Sec-Fetch-Dest': 'empty',
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-site',
+      'X-Requested-With': 'XMLHttpRequest',
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
       "Cookie": SettingsService.instance.siteCookies[id] ?? "",
     };
