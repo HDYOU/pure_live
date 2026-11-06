@@ -189,17 +189,6 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
       var configData = JsonUtil.decode(configResult) as Map? ?? {};
       CoreLog.d("configData keys: ${configData.keys}");
 
-      // 从 config 中提取 websocket 信息
-      String websocketUrl = "";
-      String websocketToken = "";
-      websocketUrl = (configData["websocketUrl"] ?? "").toString();
-      websocketToken = (configData["websocketToken"] ?? "").toString();
-      if (websocketUrl.isEmpty && configData["config"] is Map) {
-        var innerConfig = configData["config"] as Map;
-        websocketUrl = (innerConfig["websocketUrl"] ?? "").toString();
-        websocketToken = (innerConfig["websocketToken"] ?? "").toString();
-      }
-
       // 提取 HLS CDN hosts
       List<String> hlsHosts = [];
       var initial = configData["initial"] as Map? ?? {};
@@ -211,13 +200,20 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
           hlsHosts.add(host);
         }
       }
+
+      // 从 config 中提取 websocket 信息
+      String websocketUrl = "";
+      String websocketToken = "";
+      var client = initial["client"] as Map? ?? {};
+      websocketUrl = (client["websocketUrl"] ?? "").toString();
+      websocketToken = (client["websocketToken"] ?? "").toString();
       CoreLog.d("hlsHosts: $hlsHosts, websocketUrl: $websocketUrl, streamName: ${camObj["streamName"]}");
 
       var roomId = userObj["username"].toString();
       var userId = userObj["id"].toString();
       var streamName = (camObj["streamName"] ?? userId).toString();
-      var status = userObj["status"]?.toString() ?? "offline";
-      var isLive = status == "public";
+       var status = userObj["status"]?.toString() ?? "offline";
+       var isLive = status != "offline";
 
       var danmakuArgs = StripChatDanmakuArgs(
         roomId: roomId,
@@ -254,7 +250,7 @@ class StripChatSite extends LiveSite with StripChatSiteMixin {
 
   LiveRoom parseToLiveRoom(Map jsonObj, {Map<dynamic, dynamic>? camObj}) {
     var status = jsonObj["status"]?.toString() ?? "offline";
-    var isLive = status == "public";
+    var isLive = status != "offline";
     var topic = camObj?["topic"]?.toString() ?? jsonObj["topic"]?.toString() ?? "";
     var viewers = jsonObj["viewersCount"]?.toString() ?? jsonObj["favoritedCount"]?.toString() ?? "0";
     var snapshotTimestamp = jsonObj["snapshotTimestamp"];
